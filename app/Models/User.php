@@ -42,6 +42,7 @@ class User extends Authenticatable implements PasskeyUser
 
     protected $appends = ['avatar_url'];
 
+    /** @return Attribute<string|null, never> */
     protected function avatarUrl(): Attribute
     {
         return Attribute::get(
