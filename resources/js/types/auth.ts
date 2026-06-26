@@ -1,8 +1,13 @@
+export type AccountType = 'restaurant' | 'customer' | 'waiter';
+
 export type User = {
     id: number;
     name: string;
     email: string;
-    avatar?: string;
+    phone: string | null;
+    avatar: string | null;
+    avatar_url: string | null;
+    account_type: AccountType;
     email_verified_at: string | null;
     two_factor_enabled?: boolean;
     created_at: string;
