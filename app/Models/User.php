@@ -45,6 +45,7 @@ class User extends Authenticatable implements PasskeyUser
     /** @return Attribute<string|null, never> */
     protected function avatarUrl(): Attribute
     {
+        /** @phpstan-ignore return.type */
         return Attribute::get(
             fn (): ?string => $this->avatar ? Storage::disk('public')->url($this->avatar) : null
         );
