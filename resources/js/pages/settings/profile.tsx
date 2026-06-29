@@ -2,6 +2,7 @@ import { Form, Head, usePage } from '@inertiajs/react';
 import { Link } from '@inertiajs/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { compressImage } from '@/lib/compress-image';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@/components/delete-user';
 import Heading from '@/components/heading';
@@ -118,11 +119,14 @@ export default function Profile({
                                         name="avatar"
                                         accept="image/*"
                                         className="max-w-xs"
-                                        onChange={(e) => {
+                                        onChange={async (e) => {
                                             const file = e.target.files?.[0];
-                                            if (file) {
-                                                setAvatarPreview(URL.createObjectURL(file));
-                                            }
+                                            if (!file) return;
+                                            const compressed = await compressImage(file, { maxWidth: 400, maxHeight: 400 });
+                                            const dt = new DataTransfer();
+                                            dt.items.add(compressed);
+                                            e.target.files = dt.files;
+                                            setAvatarPreview(URL.createObjectURL(compressed));
                                         }}
                                     />
                                 </div>
