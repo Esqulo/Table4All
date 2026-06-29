@@ -1,5 +1,8 @@
 {
     "Profile updated.": "Perfil atualizado.",
     "Password updated.": "Senha atualizada.",
-    "Verification email sent.": "E-mail de verificação enviado."
+    "Verification email sent.": "E-mail de verificação enviado.",
+    "products.created": "Produto criado com sucesso.",
+    "products.updated": "Produto atualizado com sucesso.",
+    "products.deleted": "Produto excluído com sucesso."
 }

@@ -62,6 +62,8 @@
     },
     "nav": {
         "dashboard": "Painel",
+        "tables": "Mesas",
+        "products": "Produtos",
         "repository": "Repositório",
         "documentation": "Documentação",
         "settings": "Configurações",
@@ -124,6 +126,48 @@
         "password_placeholder": "Senha",
         "cancel": "Cancelar",
         "confirm": "Excluir conta"
+    },
+    "products": {
+        "title": "Produtos",
+        "new": "Novo produto",
+        "empty": "Nenhum produto cadastrado ainda.",
+        "name_label": "Nome",
+        "name_placeholder": "Ex: Picanha",
+        "description_label": "Descrição (opcional)",
+        "description_placeholder": "Descreva o produto...",
+        "price_label": "Preço",
+        "price_type_label": "Contexto do preço",
+        "picture_label": "Foto do produto",
+        "picture_current": "Foto atual",
+        "picture_select": "Selecionar imagem",
+        "picture_change": "Alterar imagem",
+        "crop_confirm": "Aplicar recorte",
+        "submit_create": "Criar produto",
+        "submit_update": "Salvar alterações",
+        "cancel": "Cancelar",
+        "edit": "Editar",
+        "delete": "Excluir",
+        "delete_confirm": "Tem certeza que deseja excluir este produto?",
+        "price_types": {
+            "unit": "Por unidade",
+            "kg": "Por quilo (kg)",
+            "100g": "Por 100g",
+            "liter": "Por litro",
+            "portion": "Por porção"
+        },
+        "price_suffix": {
+            "unit": "un.",
+            "kg": "kg",
+            "100g": "100g",
+            "liter": "L",
+            "portion": "porção"
+        },
+        "breadcrumb_index": "Produtos",
+        "breadcrumb_create": "Novo produto",
+        "breadcrumb_edit": "Editar produto",
+        "msg_created": "Produto criado com sucesso.",
+        "msg_updated": "Produto atualizado com sucesso.",
+        "msg_deleted": "Produto excluído com sucesso."
     },
     "language": {
         "toggle_label": "Idioma",

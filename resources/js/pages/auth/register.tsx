@@ -1,6 +1,7 @@
 import { Form, Head } from '@inertiajs/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { compressImage } from '@/lib/compress-image';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
@@ -95,11 +96,14 @@ export default function Register({ passwordRules }: Props) {
                                     tabIndex={4}
                                     name="avatar"
                                     accept="image/*"
-                                    onChange={(e) => {
+                                    onChange={async (e) => {
                                         const file = e.target.files?.[0];
-                                        if (file) {
-                                            setAvatarPreview(URL.createObjectURL(file));
-                                        }
+                                        if (!file) return;
+                                        const compressed = await compressImage(file, { maxWidth: 400, maxHeight: 400 });
+                                        const dt = new DataTransfer();
+                                        dt.items.add(compressed);
+                                        e.target.files = dt.files;
+                                        setAvatarPreview(URL.createObjectURL(compressed));
                                     }}
                                 />
                                 <InputError message={errors.avatar} />
