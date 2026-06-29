@@ -4,15 +4,14 @@ namespace App\Models;
 
 use App\Enums\PriceType;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 
-class Product extends Model
+final class Product extends Model
 {
-    use HasFactory, SoftDeletes;
+    use SoftDeletes;
 
     protected $fillable = [
         'user_id',
@@ -34,6 +33,7 @@ class Product extends Model
         );
     }
 
+    /** @return BelongsTo<User, $this> */
     public function restaurant(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');

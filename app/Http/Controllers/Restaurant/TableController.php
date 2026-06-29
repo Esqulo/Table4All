@@ -9,9 +9,11 @@ use App\Models\Product;
 use App\Models\RestaurantTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class TableController extends Controller
 {
@@ -51,7 +53,7 @@ class TableController extends Controller
         return to_route('restaurant.tables.index');
     }
 
-    public function show(Request $request, RestaurantTable $table): Response
+    public function show(Request $request, RestaurantTable $table): Response|SymfonyResponse
     {
         abort_unless($table->user_id === $request->user()->id, 403);
 
@@ -121,13 +123,12 @@ class TableController extends Controller
         abort_unless($table->user_id === $request->user()->id, 403);
         abort_if($table->closed_at !== null, 422, 'Table is already closed.');
 
-        $table->load(['products', 'payments']);
+        $productTotal = (float) DB::table('restaurant_table_product')
+            ->join('products', 'products.id', '=', 'restaurant_table_product.product_id')
+            ->where('restaurant_table_product.restaurant_table_id', $table->id)
+            ->sum(DB::raw('products.price * restaurant_table_product.quantity'));
 
-        $productTotal = $table->products->reduce(
-            fn ($sum, $p) => $sum + $p->price * $p->pivot->quantity,
-            0.0
-        );
-        $paymentTotal = (float) $table->payments->sum('amount');
+        $paymentTotal = (float) $table->payments()->sum('amount');
 
         if ($paymentTotal < $productTotal) {
             Inertia::flash('toast', ['type' => 'error', 'message' => 'tables.msg_insufficient_payment']);

@@ -6,7 +6,7 @@ use App\Enums\PaymentMethod;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class TablePayment extends Model
+final class TablePayment extends Model
 {
     protected $fillable = [
         'restaurant_table_id',
@@ -22,6 +22,7 @@ class TablePayment extends Model
         ];
     }
 
+    /** @return BelongsTo<RestaurantTable, $this> */
     public function table(): BelongsTo
     {
         return $this->belongsTo(RestaurantTable::class, 'restaurant_table_id');
