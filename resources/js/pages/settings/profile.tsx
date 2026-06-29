@@ -1,6 +1,7 @@
 import { Form, Head, usePage } from '@inertiajs/react';
 import { Link } from '@inertiajs/react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@/components/delete-user';
 import Heading from '@/components/heading';
@@ -24,6 +25,7 @@ export default function Profile({
     mustVerifyEmail: boolean;
     status?: string;
 }) {
+    const { t } = useTranslation();
     const { auth } = usePage<PageProps>().props;
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
@@ -32,15 +34,15 @@ export default function Profile({
 
     return (
         <>
-            <Head title="Profile settings" />
+            <Head title={t('settings.profile.head')} />
 
-            <h1 className="sr-only">Profile settings</h1>
+            <h1 className="sr-only">{t('settings.profile.head')}</h1>
 
             <div className="space-y-6">
                 <Heading
                     variant="small"
-                    title="Profile"
-                    description="Update your name, contact info, and profile picture"
+                    title={t('settings.profile.section_title')}
+                    description={t('settings.profile.section_description')}
                 />
 
                 <Form
@@ -53,7 +55,7 @@ export default function Profile({
                     {({ processing, errors }) => (
                         <>
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Full name</Label>
+                                <Label htmlFor="name">{t('settings.profile.name_label')}</Label>
                                 <Input
                                     id="name"
                                     className="mt-1 block w-full"
@@ -61,13 +63,13 @@ export default function Profile({
                                     name="name"
                                     required
                                     autoComplete="name"
-                                    placeholder="Full name"
+                                    placeholder={t('settings.profile.name_placeholder')}
                                 />
                                 <InputError className="mt-2" message={errors.name} />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                                <Label htmlFor="email">{t('settings.profile.email_label')}</Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -76,13 +78,13 @@ export default function Profile({
                                     name="email"
                                     required
                                     autoComplete="username"
-                                    placeholder="Email address"
+                                    placeholder={t('settings.profile.email_placeholder')}
                                 />
                                 <InputError className="mt-2" message={errors.email} />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="phone">Phone number</Label>
+                                <Label htmlFor="phone">{t('settings.profile.phone_label')}</Label>
                                 <div className="mt-1 flex">
                                     <span className="border-input bg-muted text-muted-foreground inline-flex h-9 items-center rounded-l-md border border-r-0 px-3 text-sm select-none">
                                         +55
@@ -94,7 +96,7 @@ export default function Profile({
                                         name="phone"
                                         required
                                         autoComplete="tel"
-                                        placeholder="11 99999-9999"
+                                        placeholder={t('settings.profile.phone_placeholder')}
                                         className="rounded-l-none"
                                     />
                                 </div>
@@ -102,7 +104,7 @@ export default function Profile({
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="avatar">Profile picture</Label>
+                                <Label htmlFor="avatar">{t('settings.profile.avatar_label')}</Label>
                                 <div className="flex items-center gap-4">
                                     <Avatar className="h-16 w-16">
                                         <AvatarImage src={avatarSrc} alt={auth.user.name} />
@@ -130,19 +132,19 @@ export default function Profile({
                             {mustVerifyEmail && auth.user.email_verified_at === null && (
                                 <div>
                                     <p className="-mt-4 text-sm text-muted-foreground">
-                                        Your email address is unverified.{' '}
+                                        {t('settings.profile.unverified_email')}{' '}
                                         <Link
                                             href={send()}
                                             as="button"
                                             className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
                                         >
-                                            Click here to re-send the verification email.
+                                            {t('settings.profile.resend_verification')}
                                         </Link>
                                     </p>
 
                                     {status === 'verification-link-sent' && (
                                         <div className="mt-2 text-sm font-medium text-green-600">
-                                            A new verification link has been sent to your email address.
+                                            {t('settings.profile.verification_sent')}
                                         </div>
                                     )}
                                 </div>
@@ -153,7 +155,7 @@ export default function Profile({
                                     disabled={processing}
                                     data-test="update-profile-button"
                                 >
-                                    Save
+                                    {t('settings.profile.save')}
                                 </Button>
                             </div>
                         </>
@@ -169,7 +171,7 @@ export default function Profile({
 Profile.layout = {
     breadcrumbs: [
         {
-            title: 'Profile settings',
+            title: 'settings.profile.title',
             href: edit(),
         },
     ],

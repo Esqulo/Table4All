@@ -1,0 +1,133 @@
+{
+    "auth": {
+        "login": {
+            "title": "Entrar na sua conta",
+            "description": "Digite seu e-mail e senha abaixo para entrar",
+            "head": "Entrar",
+            "email_label": "Endereço de e-mail",
+            "password_label": "Senha",
+            "forgot_password": "Esqueceu sua senha?",
+            "remember_me": "Lembrar de mim",
+            "submit": "Entrar",
+            "no_account": "Não tem uma conta?",
+            "sign_up": "Cadastre-se"
+        },
+        "register": {
+            "title": "Criar uma conta",
+            "description": "Preencha seus dados abaixo para criar sua conta",
+            "head": "Cadastro",
+            "name_label": "Nome completo",
+            "name_placeholder": "Nome completo",
+            "email_label": "Endereço de e-mail",
+            "phone_label": "Número de telefone",
+            "phone_placeholder": "11 99999-9999",
+            "avatar_label": "Foto de perfil (opcional)",
+            "avatar_preview_alt": "Prévia do avatar",
+            "password_label": "Senha",
+            "password_placeholder": "Senha",
+            "confirm_password_label": "Confirmar senha",
+            "confirm_password_placeholder": "Confirmar senha",
+            "submit": "Criar conta",
+            "already_have_account": "Já tem uma conta?",
+            "log_in": "Entrar"
+        },
+        "forgot_password": {
+            "title": "Esqueci minha senha",
+            "description": "Digite seu e-mail para receber um link de redefinição de senha",
+            "head": "Esqueci minha senha",
+            "email_label": "Endereço de e-mail",
+            "submit": "Enviar link de redefinição",
+            "or_return": "Ou, voltar para",
+            "log_in": "entrar"
+        },
+        "reset_password": {
+            "title": "Redefinir senha",
+            "description": "Por favor, digite sua nova senha abaixo",
+            "head": "Redefinir senha",
+            "email_label": "E-mail",
+            "password_label": "Senha",
+            "password_placeholder": "Senha",
+            "confirm_password_label": "Confirmar senha",
+            "confirm_password_placeholder": "Confirmar senha",
+            "submit": "Redefinir senha"
+        },
+        "verify_email": {
+            "title": "Verificação de e-mail",
+            "description": "Por favor, verifique seu endereço de e-mail clicando no link que acabamos de enviar para você.",
+            "head": "Verificação de e-mail",
+            "link_sent": "Um novo link de verificação foi enviado para o endereço de e-mail que você forneceu durante o cadastro.",
+            "resend": "Reenviar e-mail de verificação",
+            "log_out": "Sair"
+        }
+    },
+    "nav": {
+        "dashboard": "Painel",
+        "repository": "Repositório",
+        "documentation": "Documentação",
+        "settings": "Configurações",
+        "log_out": "Sair"
+    },
+    "settings": {
+        "profile": {
+            "title": "Configurações de perfil",
+            "head": "Configurações de perfil",
+            "section_title": "Perfil",
+            "section_description": "Atualize seu nome, informações de contato e foto de perfil",
+            "name_label": "Nome completo",
+            "name_placeholder": "Nome completo",
+            "email_label": "Endereço de e-mail",
+            "email_placeholder": "Endereço de e-mail",
+            "phone_label": "Número de telefone",
+            "phone_placeholder": "11 99999-9999",
+            "avatar_label": "Foto de perfil",
+            "unverified_email": "Seu endereço de e-mail não foi verificado.",
+            "resend_verification": "Clique aqui para reenviar o e-mail de verificação.",
+            "verification_sent": "Um novo link de verificação foi enviado para o seu endereço de e-mail.",
+            "save": "Salvar"
+        },
+        "security": {
+            "title": "Configurações de segurança",
+            "head": "Configurações de segurança",
+            "section_title": "Atualizar senha",
+            "section_description": "Certifique-se de que sua conta esteja usando uma senha longa e aleatória para se manter segura",
+            "current_password_label": "Senha atual",
+            "current_password_placeholder": "Senha atual",
+            "new_password_label": "Nova senha",
+            "new_password_placeholder": "Nova senha",
+            "confirm_password_label": "Confirmar senha",
+            "confirm_password_placeholder": "Confirmar senha",
+            "save": "Salvar"
+        },
+        "appearance": {
+            "title": "Configurações de aparência",
+            "head": "Configurações de aparência",
+            "section_title": "Configurações de aparência",
+            "section_description": "Atualize as configurações de aparência da sua conta"
+        }
+    },
+    "appearance": {
+        "light": "Claro",
+        "dark": "Escuro",
+        "system": "Sistema",
+        "switch_to_light": "Mudar para modo claro",
+        "switch_to_dark": "Mudar para modo escuro"
+    },
+    "delete_user": {
+        "title": "Excluir conta",
+        "description": "Exclua sua conta e todos os seus dados",
+        "warning_title": "Atenção",
+        "warning_text": "Por favor, prossiga com cautela, isso não pode ser desfeito.",
+        "trigger_button": "Excluir conta",
+        "dialog_title": "Tem certeza que deseja excluir sua conta?",
+        "dialog_description": "Uma vez excluída, todos os seus dados e recursos serão permanentemente apagados. Por favor, digite sua senha para confirmar que deseja excluir permanentemente sua conta.",
+        "password_label": "Senha",
+        "password_placeholder": "Senha",
+        "cancel": "Cancelar",
+        "confirm": "Excluir conta"
+    },
+    "language": {
+        "toggle_label": "Idioma",
+        "pt_BR": "PT",
+        "en": "EN"
+    }
+}
