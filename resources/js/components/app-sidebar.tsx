@@ -15,8 +15,8 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import ProductController from '@/actions/App/Http/Controllers/Restaurant/ProductController';
+import TableController from '@/actions/App/Http/Controllers/Restaurant/TableController';
 import { dashboard } from '@/routes';
-import { tables } from '@/routes/restaurant';
 import type { Auth, NavItem } from '@/types';
 
 export function AppSidebar() {
@@ -28,7 +28,7 @@ export function AppSidebar() {
         ? [
               {
                   title: t('nav.tables'),
-                  href: tables(),
+                  href: TableController.index.url(),
                   icon: UtensilsCrossed,
               },
               {
