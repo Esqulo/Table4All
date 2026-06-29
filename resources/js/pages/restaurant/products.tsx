@@ -3,7 +3,6 @@ import { ImageOff, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import ProductController from '@/actions/App/Http/Controllers/Restaurant/ProductController';
 import Heading from '@/components/heading';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import type { Product } from '@/types';
 

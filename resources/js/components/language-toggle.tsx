@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { getLocale, setLocale } from '@/i18n';
+import { setLocale } from '@/i18n';
 import { Button } from '@/components/ui/button';
 
 export function LanguageToggle() {
