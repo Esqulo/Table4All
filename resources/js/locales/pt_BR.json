@@ -161,7 +161,21 @@
         "qr_logo_select": "Selecionar logo",
         "qr_logo_change": "Alterar logo",
         "qr_logo_remove": "Remover",
-        "qr_logo_size": "Tamanho do logo"
+        "qr_logo_size": "Tamanho do logo",
+        "print_heading": "Imprimir Cardápio",
+        "print_button": "Imprimir",
+        "print_paper": "Tamanho do papel",
+        "print_template": "Modelo",
+        "print_tpl_classic": "Clássico",
+        "print_tpl_grid": "Grade",
+        "print_tpl_elegant": "Elegante",
+        "print_font": "Tipografia",
+        "print_order": "Ordem das páginas",
+        "print_order_hint": "Arraste para reordenar categorias e produtos.",
+        "print_no_products": "Nenhum produto cadastrado.",
+        "print_page": "Página",
+        "print_uncategorised": "Outros",
+        "print_menu": "Imprimir Cardápio"
     },
     "categories": {
         "title": "Categorias",

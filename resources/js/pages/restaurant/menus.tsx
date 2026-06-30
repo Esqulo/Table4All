@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { Plus, ScrollText, QrCode } from 'lucide-react';
+import { Plus, Printer, QrCode, ScrollText } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import MenuController from '@/actions/App/Http/Controllers/Restaurant/MenuController';
@@ -45,14 +45,22 @@ export default function Menus({ menus }: Props) {
                                     <ScrollText className="h-4 w-4 text-muted-foreground shrink-0" />
                                     <span className="text-sm font-medium truncate">{menu.name}</span>
                                 </div>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setQrMenu(menu)}
-                                >
-                                    <QrCode className="mr-1.5 h-4 w-4" />
-                                    {t('menus.qr_code')}
-                                </Button>
+                                <div className="flex items-center gap-2 shrink-0">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setQrMenu(menu)}
+                                    >
+                                        <QrCode className="mr-1.5 h-4 w-4" />
+                                        {t('menus.qr_code')}
+                                    </Button>
+                                    <Button variant="outline" size="sm" asChild>
+                                        <Link href={MenuController.printMenu.url({ menu: menu.id })}>
+                                            <Printer className="mr-1.5 h-4 w-4" />
+                                            {t('menus.print_menu')}
+                                        </Link>
+                                    </Button>
+                                </div>
                             </li>
                         ))}
                     </ul>

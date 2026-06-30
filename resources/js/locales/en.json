@@ -161,7 +161,21 @@
         "qr_logo_select": "Select logo",
         "qr_logo_change": "Change logo",
         "qr_logo_remove": "Remove",
-        "qr_logo_size": "Logo size"
+        "qr_logo_size": "Logo size",
+        "print_heading": "Print Menu",
+        "print_button": "Print",
+        "print_paper": "Paper size",
+        "print_template": "Template",
+        "print_tpl_classic": "Classic",
+        "print_tpl_grid": "Grid",
+        "print_tpl_elegant": "Elegant",
+        "print_font": "Typography",
+        "print_order": "Page order",
+        "print_order_hint": "Drag to reorder categories and products.",
+        "print_no_products": "No products registered.",
+        "print_page": "Page",
+        "print_uncategorised": "Other",
+        "print_menu": "Print Menu"
     },
     "categories": {
         "title": "Categories",

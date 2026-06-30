@@ -31,6 +31,8 @@ Route::middleware(['auth', 'verified', EnsureRestaurant::class])
             ->only(['index', 'create', 'store'])
             ->names('menus')
             ->parameters(['cardapio' => 'menu']);
+        Route::get('cardapio/{menu}/imprimir', [MenuController::class, 'printMenu'])
+            ->name('menus.print');
         Route::resource('produtos', ProductController::class)
             ->except(['show'])
             ->names('products')

@@ -33,6 +33,29 @@ class MenuController extends Controller
         return Inertia::render('restaurant/menus/create');
     }
 
+    public function printMenu(Request $request, Menu $menu): Response
+    {
+        abort_unless($menu->user_id === $request->user()->id, 403);
+
+        $menu->load(['user' => fn ($q) => $q->select('id', 'name')]);
+
+        $products = Product::where('user_id', $menu->user_id)
+            ->with('category:id,name')
+            ->orderBy('name')
+            ->get(['id', 'category_id', 'name', 'description', 'picture', 'price', 'price_type']);
+
+        $usedCategoryIds = $products->pluck('category_id')->filter()->unique();
+        $categories = Category::whereIn('id', $usedCategoryIds)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        return Inertia::render('restaurant/menus/print', [
+            'menu'       => $menu,
+            'categories' => $categories,
+            'products'   => $products,
+        ]);
+    }
+
     public function show(Menu $menu): Response
     {
         $menu->load(['user' => fn ($q) => $q->select('id', 'name', 'avatar')]);
