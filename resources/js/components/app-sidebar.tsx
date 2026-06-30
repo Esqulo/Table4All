@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid, ShoppingBag, UtensilsCrossed } from 'lucide-react';
+import { BookOpen, FolderGit2, LayoutGrid, ShoppingBag, Tag, UtensilsCrossed } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -14,6 +14,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import CategoryController from '@/actions/App/Http/Controllers/Admin/CategoryController';
 import ProductController from '@/actions/App/Http/Controllers/Restaurant/ProductController';
 import TableController from '@/actions/App/Http/Controllers/Restaurant/TableController';
 import { dashboard } from '@/routes';
@@ -22,28 +23,37 @@ import type { Auth, NavItem } from '@/types';
 export function AppSidebar() {
     const { t } = useTranslation();
     const { auth } = usePage<{ auth: Auth }>().props;
+    const isAdmin = auth.user.account_type === 'admin';
     const isRestaurant = auth.user.account_type === 'restaurant';
 
-    const mainNavItems: NavItem[] = isRestaurant
+    const mainNavItems: NavItem[] = isAdmin
         ? [
               {
-                  title: t('nav.tables'),
-                  href: TableController.index.url(),
-                  icon: UtensilsCrossed,
-              },
-              {
-                  title: t('nav.products'),
-                  href: ProductController.index.url(),
-                  icon: ShoppingBag,
+                  title: t('nav.categories'),
+                  href: CategoryController.index.url(),
+                  icon: Tag,
               },
           ]
-        : [
-              {
-                  title: t('nav.dashboard'),
-                  href: dashboard(),
-                  icon: LayoutGrid,
-              },
-          ];
+        : isRestaurant
+          ? [
+                {
+                    title: t('nav.tables'),
+                    href: TableController.index.url(),
+                    icon: UtensilsCrossed,
+                },
+                {
+                    title: t('nav.products'),
+                    href: ProductController.index.url(),
+                    icon: ShoppingBag,
+                },
+            ]
+          : [
+                {
+                    title: t('nav.dashboard'),
+                    href: dashboard(),
+                    icon: LayoutGrid,
+                },
+            ];
 
     const footerNavItems: NavItem[] = [
         {
@@ -64,7 +74,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={isRestaurant ? ProductController.index.url() : dashboard()} prefetch>
+                            <Link href={isAdmin ? CategoryController.index.url() : isRestaurant ? ProductController.index.url() : dashboard()} prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>

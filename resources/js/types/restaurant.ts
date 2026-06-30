@@ -1,8 +1,15 @@
 export type PriceType = 'unit' | 'kg' | '100g' | 'liter' | 'portion';
 
+export type Category = {
+    id: number;
+    name: string;
+};
+
 export type Product = {
     id: number;
     user_id: number;
+    category_id: number | null;
+    category: Category | null;
     name: string;
     description: string | null;
     picture: string | null;

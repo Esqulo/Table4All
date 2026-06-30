@@ -15,6 +15,7 @@ final class Product extends Model
 
     protected $fillable = [
         'user_id',
+        'category_id',
         'name',
         'description',
         'picture',
@@ -31,6 +32,12 @@ final class Product extends Model
         return Attribute::get(
             fn (): ?string => $this->picture ? Storage::disk('public')->url($this->picture) : null
         );
+    }
+
+    /** @return BelongsTo<Category, $this> */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
     }
 
     /** @return BelongsTo<User, $this> */

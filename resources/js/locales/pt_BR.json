@@ -62,6 +62,7 @@
     },
     "nav": {
         "dashboard": "Painel",
+        "categories": "Categorias",
         "tables": "Mesas",
         "products": "Produtos",
         "repository": "Repositório",
@@ -127,10 +128,22 @@
         "cancel": "Cancelar",
         "confirm": "Excluir conta"
     },
+    "categories": {
+        "title": "Categorias",
+        "new_placeholder": "Nome da categoria",
+        "add": "Adicionar",
+        "empty": "Nenhuma categoria cadastrada ainda.",
+        "delete_confirm": "Tem certeza que deseja excluir esta categoria?",
+        "msg_created": "Categoria criada com sucesso.",
+        "msg_deleted": "Categoria excluída com sucesso.",
+        "breadcrumb_index": "Categorias"
+    },
     "products": {
         "title": "Produtos",
         "new": "Novo produto",
         "empty": "Nenhum produto cadastrado ainda.",
+        "category_label": "Categoria",
+        "category_none": "Sem categoria",
         "name_label": "Nome",
         "name_placeholder": "Ex: Picanha",
         "description_label": "Descrição (opcional)",

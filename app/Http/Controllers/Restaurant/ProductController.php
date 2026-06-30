@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Restaurant;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Restaurant\ProductRequest;
+use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,6 +17,7 @@ class ProductController extends Controller
     public function index(Request $request): Response
     {
         $products = Product::where('user_id', $request->user()->id)
+            ->with('category:id,name')
             ->orderBy('name')
             ->get();
 
@@ -26,7 +28,9 @@ class ProductController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('restaurant/products/create');
+        return Inertia::render('restaurant/products/create', [
+            'categories' => Category::orderBy('name')->get(['id', 'name']),
+        ]);
     }
 
     public function store(ProductRequest $request): RedirectResponse
@@ -50,7 +54,8 @@ class ProductController extends Controller
         abort_unless($product->user_id === $request->user()->id, 403);
 
         return Inertia::render('restaurant/products/edit', [
-            'product' => $product,
+            'product'    => $product,
+            'categories' => Category::orderBy('name')->get(['id', 'name']),
         ]);
     }
 

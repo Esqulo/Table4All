@@ -15,15 +15,16 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import type { PriceType, Product } from '@/types';
+import type { Category, PriceType, Product } from '@/types';
 
 const PRICE_TYPES: PriceType[] = ['unit', 'kg', '100g', 'liter', 'portion'];
 
 type Props = {
     product: Product;
+    categories: Category[];
 };
 
-export default function EditProduct({ product }: Props) {
+export default function EditProduct({ product, categories }: Props) {
     const { t } = useTranslation();
     const pickerRef = useRef<HTMLInputElement>(null);
     const formPictureRef = useRef<HTMLInputElement>(null);
@@ -82,6 +83,28 @@ export default function EditProduct({ product }: Props) {
                 >
                     {({ processing, errors }) => (
                         <>
+                            {categories.length > 0 && (
+                                <div className="grid gap-2">
+                                    <Label htmlFor="category_id">{t('products.category_label')}</Label>
+                                    <Select
+                                        name="category_id"
+                                        defaultValue={product.category_id ? String(product.category_id) : ''}
+                                    >
+                                        <SelectTrigger id="category_id">
+                                            <SelectValue placeholder={t('products.category_none')} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {categories.map((cat) => (
+                                                <SelectItem key={cat.id} value={String(cat.id)}>
+                                                    {cat.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <InputError message={errors.category_id} />
+                                </div>
+                            )}
+
                             <div className="grid gap-2">
                                 <Label htmlFor="name">{t('products.name_label')}</Label>
                                 <Input

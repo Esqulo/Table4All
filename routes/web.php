@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Restaurant\ProductController;
 use App\Http\Controllers\Restaurant\TableController;
+use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureRestaurant;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +28,16 @@ Route::middleware(['auth', 'verified', EnsureRestaurant::class])
             ->except(['show'])
             ->names('products')
             ->parameters(['produtos' => 'product']);
+    });
+
+Route::middleware(['auth', 'verified', EnsureAdmin::class])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::resource('categorias', CategoryController::class)
+            ->only(['index', 'store', 'destroy'])
+            ->names('categories')
+            ->parameters(['categorias' => 'category']);
     });
 
 require __DIR__.'/settings.php';
