@@ -1,4 +1,4 @@
-export type AccountType = 'restaurant' | 'customer' | 'waiter';
+export type AccountType = 'admin' | 'restaurant' | 'customer' | 'waiter';
 
 export type User = {
     id: number;

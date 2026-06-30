@@ -71,6 +71,11 @@ function ProductCard({ product }: { product: Product }) {
             </div>
 
             <div className="flex flex-1 flex-col gap-1 p-4">
+                {product.category && (
+                    <span className="self-start rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                        {product.category.name}
+                    </span>
+                )}
                 <p className="font-medium leading-tight">{product.name}</p>
                 {product.description && (
                     <p className="text-xs text-muted-foreground line-clamp-2">
