@@ -5,6 +5,14 @@ export type Category = {
     name: string;
 };
 
+export type Menu = {
+    id: number;
+    user_id: number;
+    name: string;
+    created_at: string;
+    updated_at: string;
+};
+
 export type Product = {
     id: number;
     user_id: number;
