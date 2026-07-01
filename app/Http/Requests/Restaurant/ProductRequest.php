@@ -19,6 +19,7 @@ class ProductRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'category_id' => ['nullable', 'integer', 'exists:categories,id'],
+            'queue_id' => ['nullable', 'integer', 'exists:restaurant_queues,id'],
             'description' => ['nullable', 'string', 'max:2000'],
             'price' => ['required', 'numeric', 'min:0.01', 'max:99999.99'],
             'price_type' => ['required', new Enum(PriceType::class)],

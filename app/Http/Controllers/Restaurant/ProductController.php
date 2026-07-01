@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Restaurant\ProductRequest;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\RestaurantQueue;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -28,10 +29,11 @@ class ProductController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
         return Inertia::render('restaurant/products/create', [
             'categories' => Category::orderBy('name')->get(['id', 'name']),
+            'queues'     => RestaurantQueue::where('user_id', $request->user()->id)->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -58,6 +60,7 @@ class ProductController extends Controller
         return Inertia::render('restaurant/products/edit', [
             'product'    => $product,
             'categories' => Category::orderBy('name')->get(['id', 'name']),
+            'queues'     => RestaurantQueue::where('user_id', $request->user()->id)->orderBy('name')->get(['id', 'name']),
         ]);
     }
 

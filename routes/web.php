@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Restaurant\MenuController;
 use App\Http\Controllers\Restaurant\ProductController;
+use App\Http\Controllers\Restaurant\QueueController;
 use App\Http\Controllers\Restaurant\TableController;
 use App\Http\Controllers\Restaurant\WaiterController;
 use App\Http\Controllers\WaiterInvitationController;
@@ -63,6 +64,10 @@ Route::middleware(['auth', 'verified', EnsureRestaurant::class])
             ->except(['show', 'index'])
             ->names('products')
             ->parameters(['produtos' => 'product']);
+        Route::resource('filas', QueueController::class)
+            ->except(['show'])
+            ->names('queues')
+            ->parameters(['filas' => 'queue']);
     });
 
 Route::middleware(['auth', 'verified', EnsureAdmin::class])

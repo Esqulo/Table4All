@@ -18,6 +18,15 @@ export type Category = {
     name: string;
 };
 
+export type RestaurantQueue = {
+    id: number;
+    user_id: number;
+    name: string;
+    products_count?: number;
+    created_at: string;
+    updated_at: string;
+};
+
 export type Menu = {
     id: number;
     user_id: number;
@@ -31,6 +40,8 @@ export type Product = {
     user_id: number;
     category_id: number | null;
     category: Category | null;
+    queue_id: number | null;
+    queue: RestaurantQueue | null;
     name: string;
     description: string | null;
     picture: string | null;
