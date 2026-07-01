@@ -1,6 +1,5 @@
-import { Form, Head, Link } from '@inertiajs/react';
-import { ImageOff, Pencil, ShoppingBag, Trash2 } from 'lucide-react';
-import { Plus } from 'lucide-react';
+import { Head, Link } from '@inertiajs/react';
+import { ImageOff, Pencil, Plus, ShoppingBag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import TableController from '@/actions/App/Http/Controllers/Restaurant/TableController';
 import Heading from '@/components/heading';
@@ -104,33 +103,12 @@ function TableCard({ table }: { table: RestaurantTable }) {
                     </Link>
                 </Button>
 
-                <div className="flex gap-2">
-                    <Button variant="outline" size="sm" asChild className="flex-1">
-                        <Link href={TableController.edit.url({ table: table.id })}>
-                            <Pencil className="mr-1 h-3.5 w-3.5" />
-                            {t('tables.edit')}
-                        </Link>
-                    </Button>
-
-                    <Form
-                        {...TableController.destroy.form({ table: table.id })}
-                        className="flex-1"
-                        onBefore={() => confirm(t('tables.delete_confirm'))}
-                    >
-                        {({ processing }) => (
-                            <Button
-                                type="submit"
-                                variant="outline"
-                                size="sm"
-                                disabled={processing}
-                                className="w-full text-destructive hover:text-destructive"
-                            >
-                                <Trash2 className="mr-1 h-3.5 w-3.5" />
-                                {t('tables.delete')}
-                            </Button>
-                        )}
-                    </Form>
-                </div>
+                <Button variant="outline" size="sm" asChild className="w-full">
+                    <Link href={TableController.edit.url({ table: table.id })}>
+                        <Pencil className="mr-1 h-3.5 w-3.5" />
+                        {t('tables.edit')}
+                    </Link>
+                </Button>
             </div>
         </div>
     );
