@@ -1,6 +1,6 @@
-import { Form, Head, Link } from '@inertiajs/react';
+import { Form, Head, Link, router } from '@inertiajs/react';
 import { Banknote, CreditCard, ImageOff, Minus, Plus, QrCode, Search, ShoppingCart, Tag, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import TableController from '@/actions/App/Http/Controllers/Restaurant/TableController';
 import { Button } from '@/components/ui/button';
@@ -46,6 +46,7 @@ export default function ManageOrder({ table, products }: Props) {
     const [quantities, setQuantities] = useState<Record<number, number>>(initial);
     const [addProductsOpen, setAddProductsOpen] = useState(false);
     const [addPaymentOpen, setAddPaymentOpen] = useState(false);
+    const [autoSubmitting, setAutoSubmitting] = useState(false);
 
     const adjust = (id: number, delta: number) =>
         setQuantities((prev) => {
@@ -57,16 +58,30 @@ export default function ManageOrder({ table, products }: Props) {
         });
 
     const handleAddProducts = (pending: Record<number, number>) => {
-        setQuantities((prev) => {
-            const next = { ...prev };
-            for (const [rawId, qty] of Object.entries(pending)) {
-                const id = Number(rawId);
-                if (qty > 0) next[id] = (next[id] ?? 0) + qty;
-            }
-            return next;
-        });
+        const merged = { ...quantities };
+        for (const [rawId, qty] of Object.entries(pending)) {
+            const id = Number(rawId);
+            if (qty > 0) merged[id] = (merged[id] ?? 0) + qty;
+        }
+        setAutoSubmitting(true);
+        setQuantities(merged);
         setAddProductsOpen(false);
+        router.patch(
+            TableController.update.url({ table: table.id }),
+            { products: merged },
+            { onFinish: () => setAutoSubmitting(false) },
+        );
     };
+
+    const isDirty = useMemo(() => {
+        const saved: Record<number, number> = {};
+        for (const item of table.products) saved[item.id] = item.pivot.quantity;
+        const keys = new Set([...Object.keys(quantities), ...Object.keys(saved)].map(Number));
+        for (const id of keys) {
+            if ((quantities[id] ?? 0) !== (saved[id] ?? 0)) return true;
+        }
+        return false;
+    }, [quantities, table.products]);
 
     const orderItems = products.filter((p) => (quantities[p.id] ?? 0) > 0);
     const productTotal = orderItems.reduce((sum, p) => sum + p.price * quantities[p.id], 0);
@@ -92,13 +107,17 @@ export default function ManageOrder({ table, products }: Props) {
                 onClose={() => setAddPaymentOpen(false)}
             />
 
-            <div className="mx-auto max-w-xl space-y-6 p-6">
+            <div className="mx-auto max-w-4xl space-y-6 p-6">
                 <div>
                     <h1 className="text-xl font-semibold">{table.title}</h1>
                     <p className="mt-0.5 text-sm text-muted-foreground">{t('tables.manage_products')}</p>
                 </div>
 
+                <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2">
+
                 {/* ── Products form ── */}
+                <div className="space-y-3">
+                <p className="text-sm font-semibold">{t('products.title')}</p>
                 <Form
                     {...TableController.update.form({ table: table.id })}
                     className="space-y-3"
@@ -168,12 +187,13 @@ export default function ManageOrder({ table, products }: Props) {
                                 <span className="text-lg font-bold tabular-nums">{orderItems.length > 0 ? fmt(productTotal) : '—'}</span>
                             </div>
 
-                            <Button type="submit" disabled={processing} variant="outline" className="w-full">
+                            <Button type="submit" disabled={processing || !isDirty || autoSubmitting} variant="outline" className="w-full">
                                 {t('tables.save_order')}
                             </Button>
                         </>
                     )}
                 </Form>
+                </div>
 
                 {/* ── Payments section ── */}
                 <div className="space-y-3">
@@ -211,6 +231,8 @@ export default function ManageOrder({ table, products }: Props) {
                         {t('tables.payment_add')}
                     </Button>
                 </div>
+
+                </div>{/* ── end grid ── */}
 
                 {/* ── Close table ── */}
                 <div className="space-y-2 border-t border-border pt-4">
@@ -279,6 +301,20 @@ function AddPaymentDialog({ open, table, remaining, onClose }: {
     onClose: () => void;
 }) {
     const { t } = useTranslation();
+    const [cents, setCents] = useState(0);
+
+    useEffect(() => {
+        if (open) setCents(remaining > 0 ? Math.round(remaining * 100) : 0);
+    }, [open, remaining]);
+
+    const displayValue = cents > 0
+        ? (cents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        : '';
+
+    const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const digits = e.target.value.replace(/\D/g, '');
+        setCents(digits === '' ? 0 : Math.min(parseInt(digits, 10), 9999999));
+    };
 
     return (
         <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
@@ -314,15 +350,14 @@ function AddPaymentDialog({ open, table, remaining, onClose }: {
 
                             <div className="grid gap-2">
                                 <Label htmlFor="amount">{t('tables.payment_amount_label')}</Label>
+                                <input type="hidden" name="amount" value={(cents / 100).toFixed(2)} />
                                 <Input
                                     id="amount"
-                                    name="amount"
-                                    type="number"
-                                    min="0.01"
-                                    step="0.01"
-                                    required
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={displayValue}
+                                    onChange={handleAmountChange}
                                     autoFocus
-                                    defaultValue={remaining > 0 ? remaining.toFixed(2) : ''}
                                     placeholder="0,00"
                                 />
                             </div>
@@ -331,7 +366,7 @@ function AddPaymentDialog({ open, table, remaining, onClose }: {
                                 <Button type="button" variant="outline" onClick={onClose}>
                                     {t('tables.cancel')}
                                 </Button>
-                                <Button type="submit" disabled={processing}>
+                                <Button type="submit" disabled={processing || cents === 0}>
                                     {t('tables.confirm_add')}
                                 </Button>
                             </DialogFooter>
