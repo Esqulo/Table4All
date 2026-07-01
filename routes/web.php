@@ -4,6 +4,8 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Restaurant\MenuController;
 use App\Http\Controllers\Restaurant\ProductController;
 use App\Http\Controllers\Restaurant\TableController;
+use App\Http\Controllers\Restaurant\WaiterController;
+use App\Http\Controllers\WaiterInvitationController;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureRestaurant;
 use Illuminate\Support\Facades\Route;
@@ -11,6 +13,12 @@ use Illuminate\Support\Facades\Route;
 Route::inertia('/', 'welcome')->name('home');
 
 Route::get('/menu/{menu}', [MenuController::class, 'show'])->name('menu.show');
+
+// Public waiter invitation acceptance
+Route::get('/garcom/aceitar/{token}', [WaiterInvitationController::class, 'show'])
+    ->name('waiter.invite.show');
+Route::post('/garcom/aceitar/{token}', [WaiterInvitationController::class, 'store'])
+    ->name('waiter.invite.accept');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
@@ -27,6 +35,13 @@ Route::middleware(['auth', 'verified', EnsureRestaurant::class])
             ->name('tables.add-payment');
         Route::patch('mesas/{table}/fechar', [TableController::class, 'close'])
             ->name('tables.close');
+        // cancelInvitation must be declared before the resource so it's matched first
+        Route::delete('garcons/convites/{invitation}', [WaiterController::class, 'cancelInvitation'])
+            ->name('waiters.cancel-invitation');
+        Route::resource('garcons', WaiterController::class)
+            ->only(['index', 'store', 'destroy'])
+            ->names('waiters')
+            ->parameters(['garcons' => 'waiter']);
         Route::resource('cardapio', MenuController::class)
             ->only(['index', 'create', 'store'])
             ->names('menus')

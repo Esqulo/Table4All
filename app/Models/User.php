@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -24,6 +26,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property string|null $phone
  * @property string|null $avatar
  * @property AccountType $account_type
+ * @property int|null $restaurant_id
  * @property Carbon|null $email_verified_at
  * @property string $password
  * @property string|null $two_factor_secret
@@ -33,12 +36,24 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'email', 'phone', 'avatar', 'account_type', 'password'])]
+#[Fillable(['name', 'email', 'phone', 'avatar', 'account_type', 'password', 'restaurant_id'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+
+    /** @return HasMany<User, $this> */
+    public function waiters(): HasMany
+    {
+        return $this->hasMany(User::class, 'restaurant_id');
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function restaurant(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'restaurant_id');
+    }
 
     protected $appends = ['avatar_url'];
 

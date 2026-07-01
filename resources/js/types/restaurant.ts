@@ -1,5 +1,18 @@
 export type PriceType = 'unit' | 'kg' | '100g' | 'liter' | 'portion';
 
+export type Waiter = {
+    id: number;
+    name: string;
+    email: string;
+    created_at: string;
+};
+
+export type WaiterInvitation = {
+    id: number;
+    email: string;
+    created_at: string;
+};
+
 export type Category = {
     id: number;
     name: string;

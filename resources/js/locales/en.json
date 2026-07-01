@@ -66,6 +66,7 @@
         "menus": "Menu",
         "tables": "Tables",
         "products": "Products",
+        "waiters": "Waiters",
         "repository": "Repository",
         "documentation": "Documentation",
         "settings": "Settings",
@@ -281,6 +282,25 @@
         "msg_updated": "Table updated successfully.",
         "msg_deleted": "Table deleted successfully.",
         "msg_products_updated": "Table products updated successfully."
+    },
+    "waiters": {
+        "title": "Waiters",
+        "invite_heading": "Invite waiter",
+        "invite_hint": "The waiter will receive an email with a link to create their account. The invitation expires in 7 days.",
+        "email_label": "Email",
+        "email_placeholder": "waiter@email.com",
+        "invite": "Send invite",
+        "pending_heading": "Pending invitations",
+        "active_heading": "Active waiters",
+        "empty": "No active waiters yet.",
+        "cancel_confirm": "Are you sure you want to cancel this invitation?",
+        "delete_confirm": "Are you sure you want to remove this waiter?",
+        "breadcrumb_index": "Waiters",
+        "msg_invited": "Invitation sent successfully.",
+        "msg_invite_cancelled": "Invitation cancelled.",
+        "msg_deleted": "Waiter removed successfully.",
+        "error_already_waiter": "This email is already an active waiter at this restaurant.",
+        "error_email_taken": "An account with this email already exists."
     },
     "language": {
         "toggle_label": "Language",

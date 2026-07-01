@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid, ScrollText, ShoppingBag, Tag, UtensilsCrossed } from 'lucide-react';
+import { BookOpen, FolderGit2, LayoutGrid, ScrollText, ShoppingBag, Tag, Users, UtensilsCrossed } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -18,6 +18,7 @@ import CategoryController from '@/actions/App/Http/Controllers/Admin/CategoryCon
 import MenuController from '@/actions/App/Http/Controllers/Restaurant/MenuController';
 import ProductController from '@/actions/App/Http/Controllers/Restaurant/ProductController';
 import TableController from '@/actions/App/Http/Controllers/Restaurant/TableController';
+import WaiterController from '@/actions/App/Http/Controllers/Restaurant/WaiterController';
 import { dashboard } from '@/routes';
 import type { Auth, NavItem } from '@/types';
 
@@ -51,6 +52,11 @@ export function AppSidebar() {
                     title: t('nav.products'),
                     href: ProductController.index.url(),
                     icon: ShoppingBag,
+                },
+                {
+                    title: t('nav.waiters'),
+                    href: WaiterController.index.url(),
+                    icon: Users,
                 },
             ]
           : [
