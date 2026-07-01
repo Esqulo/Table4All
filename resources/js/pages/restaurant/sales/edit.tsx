@@ -3,6 +3,7 @@ import { Check, ChevronDown, Search } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import SaleController from '@/actions/App/Http/Controllers/Restaurant/SaleController';
+import { CurrencyInput } from '@/components/currency-input';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -196,15 +197,7 @@ export default function EditSale({ sale, products }: Props) {
 
                             <div className="grid gap-2">
                                 <Label htmlFor="sale_price">{t('sales.sale_price_label')}</Label>
-                                <Input
-                                    id="sale_price"
-                                    name="sale_price"
-                                    type="number"
-                                    min="0.01"
-                                    step="0.01"
-                                    required
-                                    defaultValue={sale.sale_price}
-                                />
+                                <CurrencyInput id="sale_price" name="sale_price" defaultValue={sale.sale_price} />
                                 <InputError message={errors.sale_price} />
                             </div>
 
