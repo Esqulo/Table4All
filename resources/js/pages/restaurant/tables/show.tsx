@@ -97,6 +97,38 @@ export default function ManageOrder({ table, products, queueItems }: Props) {
         );
     };
 
+    const handleSaveOrder = () => {
+        const saved: Record<number, number> = {};
+        for (const item of table.products) saved[item.id] = item.pivot.quantity;
+
+        const directProducts: Record<number, number> = {};
+        const queueAdditions: Record<number, number> = {};
+
+        for (const [rawId, qty] of Object.entries(quantities)) {
+            const id = Number(rawId);
+            const product = products.find((p) => p.id === id);
+
+            if (product?.queue_id) {
+                // Keep up to the already-delivered quantity in the pivot directly.
+                // Any increase beyond that must go through the kitchen queue.
+                const deliveredQty = saved[id] ?? 0;
+                const directQty = Math.min(qty, deliveredQty);
+                const delta = qty - deliveredQty;
+                if (directQty > 0) directProducts[id] = directQty;
+                if (delta > 0) queueAdditions[id] = delta;
+            } else {
+                if (qty > 0) directProducts[id] = qty;
+            }
+        }
+
+        setAutoSubmitting(true);
+        router.patch(
+            TableController.update.url({ table: table.id }),
+            { products: directProducts, queue_additions: queueAdditions },
+            { onFinish: () => setAutoSubmitting(false) },
+        );
+    };
+
     const isDirty = useMemo(() => {
         const saved: Record<number, number> = {};
         for (const item of table.products) saved[item.id] = item.pivot.quantity;
@@ -194,81 +226,70 @@ export default function ManageOrder({ table, products, queueItems }: Props) {
                 {/* ── Products form ── */}
                 <div className="space-y-3">
                 <p className="text-sm font-semibold">{t('products.title')}</p>
-                <Form
-                    {...TableController.update.form({ table: table.id })}
-                    className="space-y-3"
-                >
-                    {({ processing }) => (
-                        <>
-                            {Object.entries(quantities).map(([id, qty]) => (
-                                <input key={id} type="hidden" name={`products[${id}]`} value={qty} />
-                            ))}
-
-                            {orderItems.length > 0 ? (
-                                <div className="overflow-hidden rounded-xl border border-border">
-                                    {orderItems.map((product, idx) => {
-                                        const qty = quantities[product.id];
-                                        const suffix = t(`products.price_suffix.${product.price_type}`);
-                                        return (
-                                            <div
-                                                key={product.id}
-                                                className={[
-                                                    'flex items-center gap-3 px-4 py-3',
-                                                    idx > 0 ? 'border-t border-border' : '',
-                                                ].join(' ')}
-                                            >
-                                                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
-                                                    {product.picture_url ? (
-                                                        <img src={product.picture_url} alt={product.name} className="h-full w-full object-cover" />
-                                                    ) : (
-                                                        <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                                                            <ImageOff className="h-3.5 w-3.5 opacity-40" />
-                                                        </div>
-                                                    )}
+                <div className="space-y-3">
+                    {orderItems.length > 0 ? (
+                        <div className="overflow-hidden rounded-xl border border-border">
+                            {orderItems.map((product, idx) => {
+                                const qty = quantities[product.id];
+                                const suffix = t(`products.price_suffix.${product.price_type}`);
+                                return (
+                                    <div
+                                        key={product.id}
+                                        className={[
+                                            'flex items-center gap-3 px-4 py-3',
+                                            idx > 0 ? 'border-t border-border' : '',
+                                        ].join(' ')}
+                                    >
+                                        <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
+                                            {product.picture_url ? (
+                                                <img src={product.picture_url} alt={product.name} className="h-full w-full object-cover" />
+                                            ) : (
+                                                <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                                                    <ImageOff className="h-3.5 w-3.5 opacity-40" />
                                                 </div>
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="truncate text-sm font-medium">{product.name}</p>
-                                                    <p className="text-xs text-muted-foreground">{fmt(product.price)} / {suffix}</p>
-                                                </div>
-                                                <p className="w-20 shrink-0 text-right text-sm font-semibold tabular-nums">
-                                                    {fmt(product.price * qty)}
-                                                </p>
-                                                <div className="flex shrink-0 items-center gap-1">
-                                                    <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => adjust(product.id, -1)}>
-                                                        <Minus className="h-3 w-3" />
-                                                    </Button>
-                                                    <span className="w-6 text-center text-sm tabular-nums">{qty}</span>
-                                                    <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => adjust(product.id, +1)}>
-                                                        <Plus className="h-3 w-3" />
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            ) : (
-                                <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border py-8 text-muted-foreground">
-                                    <ShoppingCart className="h-7 w-7 opacity-30" />
-                                    <p className="text-sm">{t('tables.order_empty')}</p>
-                                </div>
-                            )}
-
-                            <Button type="button" variant="outline" className="w-full" onClick={() => setAddProductsOpen(true)}>
-                                <Plus className="mr-2 h-4 w-4" />
-                                {t('tables.add_products')}
-                            </Button>
-
-                            <div className="flex items-center justify-between rounded-xl border border-border px-5 py-3">
-                                <span className="text-sm text-muted-foreground">{t('tables.order_total')}</span>
-                                <span className="text-lg font-bold tabular-nums">{orderItems.length > 0 ? fmt(productTotal) : '—'}</span>
-                            </div>
-
-                            <Button type="submit" disabled={processing || !isDirty || autoSubmitting} variant="outline" className="w-full">
-                                {t('tables.save_order')}
-                            </Button>
-                        </>
+                                            )}
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="truncate text-sm font-medium">{product.name}</p>
+                                            <p className="text-xs text-muted-foreground">{fmt(product.price)} / {suffix}</p>
+                                        </div>
+                                        <p className="w-20 shrink-0 text-right text-sm font-semibold tabular-nums">
+                                            {fmt(product.price * qty)}
+                                        </p>
+                                        <div className="flex shrink-0 items-center gap-1">
+                                            <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => adjust(product.id, -1)}>
+                                                <Minus className="h-3 w-3" />
+                                            </Button>
+                                            <span className="w-6 text-center text-sm tabular-nums">{qty}</span>
+                                            <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => adjust(product.id, +1)}>
+                                                <Plus className="h-3 w-3" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border py-8 text-muted-foreground">
+                            <ShoppingCart className="h-7 w-7 opacity-30" />
+                            <p className="text-sm">{t('tables.order_empty')}</p>
+                        </div>
                     )}
-                </Form>
+
+                    <Button type="button" variant="outline" className="w-full" onClick={() => setAddProductsOpen(true)}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        {t('tables.add_products')}
+                    </Button>
+
+                    <div className="flex items-center justify-between rounded-xl border border-border px-5 py-3">
+                        <span className="text-sm text-muted-foreground">{t('tables.order_total')}</span>
+                        <span className="text-lg font-bold tabular-nums">{orderItems.length > 0 ? fmt(productTotal) : '—'}</span>
+                    </div>
+
+                    <Button type="button" onClick={handleSaveOrder} disabled={!isDirty || autoSubmitting} variant="outline" className="w-full">
+                        {t('tables.save_order')}
+                    </Button>
+                </div>
                 </div>
 
                 {/* ── Payments section ── */}
