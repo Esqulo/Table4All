@@ -1,5 +1,18 @@
 export type PriceType = 'unit' | 'kg' | '100g' | 'liter' | 'portion';
 
+export type Waiter = {
+    id: number;
+    name: string;
+    email: string;
+    created_at: string;
+};
+
+export type WaiterInvitation = {
+    id: number;
+    email: string;
+    created_at: string;
+};
+
 export type Category = {
     id: number;
     name: string;
@@ -34,11 +47,16 @@ export type OrderItem = Pick<Product, 'id' | 'name' | 'picture' | 'picture_url' 
 
 export type PaymentMethod = 'cash' | 'pix' | 'card' | 'coupon';
 
+export type PaymentRegistrar = 'waiter' | 'restaurant' | 'app';
+
 export type TablePayment = {
     id: number;
     restaurant_table_id: number;
     method: PaymentMethod;
     amount: number;
+    registered_by_id: number | null;
+    registered_by_type: PaymentRegistrar | null;
+    registered_by: { id: number; name: string } | null;
     created_at: string;
 };
 

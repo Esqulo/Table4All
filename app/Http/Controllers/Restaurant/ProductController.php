@@ -16,13 +16,15 @@ class ProductController extends Controller
 {
     public function index(Request $request): Response
     {
-        $products = Product::where('user_id', $request->user()->id)
+        $user = $request->user();
+        $products = Product::where('user_id', $user->effectiveRestaurantId())
             ->with('category:id,name')
             ->orderBy('name')
             ->get();
 
         return Inertia::render('restaurant/products', [
-            'products' => $products,
+            'products'  => $products,
+            'canManage' => $user->account_type->value === 'restaurant',
         ]);
     }
 

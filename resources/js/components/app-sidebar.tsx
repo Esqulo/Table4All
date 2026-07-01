@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid, ScrollText, ShoppingBag, Tag, UtensilsCrossed } from 'lucide-react';
+import { BookOpen, FolderGit2, LayoutGrid, ScrollText, ShoppingBag, Tag, Users, UtensilsCrossed } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -18,6 +18,7 @@ import CategoryController from '@/actions/App/Http/Controllers/Admin/CategoryCon
 import MenuController from '@/actions/App/Http/Controllers/Restaurant/MenuController';
 import ProductController from '@/actions/App/Http/Controllers/Restaurant/ProductController';
 import TableController from '@/actions/App/Http/Controllers/Restaurant/TableController';
+import WaiterController from '@/actions/App/Http/Controllers/Restaurant/WaiterController';
 import { dashboard } from '@/routes';
 import type { Auth, NavItem } from '@/types';
 
@@ -26,6 +27,7 @@ export function AppSidebar() {
     const { auth } = usePage<{ auth: Auth }>().props;
     const isAdmin = auth.user.account_type === 'admin';
     const isRestaurant = auth.user.account_type === 'restaurant';
+    const isWaiter = auth.user.account_type === 'waiter';
 
     const mainNavItems: NavItem[] = isAdmin
         ? [
@@ -46,6 +48,24 @@ export function AppSidebar() {
                     title: t('nav.menus'),
                     href: MenuController.index.url(),
                     icon: ScrollText,
+                },
+                {
+                    title: t('nav.products'),
+                    href: ProductController.index.url(),
+                    icon: ShoppingBag,
+                },
+                {
+                    title: t('nav.waiters'),
+                    href: WaiterController.index.url(),
+                    icon: Users,
+                },
+            ]
+          : isWaiter
+          ? [
+                {
+                    title: t('nav.tables'),
+                    href: TableController.index.url(),
+                    icon: UtensilsCrossed,
                 },
                 {
                     title: t('nav.products'),
@@ -80,7 +100,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={isAdmin ? CategoryController.index.url() : isRestaurant ? ProductController.index.url() : dashboard()} prefetch>
+                            <Link href={isAdmin ? CategoryController.index.url() : isRestaurant ? ProductController.index.url() : isWaiter ? TableController.index.url() : dashboard()} prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>

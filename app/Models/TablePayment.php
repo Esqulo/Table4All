@@ -12,6 +12,8 @@ final class TablePayment extends Model
         'restaurant_table_id',
         'method',
         'amount',
+        'registered_by_id',
+        'registered_by_type',
     ];
 
     protected function casts(): array
@@ -26,5 +28,11 @@ final class TablePayment extends Model
     public function table(): BelongsTo
     {
         return $this->belongsTo(RestaurantTable::class, 'restaurant_table_id');
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function registeredBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'registered_by_id');
     }
 }

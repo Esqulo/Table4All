@@ -66,6 +66,7 @@
         "menus": "Cardápio",
         "tables": "Mesas",
         "products": "Produtos",
+        "waiters": "Garçons",
         "repository": "Repositório",
         "documentation": "Documentação",
         "settings": "Configurações",
@@ -280,7 +281,27 @@
         "msg_created": "Mesa criada com sucesso.",
         "msg_updated": "Mesa atualizada com sucesso.",
         "msg_deleted": "Mesa excluída com sucesso.",
-        "msg_products_updated": "Produtos da mesa atualizados com sucesso."
+        "msg_products_updated": "Produtos da mesa atualizados com sucesso.",
+        "payment_by": "por {{name}}"
+    },
+    "waiters": {
+        "title": "Garçons",
+        "invite_heading": "Convidar garçom",
+        "invite_hint": "O garçom receberá um e-mail com um link para criar a conta. O convite expira em 7 dias.",
+        "email_label": "E-mail",
+        "email_placeholder": "garcom@email.com",
+        "invite": "Enviar convite",
+        "pending_heading": "Convites pendentes",
+        "active_heading": "Garçons ativos",
+        "empty": "Nenhum garçom ativo ainda.",
+        "cancel_confirm": "Tem certeza que deseja cancelar este convite?",
+        "delete_confirm": "Tem certeza que deseja remover este garçom?",
+        "breadcrumb_index": "Garçons",
+        "msg_invited": "Convite enviado com sucesso.",
+        "msg_invite_cancelled": "Convite cancelado.",
+        "msg_deleted": "Garçom removido com sucesso.",
+        "error_already_waiter": "Este e-mail já é um garçom ativo neste restaurante.",
+        "error_email_taken": "Já existe uma conta com este e-mail."
     },
     "language": {
         "toggle_label": "Idioma",

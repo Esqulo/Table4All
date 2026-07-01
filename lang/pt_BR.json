@@ -4,5 +4,7 @@
     "Verification email sent.": "E-mail de verificação enviado.",
     "products.created": "Produto criado com sucesso.",
     "products.updated": "Produto atualizado com sucesso.",
-    "products.deleted": "Produto excluído com sucesso."
+    "products.deleted": "Produto excluído com sucesso.",
+    "waiters.error_already_waiter": "Este e-mail já é um garçom ativo neste restaurante.",
+    "waiters.error_email_taken": "Já existe uma conta com este e-mail."
 }
