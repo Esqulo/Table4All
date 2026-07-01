@@ -3,6 +3,8 @@
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Restaurant\MenuController;
 use App\Http\Controllers\Restaurant\ProductController;
+use App\Http\Controllers\Restaurant\QueueController;
+use App\Http\Controllers\Restaurant\QueueItemController;
 use App\Http\Controllers\Restaurant\TableController;
 use App\Http\Controllers\Restaurant\WaiterController;
 use App\Http\Controllers\WaiterInvitationController;
@@ -39,6 +41,10 @@ Route::middleware(['auth', 'verified', EnsureRestaurantOrWaiter::class])
             ->name('tables.close');
         Route::get('produtos', [ProductController::class, 'index'])
             ->name('products.index');
+        Route::patch('queue-items/{queueItem}/pronto', [QueueItemController::class, 'markDone'])
+            ->name('queue-items.mark-done');
+        Route::patch('queue-items/{queueItem}/entregue', [QueueItemController::class, 'markDelivered'])
+            ->name('queue-items.mark-delivered');
     });
 
 // Restaurant-only routes: waiters management, menus, product CRUD
@@ -63,6 +69,9 @@ Route::middleware(['auth', 'verified', EnsureRestaurant::class])
             ->except(['show', 'index'])
             ->names('products')
             ->parameters(['produtos' => 'product']);
+        Route::resource('filas', QueueController::class)
+            ->names('queues')
+            ->parameters(['filas' => 'queue']);
     });
 
 Route::middleware(['auth', 'verified', EnsureAdmin::class])

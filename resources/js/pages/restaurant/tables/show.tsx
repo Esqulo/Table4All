@@ -1,7 +1,8 @@
 import { Form, Head, Link, router } from '@inertiajs/react';
-import { Banknote, CreditCard, ImageOff, Minus, Plus, QrCode, Search, ShoppingCart, Tag, X } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { Banknote, CreditCard, Clock, ImageOff, Minus, Plus, QrCode, Search, ShoppingCart, Tag, X } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import QueueItemController from '@/actions/App/Http/Controllers/Restaurant/QueueItemController';
 import TableController from '@/actions/App/Http/Controllers/Restaurant/TableController';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -14,13 +15,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import type { PaymentMethod, Product, RestaurantTable, TablePayment } from '@/types';
+import type { PaymentMethod, Product, QueueItem, RestaurantTable, TablePayment } from '@/types';
 
-type AvailableProduct = Pick<Product, 'id' | 'name' | 'picture_url' | 'price' | 'price_type'>;
+type AvailableProduct = Pick<Product, 'id' | 'name' | 'picture_url' | 'price' | 'price_type' | 'queue_id'> & {
+    queue: { id: number; name: string } | null;
+};
 
 type Props = {
     table: RestaurantTable;
     products: AvailableProduct[];
+    queueItems: QueueItem[];
 };
 
 const fmt = (n: number) =>
@@ -37,13 +41,24 @@ const PAYMENT_METHODS: PaymentMethod[] = ['cash', 'pix', 'card', 'coupon'];
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-export default function ManageOrder({ table, products }: Props) {
+export default function ManageOrder({ table, products, queueItems }: Props) {
     const { t } = useTranslation();
 
     const initial: Record<number, number> = {};
     for (const item of table.products) initial[item.id] = item.pivot.quantity;
 
     const [quantities, setQuantities] = useState<Record<number, number>>(initial);
+
+    // Sync local quantities when table.products changes (e.g. after a queue item is delivered).
+    // Using the setState-during-render pattern instead of useEffect to avoid cascading renders.
+    const productsKey = table.products.map((p) => `${p.id}:${p.pivot.quantity}`).join(',');
+    const [prevProductsKey, setPrevProductsKey] = useState(productsKey);
+    if (prevProductsKey !== productsKey) {
+        setPrevProductsKey(productsKey);
+        const next: Record<number, number> = {};
+        for (const item of table.products) next[item.id] = item.pivot.quantity;
+        setQuantities(next);
+    }
     const [addProductsOpen, setAddProductsOpen] = useState(false);
     const [addPaymentOpen, setAddPaymentOpen] = useState(false);
     const [autoSubmitting, setAutoSubmitting] = useState(false);
@@ -58,17 +73,59 @@ export default function ManageOrder({ table, products }: Props) {
         });
 
     const handleAddProducts = (pending: Record<number, number>) => {
+        // Split pending into direct-order (non-queue) and queue additions
         const merged = { ...quantities };
+        const queueAdditions: Record<number, number> = {};
+
         for (const [rawId, qty] of Object.entries(pending)) {
             const id = Number(rawId);
-            if (qty > 0) merged[id] = (merged[id] ?? 0) + qty;
+            if (qty <= 0) continue;
+            const product = products.find((p) => p.id === id);
+            if (product?.queue_id) {
+                queueAdditions[id] = qty;
+            } else {
+                merged[id] = (merged[id] ?? 0) + qty;
+            }
         }
+
         setAutoSubmitting(true);
         setQuantities(merged);
         setAddProductsOpen(false);
         router.patch(
             TableController.update.url({ table: table.id }),
-            { products: merged },
+            { products: merged, queue_additions: queueAdditions },
+            { onFinish: () => setAutoSubmitting(false) },
+        );
+    };
+
+    const handleSaveOrder = () => {
+        const saved: Record<number, number> = {};
+        for (const item of table.products) saved[item.id] = item.pivot.quantity;
+
+        const directProducts: Record<number, number> = {};
+        const queueAdditions: Record<number, number> = {};
+
+        for (const [rawId, qty] of Object.entries(quantities)) {
+            const id = Number(rawId);
+            const product = products.find((p) => p.id === id);
+
+            if (product?.queue_id) {
+                // Keep up to the already-delivered quantity in the pivot directly.
+                // Any increase beyond that must go through the kitchen queue.
+                const deliveredQty = saved[id] ?? 0;
+                const directQty = Math.min(qty, deliveredQty);
+                const delta = qty - deliveredQty;
+                if (directQty > 0) directProducts[id] = directQty;
+                if (delta > 0) queueAdditions[id] = delta;
+            } else {
+                if (qty > 0) directProducts[id] = qty;
+            }
+        }
+
+        setAutoSubmitting(true);
+        router.patch(
+            TableController.update.url({ table: table.id }),
+            { products: directProducts, queue_additions: queueAdditions },
             { onFinish: () => setAutoSubmitting(false) },
         );
     };
@@ -113,86 +170,127 @@ export default function ManageOrder({ table, products }: Props) {
                     <p className="mt-0.5 text-sm text-muted-foreground">{t('tables.manage_products')}</p>
                 </div>
 
+                {/* ── Queue items section ── */}
+                {queueItems.length > 0 && (
+                    <div className="space-y-3">
+                        <p className="text-sm font-semibold">{t('queues.items_title')}</p>
+                        <div className="overflow-hidden rounded-xl border border-border">
+                            {queueItems.map((item, idx) => (
+                                <div
+                                    key={item.id}
+                                    className={[
+                                        'flex items-center gap-3 px-4 py-3',
+                                        idx > 0 ? 'border-t border-border' : '',
+                                    ].join(' ')}
+                                >
+                                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
+                                        {item.product.picture_url ? (
+                                            <img src={item.product.picture_url} alt={item.product.name} className="h-full w-full object-cover" />
+                                        ) : (
+                                            <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                                                <ImageOff className="h-3.5 w-3.5 opacity-40" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="truncate text-sm font-medium">{item.product.name}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {item.queue.name} · x{item.quantity}
+                                        </p>
+                                    </div>
+                                    {item.status === 'pending' ? (
+                                        <Form {...QueueItemController.markDone.form({ queueItem: item.id })}>
+                                            {({ processing }) => (
+                                                <Button type="submit" size="sm" variant="outline" disabled={processing} className="shrink-0">
+                                                    <Clock className="mr-1.5 h-3.5 w-3.5" />
+                                                    {t('queues.item_mark_done')}
+                                                </Button>
+                                            )}
+                                        </Form>
+                                    ) : (
+                                        <Form {...QueueItemController.markDelivered.form({ queueItem: item.id })}>
+                                            {({ processing }) => (
+                                                <Button type="submit" size="sm" disabled={processing} className="shrink-0">
+                                                    {t('queues.item_mark_delivered')}
+                                                </Button>
+                                            )}
+                                        </Form>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2">
 
                 {/* ── Products form ── */}
                 <div className="space-y-3">
                 <p className="text-sm font-semibold">{t('products.title')}</p>
-                <Form
-                    {...TableController.update.form({ table: table.id })}
-                    className="space-y-3"
-                >
-                    {({ processing }) => (
-                        <>
-                            {Object.entries(quantities).map(([id, qty]) => (
-                                <input key={id} type="hidden" name={`products[${id}]`} value={qty} />
-                            ))}
-
-                            {orderItems.length > 0 ? (
-                                <div className="overflow-hidden rounded-xl border border-border">
-                                    {orderItems.map((product, idx) => {
-                                        const qty = quantities[product.id];
-                                        const suffix = t(`products.price_suffix.${product.price_type}`);
-                                        return (
-                                            <div
-                                                key={product.id}
-                                                className={[
-                                                    'flex items-center gap-3 px-4 py-3',
-                                                    idx > 0 ? 'border-t border-border' : '',
-                                                ].join(' ')}
-                                            >
-                                                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
-                                                    {product.picture_url ? (
-                                                        <img src={product.picture_url} alt={product.name} className="h-full w-full object-cover" />
-                                                    ) : (
-                                                        <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                                                            <ImageOff className="h-3.5 w-3.5 opacity-40" />
-                                                        </div>
-                                                    )}
+                <div className="space-y-3">
+                    {orderItems.length > 0 ? (
+                        <div className="overflow-hidden rounded-xl border border-border">
+                            {orderItems.map((product, idx) => {
+                                const qty = quantities[product.id];
+                                const suffix = t(`products.price_suffix.${product.price_type}`);
+                                return (
+                                    <div
+                                        key={product.id}
+                                        className={[
+                                            'flex items-center gap-3 px-4 py-3',
+                                            idx > 0 ? 'border-t border-border' : '',
+                                        ].join(' ')}
+                                    >
+                                        <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
+                                            {product.picture_url ? (
+                                                <img src={product.picture_url} alt={product.name} className="h-full w-full object-cover" />
+                                            ) : (
+                                                <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                                                    <ImageOff className="h-3.5 w-3.5 opacity-40" />
                                                 </div>
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="truncate text-sm font-medium">{product.name}</p>
-                                                    <p className="text-xs text-muted-foreground">{fmt(product.price)} / {suffix}</p>
-                                                </div>
-                                                <p className="w-20 shrink-0 text-right text-sm font-semibold tabular-nums">
-                                                    {fmt(product.price * qty)}
-                                                </p>
-                                                <div className="flex shrink-0 items-center gap-1">
-                                                    <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => adjust(product.id, -1)}>
-                                                        <Minus className="h-3 w-3" />
-                                                    </Button>
-                                                    <span className="w-6 text-center text-sm tabular-nums">{qty}</span>
-                                                    <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => adjust(product.id, +1)}>
-                                                        <Plus className="h-3 w-3" />
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            ) : (
-                                <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border py-8 text-muted-foreground">
-                                    <ShoppingCart className="h-7 w-7 opacity-30" />
-                                    <p className="text-sm">{t('tables.order_empty')}</p>
-                                </div>
-                            )}
-
-                            <Button type="button" variant="outline" className="w-full" onClick={() => setAddProductsOpen(true)}>
-                                <Plus className="mr-2 h-4 w-4" />
-                                {t('tables.add_products')}
-                            </Button>
-
-                            <div className="flex items-center justify-between rounded-xl border border-border px-5 py-3">
-                                <span className="text-sm text-muted-foreground">{t('tables.order_total')}</span>
-                                <span className="text-lg font-bold tabular-nums">{orderItems.length > 0 ? fmt(productTotal) : '—'}</span>
-                            </div>
-
-                            <Button type="submit" disabled={processing || !isDirty || autoSubmitting} variant="outline" className="w-full">
-                                {t('tables.save_order')}
-                            </Button>
-                        </>
+                                            )}
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="truncate text-sm font-medium">{product.name}</p>
+                                            <p className="text-xs text-muted-foreground">{fmt(product.price)} / {suffix}</p>
+                                        </div>
+                                        <p className="w-20 shrink-0 text-right text-sm font-semibold tabular-nums">
+                                            {fmt(product.price * qty)}
+                                        </p>
+                                        <div className="flex shrink-0 items-center gap-1">
+                                            <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => adjust(product.id, -1)}>
+                                                <Minus className="h-3 w-3" />
+                                            </Button>
+                                            <span className="w-6 text-center text-sm tabular-nums">{qty}</span>
+                                            <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => adjust(product.id, +1)}>
+                                                <Plus className="h-3 w-3" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border py-8 text-muted-foreground">
+                            <ShoppingCart className="h-7 w-7 opacity-30" />
+                            <p className="text-sm">{t('tables.order_empty')}</p>
+                        </div>
                     )}
-                </Form>
+
+                    <Button type="button" variant="outline" className="w-full" onClick={() => setAddProductsOpen(true)}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        {t('tables.add_products')}
+                    </Button>
+
+                    <div className="flex items-center justify-between rounded-xl border border-border px-5 py-3">
+                        <span className="text-sm text-muted-foreground">{t('tables.order_total')}</span>
+                        <span className="text-lg font-bold tabular-nums">{orderItems.length > 0 ? fmt(productTotal) : '—'}</span>
+                    </div>
+
+                    <Button type="button" onClick={handleSaveOrder} disabled={!isDirty || autoSubmitting} variant="outline" className="w-full">
+                        {t('tables.save_order')}
+                    </Button>
+                </div>
                 </div>
 
                 {/* ── Payments section ── */}
@@ -303,9 +401,12 @@ function AddPaymentDialog({ open, table, remaining, onClose }: {
     const { t } = useTranslation();
     const [cents, setCents] = useState(0);
 
-    useEffect(() => {
+    // Reset cents to the remaining amount whenever the dialog opens.
+    const [prevOpen, setPrevOpen] = useState(open);
+    if (prevOpen !== open) {
+        setPrevOpen(open);
         if (open) setCents(remaining > 0 ? Math.round(remaining * 100) : 0);
-    }, [open, remaining]);
+    }
 
     const displayValue = cents > 0
         ? (cents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -378,7 +479,7 @@ function AddPaymentDialog({ open, table, remaining, onClose }: {
     );
 }
 
-// ─── Add products dialog (unchanged) ─────────────────────────────────────────
+// ─── Add products dialog ──────────────────────────────────────────────────────
 
 type DialogProps = {
     open: boolean;
@@ -458,7 +559,14 @@ function AddProductsDialog({ open, products, onConfirm, onClose }: DialogProps) 
                                 </div>
                                 <div className="min-w-0 flex-1">
                                     <p className="truncate text-sm font-medium">{product.name}</p>
-                                    <p className="text-xs text-muted-foreground">{fmt(product.price)} / {suffix}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {fmt(product.price)} / {suffix}
+                                        {product.queue_id && (
+                                            <span className="ml-1.5 rounded bg-muted px-1 py-0.5 text-[10px] font-medium">
+                                                {product.queue?.name}
+                                            </span>
+                                        )}
+                                    </p>
                                 </div>
                                 {qty === 0 ? (
                                     <Button type="button" size="sm" variant="outline" onClick={() => setPendingQty(product.id, 1)}>

@@ -15,15 +15,16 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import type { Category, PriceType } from '@/types';
+import type { Category, PriceType, RestaurantQueue } from '@/types';
 
 const PRICE_TYPES: PriceType[] = ['unit', 'kg', '100g', 'liter', 'portion'];
 
 type Props = {
     categories: Category[];
+    queues: RestaurantQueue[];
 };
 
-export default function CreateProduct({ categories }: Props) {
+export default function CreateProduct({ categories, queues }: Props) {
     const { t } = useTranslation();
     const pickerRef = useRef<HTMLInputElement>(null);
     const formPictureRef = useRef<HTMLInputElement>(null);
@@ -96,6 +97,25 @@ export default function CreateProduct({ categories }: Props) {
                                         </SelectContent>
                                     </Select>
                                     <InputError message={errors.category_id} />
+                                </div>
+                            )}
+
+                            {queues.length > 0 && (
+                                <div className="grid gap-2">
+                                    <Label htmlFor="queue_id">{t('products.queue_label')}</Label>
+                                    <Select name="queue_id" defaultValue="">
+                                        <SelectTrigger id="queue_id">
+                                            <SelectValue placeholder={t('products.queue_none')} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {queues.map((q) => (
+                                                <SelectItem key={q.id} value={String(q.id)}>
+                                                    {q.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <InputError message={errors.queue_id} />
                                 </div>
                             )}
 

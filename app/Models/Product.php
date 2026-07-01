@@ -16,6 +16,7 @@ final class Product extends Model
     protected $fillable = [
         'user_id',
         'category_id',
+        'queue_id',
         'name',
         'description',
         'picture',
@@ -38,6 +39,12 @@ final class Product extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    /** @return BelongsTo<RestaurantQueue, $this> */
+    public function queue(): BelongsTo
+    {
+        return $this->belongsTo(RestaurantQueue::class, 'queue_id');
     }
 
     /** @return BelongsTo<User, $this> */

@@ -15,9 +15,11 @@ class TableRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title'     => ['sometimes', 'required', 'string', 'max:255'],
-            'products'  => ['nullable', 'array'],
-            'products.*' => ['integer'],
+            'title'           => ['sometimes', 'required', 'string', 'max:255'],
+            'products'        => ['nullable', 'array'],
+            'products.*'      => ['integer'],
+            'queue_additions'    => ['nullable', 'array'],
+            'queue_additions.*'  => ['integer'],
         ];
     }
 }
