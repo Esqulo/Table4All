@@ -257,7 +257,14 @@ function PaymentRow({ payment, idx }: { payment: TablePayment; idx: number }) {
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
                 {PAYMENT_ICONS[payment.method]}
             </span>
-            <span className="flex-1 text-sm">{t(`tables.payment_methods.${payment.method}`)}</span>
+            <div className="min-w-0 flex-1">
+                <span className="text-sm">{t(`tables.payment_methods.${payment.method}`)}</span>
+                {payment.registered_by && (
+                    <p className="text-xs text-muted-foreground">
+                        {t('tables.payment_by', { name: payment.registered_by.name })}
+                    </p>
+                )}
+            </div>
             <span className="text-sm font-semibold tabular-nums">{fmt(payment.amount)}</span>
         </div>
     );

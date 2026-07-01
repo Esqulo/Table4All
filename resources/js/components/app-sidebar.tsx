@@ -27,6 +27,7 @@ export function AppSidebar() {
     const { auth } = usePage<{ auth: Auth }>().props;
     const isAdmin = auth.user.account_type === 'admin';
     const isRestaurant = auth.user.account_type === 'restaurant';
+    const isWaiter = auth.user.account_type === 'waiter';
 
     const mainNavItems: NavItem[] = isAdmin
         ? [
@@ -59,6 +60,19 @@ export function AppSidebar() {
                     icon: Users,
                 },
             ]
+          : isWaiter
+          ? [
+                {
+                    title: t('nav.tables'),
+                    href: TableController.index.url(),
+                    icon: UtensilsCrossed,
+                },
+                {
+                    title: t('nav.products'),
+                    href: ProductController.index.url(),
+                    icon: ShoppingBag,
+                },
+            ]
           : [
                 {
                     title: t('nav.dashboard'),
@@ -86,7 +100,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={isAdmin ? CategoryController.index.url() : isRestaurant ? ProductController.index.url() : dashboard()} prefetch>
+                            <Link href={isAdmin ? CategoryController.index.url() : isRestaurant ? ProductController.index.url() : isWaiter ? TableController.index.url() : dashboard()} prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>

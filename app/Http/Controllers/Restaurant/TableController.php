@@ -19,7 +19,7 @@ class TableController extends Controller
 {
     public function index(Request $request): Response
     {
-        $tables = RestaurantTable::where('user_id', $request->user()->id)
+        $tables = RestaurantTable::where('user_id', $request->user()->effectiveRestaurantId())
             ->whereNull('closed_at')
             ->with([
                 'products' => fn ($q) => $q
@@ -44,7 +44,7 @@ class TableController extends Controller
     public function store(TableRequest $request): RedirectResponse
     {
         RestaurantTable::create([
-            'user_id' => $request->user()->id,
+            'user_id' => $request->user()->effectiveRestaurantId(),
             'title'   => $request->validated('title'),
         ]);
 
@@ -55,7 +55,7 @@ class TableController extends Controller
 
     public function show(Request $request, RestaurantTable $table): Response|SymfonyResponse
     {
-        abort_unless($table->user_id === $request->user()->id, 403);
+        abort_unless($table->user_id === $request->user()->effectiveRestaurantId(), 403);
 
         if ($table->closed_at !== null) {
             return Inertia::location(route('restaurant.tables.index'));
@@ -65,10 +65,10 @@ class TableController extends Controller
             'products' => fn ($q) => $q
                 ->select('products.id', 'name', 'picture', 'price', 'price_type')
                 ->withPivot('quantity'),
-            'payments',
+            'payments' => fn ($q) => $q->with('registeredBy:id,name'),
         ]);
 
-        $products = Product::where('user_id', $request->user()->id)
+        $products = Product::where('user_id', $request->user()->effectiveRestaurantId())
             ->orderBy('name')
             ->get(['id', 'name', 'picture', 'price', 'price_type']);
 
@@ -80,7 +80,7 @@ class TableController extends Controller
 
     public function edit(Request $request, RestaurantTable $table): Response
     {
-        abort_unless($table->user_id === $request->user()->id, 403);
+        abort_unless($table->user_id === $request->user()->effectiveRestaurantId(), 403);
 
         return Inertia::render('restaurant/tables/edit', [
             'table' => $table,
@@ -89,7 +89,7 @@ class TableController extends Controller
 
     public function update(TableRequest $request, RestaurantTable $table): RedirectResponse
     {
-        abort_unless($table->user_id === $request->user()->id, 403);
+        abort_unless($table->user_id === $request->user()->effectiveRestaurantId(), 403);
 
         if ($request->has('title')) {
             $table->update(['title' => $request->validated('title')]);
@@ -104,7 +104,7 @@ class TableController extends Controller
 
     public function addPayment(Request $request, RestaurantTable $table): RedirectResponse
     {
-        abort_unless($table->user_id === $request->user()->id, 403);
+        abort_unless($table->user_id === $request->user()->effectiveRestaurantId(), 403);
         abort_if($table->closed_at !== null, 422, 'Table is already closed.');
 
         $validated = $request->validate([
@@ -112,7 +112,12 @@ class TableController extends Controller
             'amount' => ['required', 'numeric', 'min:0.01', 'max:99999.99'],
         ]);
 
-        $table->payments()->create($validated);
+        $table->payments()->create([
+            'method'             => $validated['method'],
+            'amount'             => $validated['amount'],
+            'registered_by_id'   => $request->user()->id,
+            'registered_by_type' => $request->user()->account_type->value,
+        ]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'tables.msg_payment_added']);
         return to_route('restaurant.tables.show', $table);
@@ -120,7 +125,7 @@ class TableController extends Controller
 
     public function close(Request $request, RestaurantTable $table): RedirectResponse
     {
-        abort_unless($table->user_id === $request->user()->id, 403);
+        abort_unless($table->user_id === $request->user()->effectiveRestaurantId(), 403);
         abort_if($table->closed_at !== null, 422, 'Table is already closed.');
 
         $productTotal = (float) DB::table('restaurant_table_product')
@@ -144,7 +149,7 @@ class TableController extends Controller
 
     public function destroy(Request $request, RestaurantTable $table): RedirectResponse
     {
-        abort_unless($table->user_id === $request->user()->id, 403);
+        abort_unless($table->user_id === $request->user()->effectiveRestaurantId(), 403);
 
         $table->delete();
 
@@ -156,7 +161,7 @@ class TableController extends Controller
     {
         $submitted = $request->input('products', []);
 
-        $validIds = Product::where('user_id', $request->user()->id)
+        $validIds = Product::where('user_id', $request->user()->effectiveRestaurantId())
             ->pluck('id')
             ->map(fn ($id) => (string) $id)
             ->toArray();

@@ -281,7 +281,8 @@
         "msg_created": "Table created successfully.",
         "msg_updated": "Table updated successfully.",
         "msg_deleted": "Table deleted successfully.",
-        "msg_products_updated": "Table products updated successfully."
+        "msg_products_updated": "Table products updated successfully.",
+        "payment_by": "by {{name}}"
     },
     "waiters": {
         "title": "Waiters",

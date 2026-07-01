@@ -8,6 +8,7 @@ use App\Http\Controllers\Restaurant\WaiterController;
 use App\Http\Controllers\WaiterInvitationController;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureRestaurant;
+use App\Http\Middleware\EnsureRestaurantOrWaiter;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
@@ -24,7 +25,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
 });
 
-Route::middleware(['auth', 'verified', EnsureRestaurant::class])
+// Tables (full CRUD) + product listing: accessible by restaurant and waiter
+Route::middleware(['auth', 'verified', EnsureRestaurantOrWaiter::class])
     ->prefix('restaurant')
     ->name('restaurant.')
     ->group(function () {
@@ -35,6 +37,15 @@ Route::middleware(['auth', 'verified', EnsureRestaurant::class])
             ->name('tables.add-payment');
         Route::patch('mesas/{table}/fechar', [TableController::class, 'close'])
             ->name('tables.close');
+        Route::get('produtos', [ProductController::class, 'index'])
+            ->name('products.index');
+    });
+
+// Restaurant-only routes: waiters management, menus, product CRUD
+Route::middleware(['auth', 'verified', EnsureRestaurant::class])
+    ->prefix('restaurant')
+    ->name('restaurant.')
+    ->group(function () {
         // cancelInvitation must be declared before the resource so it's matched first
         Route::delete('garcons/convites/{invitation}', [WaiterController::class, 'cancelInvitation'])
             ->name('waiters.cancel-invitation');
@@ -49,7 +60,7 @@ Route::middleware(['auth', 'verified', EnsureRestaurant::class])
         Route::get('cardapio/{menu}/imprimir', [MenuController::class, 'printMenu'])
             ->name('menus.print');
         Route::resource('produtos', ProductController::class)
-            ->except(['show'])
+            ->except(['show', 'index'])
             ->names('products')
             ->parameters(['produtos' => 'product']);
     });

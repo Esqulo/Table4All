@@ -43,6 +43,13 @@ class User extends Authenticatable implements PasskeyUser
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
+    public function effectiveRestaurantId(): int
+    {
+        return $this->account_type === AccountType::WAITER
+            ? (int) $this->restaurant_id
+            : $this->id;
+    }
+
     /** @return HasMany<User, $this> */
     public function waiters(): HasMany
     {

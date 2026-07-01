@@ -281,7 +281,8 @@
         "msg_created": "Mesa criada com sucesso.",
         "msg_updated": "Mesa atualizada com sucesso.",
         "msg_deleted": "Mesa excluída com sucesso.",
-        "msg_products_updated": "Produtos da mesa atualizados com sucesso."
+        "msg_products_updated": "Produtos da mesa atualizados com sucesso.",
+        "payment_by": "por {{name}}"
     },
     "waiters": {
         "title": "Garçons",

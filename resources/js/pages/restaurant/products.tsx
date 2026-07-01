@@ -8,9 +8,10 @@ import type { Product } from '@/types';
 
 type Props = {
     products: Product[];
+    canManage?: boolean;
 };
 
-export default function Products({ products }: Props) {
+export default function Products({ products, canManage = true }: Props) {
     const { t } = useTranslation();
 
     return (
@@ -20,12 +21,14 @@ export default function Products({ products }: Props) {
             <div className="space-y-6 p-6">
                 <div className="flex items-center justify-between">
                     <Heading title={t('products.title')} />
-                    <Button asChild>
-                        <Link href={ProductController.create.url()}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            {t('products.new')}
-                        </Link>
-                    </Button>
+                    {canManage && (
+                        <Button asChild>
+                            <Link href={ProductController.create.url()}>
+                                <Plus className="mr-2 h-4 w-4" />
+                                {t('products.new')}
+                            </Link>
+                        </Button>
+                    )}
                 </div>
 
                 {products.length === 0 ? (
@@ -35,7 +38,7 @@ export default function Products({ products }: Props) {
                 ) : (
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                         {products.map((product) => (
-                            <ProductCard key={product.id} product={product} />
+                            <ProductCard key={product.id} product={product} canManage={canManage} />
                         ))}
                     </div>
                 )}
@@ -44,7 +47,7 @@ export default function Products({ products }: Props) {
     );
 }
 
-function ProductCard({ product }: { product: Product }) {
+function ProductCard({ product, canManage }: { product: Product; canManage: boolean }) {
     const { t } = useTranslation();
 
     const priceFormatted = new Intl.NumberFormat('pt-BR', {
@@ -90,33 +93,35 @@ function ProductCard({ product }: { product: Product }) {
                 </p>
             </div>
 
-            <div className="flex gap-2 border-t border-border px-4 py-3">
-                <Button variant="outline" size="sm" asChild className="flex-1">
-                    <Link href={ProductController.edit.url({ product: product.id })}>
-                        <Pencil className="mr-1 h-3.5 w-3.5" />
-                        {t('products.edit')}
-                    </Link>
-                </Button>
+            {canManage && (
+                <div className="flex gap-2 border-t border-border px-4 py-3">
+                    <Button variant="outline" size="sm" asChild className="flex-1">
+                        <Link href={ProductController.edit.url({ product: product.id })}>
+                            <Pencil className="mr-1 h-3.5 w-3.5" />
+                            {t('products.edit')}
+                        </Link>
+                    </Button>
 
-                <Form
-                    {...ProductController.destroy.form({ product: product.id })}
-                    className="flex-1"
-                    onBefore={() => confirm(t('products.delete_confirm'))}
-                >
-                    {({ processing }) => (
-                        <Button
-                            type="submit"
-                            variant="outline"
-                            size="sm"
-                            disabled={processing}
-                            className="w-full text-destructive hover:text-destructive"
-                        >
-                            <Trash2 className="mr-1 h-3.5 w-3.5" />
-                            {t('products.delete')}
-                        </Button>
-                    )}
-                </Form>
-            </div>
+                    <Form
+                        {...ProductController.destroy.form({ product: product.id })}
+                        className="flex-1"
+                        onBefore={() => confirm(t('products.delete_confirm'))}
+                    >
+                        {({ processing }) => (
+                            <Button
+                                type="submit"
+                                variant="outline"
+                                size="sm"
+                                disabled={processing}
+                                className="w-full text-destructive hover:text-destructive"
+                            >
+                                <Trash2 className="mr-1 h-3.5 w-3.5" />
+                                {t('products.delete')}
+                            </Button>
+                        )}
+                    </Form>
+                </div>
+            )}
         </div>
     );
 }
