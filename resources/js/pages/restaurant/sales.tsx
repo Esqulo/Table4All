@@ -1,5 +1,5 @@
 import { Form, Head, Link } from '@inertiajs/react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import SaleController from '@/actions/App/Http/Controllers/Restaurant/SaleController';
 import Heading from '@/components/heading';
@@ -102,22 +102,30 @@ function SaleRow({ sale }: { sale: Sale }) {
                 </div>
             </div>
 
-            <Form
-                {...SaleController.destroy.form({ sale: sale.id })}
-                onBefore={() => confirm(t('sales.delete_confirm'))}
-            >
-                {({ processing }) => (
-                    <Button
-                        type="submit"
-                        variant="ghost"
-                        size="icon"
-                        disabled={processing}
-                        className="text-destructive hover:text-destructive shrink-0"
-                    >
-                        <Trash2 className="h-4 w-4" />
-                    </Button>
-                )}
-            </Form>
+            <div className="flex items-center gap-1 shrink-0">
+                <Button variant="ghost" size="icon" asChild>
+                    <Link href={SaleController.edit.url({ sale: sale.id })}>
+                        <Pencil className="h-4 w-4" />
+                    </Link>
+                </Button>
+
+                <Form
+                    {...SaleController.destroy.form({ sale: sale.id })}
+                    onBefore={() => confirm(t('sales.delete_confirm'))}
+                >
+                    {({ processing }) => (
+                        <Button
+                            type="submit"
+                            variant="ghost"
+                            size="icon"
+                            disabled={processing}
+                            className="text-destructive hover:text-destructive"
+                        >
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                    )}
+                </Form>
+            </div>
         </div>
     );
 }

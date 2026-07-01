@@ -74,7 +74,7 @@ Route::middleware(['auth', 'verified', EnsureRestaurant::class])
             ->names('queues')
             ->parameters(['filas' => 'queue']);
         Route::resource('promocoes', SaleController::class)
-            ->only(['index', 'create', 'store', 'destroy'])
+            ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
             ->names('sales')
             ->parameters(['promocoes' => 'sale']);
     });

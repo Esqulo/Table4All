@@ -48,6 +48,31 @@ class SaleController extends Controller
         return to_route('restaurant.sales.index');
     }
 
+    public function edit(Request $request, Sale $sale): Response
+    {
+        abort_unless($sale->user_id === $request->user()->id, 403);
+
+        $products = Product::where('user_id', $request->user()->id)
+            ->orderBy('name')
+            ->get(['id', 'name', 'price', 'price_type']);
+
+        return Inertia::render('restaurant/sales/edit', [
+            'sale'     => $sale,
+            'products' => $products,
+        ]);
+    }
+
+    public function update(SaleRequest $request, Sale $sale): RedirectResponse
+    {
+        abort_unless($sale->user_id === $request->user()->id, 403);
+
+        $sale->update($request->validated());
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'sales.msg_updated']);
+
+        return to_route('restaurant.sales.index');
+    }
+
     public function destroy(Request $request, Sale $sale): RedirectResponse
     {
         abort_unless($sale->user_id === $request->user()->id, 403);
