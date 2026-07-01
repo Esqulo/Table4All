@@ -44,26 +44,23 @@ export default function Tables({ tables }: Props) {
     );
 }
 
+const fmt = (n: number) =>
+    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n);
+
 function TableCard({ table }: { table: RestaurantTable }) {
     const { t } = useTranslation();
 
     const total = table.products.reduce((sum, p) => sum + p.price * p.pivot.quantity, 0);
-    const totalFormatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total);
+    const paid = table.payments.reduce((sum, p) => sum + p.amount, 0);
+    const remaining = total - paid;
 
     return (
         <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-xs">
-            <div className="flex items-start justify-between gap-2 p-4">
-                <div>
-                    <p className="text-lg font-semibold leading-tight">{table.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                        {t('tables.products_count', { count: table.products_count })}
-                    </p>
-                </div>
-                {total > 0 && (
-                    <span className="shrink-0 rounded-full bg-primary/10 px-2.5 py-1 text-sm font-semibold text-primary">
-                        {totalFormatted}
-                    </span>
-                )}
+            <div className="p-4">
+                <p className="text-lg font-semibold leading-tight">{table.title}</p>
+                <p className="text-xs text-muted-foreground">
+                    {t('tables.products_count', { count: table.products_count })}
+                </p>
             </div>
 
             {table.products.length > 0 && (
@@ -90,6 +87,27 @@ function TableCard({ table }: { table: RestaurantTable }) {
                     {table.products_count > 5 && (
                         <div className="flex h-9 w-9 items-center justify-center rounded-md bg-muted text-xs text-muted-foreground">
                             +{table.products_count - 5}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {total > 0 && (
+                <div className="space-y-1 border-t border-border px-4 py-3 text-sm">
+                    <div className="flex justify-between">
+                        <span className="text-muted-foreground">{t('tables.order_total')}</span>
+                        <span className="font-semibold tabular-nums">{fmt(total)}</span>
+                    </div>
+                    {paid > 0 && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">{t('tables.payment_total_paid')}</span>
+                            <span className="font-semibold tabular-nums text-green-600">{fmt(paid)}</span>
+                        </div>
+                    )}
+                    {remaining > 0 && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">{t('tables.payment_remaining')}</span>
+                            <span className="font-semibold tabular-nums text-destructive">{fmt(remaining)}</span>
                         </div>
                     )}
                 </div>
