@@ -11,24 +11,17 @@ type Props = {
     sales: Sale[];
 };
 
-type SaleStatus = 'active' | 'scheduled' | 'expired';
-
-function getSaleStatus(sale: Sale): SaleStatus {
+function isActiveNow(sale: Sale): boolean {
     const now = new Date();
-    const start = new Date(sale.starts_at);
-    const end = new Date(sale.ends_at);
-    if (now < start) return 'scheduled';
-    if (now > end) return 'expired';
-    return 'active';
+    const currentDay = now.getDay(); // 0=Sun … 6=Sat
+    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const start = sale.start_time.slice(0, 5); // "HH:MM"
+    const end = sale.end_time.slice(0, 5);
+    return sale.days.includes(currentDay) && currentTime >= start && currentTime < end;
 }
 
 function formatCurrency(value: number) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
-}
-
-function formatDateRange(startsAt: string, endsAt: string) {
-    const fmt = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
-    return `${fmt.format(new Date(startsAt))} → ${fmt.format(new Date(endsAt))}`;
 }
 
 export default function Sales({ sales }: Props) {
@@ -67,25 +60,27 @@ export default function Sales({ sales }: Props) {
 
 function SaleRow({ sale }: { sale: Sale }) {
     const { t } = useTranslation();
-    const status = getSaleStatus(sale);
+    const active = isActiveNow(sale);
 
     const discount = sale.product.price > 0
         ? Math.round((1 - sale.sale_price / sale.product.price) * 100)
         : 0;
 
-    const statusVariant: Record<SaleStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-        active: 'default',
-        scheduled: 'secondary',
-        expired: 'outline',
-    };
+    const dayLabels = sale.days
+        .slice()
+        .sort((a, b) => a - b)
+        .map((d) => t(`sales.day_${d}`))
+        .join(', ');
+
+    const timeRange = `${sale.start_time.slice(0, 5)} – ${sale.end_time.slice(0, 5)}`;
 
     return (
         <div className="flex items-center gap-4 px-4 py-3">
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium truncate">{sale.product.name}</span>
-                    <Badge variant={statusVariant[status]}>
-                        {t(`sales.status_${status}`)}
+                    <Badge variant={active ? 'default' : 'outline'}>
+                        {t(active ? 'sales.status_active' : 'sales.status_inactive')}
                     </Badge>
                     {discount > 0 && (
                         <Badge variant="secondary" className="text-xs">
@@ -101,7 +96,9 @@ function SaleRow({ sale }: { sale: Sale }) {
                         <span className="font-semibold text-primary">{formatCurrency(sale.sale_price)}</span>
                     </span>
                     <span className="hidden sm:inline">·</span>
-                    <span>{formatDateRange(sale.starts_at, sale.ends_at)}</span>
+                    <span>{dayLabels}</span>
+                    <span className="hidden sm:inline">·</span>
+                    <span>{timeRange}</span>
                 </div>
             </div>
 

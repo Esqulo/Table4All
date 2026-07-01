@@ -97,10 +97,11 @@ export type Sale = {
     id: number;
     user_id: number;
     product_id: number;
-    product: Pick<Product, 'id' | 'name' | 'price' | 'price_type' | 'picture_url'>;
+    product: Pick<Product, 'id' | 'name' | 'price' | 'price_type'>;
     sale_price: number;
-    starts_at: string;
-    ends_at: string;
+    days: number[];       // 0=Sun, 1=Mon, …, 6=Sat
+    start_time: string;   // "HH:MM:SS"
+    end_time: string;     // "HH:MM:SS"
     created_at: string;
     updated_at: string;
 };

@@ -7,6 +7,7 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import type { Product } from '@/types';
 
 type ProductOption = Pick<Product, 'id' | 'name' | 'price' | 'price_type'>;
@@ -15,10 +16,7 @@ type Props = {
     products: ProductOption[];
 };
 
-function toDatetimeLocal(iso?: string): string {
-    if (!iso) return '';
-    return iso.slice(0, 16);
-}
+const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6] as const;
 
 // ─── Searchable product combobox ──────────────────────────────────────────────
 
@@ -98,7 +96,7 @@ function ProductCombobox({
                     <div className="max-h-52 overflow-y-auto border-t border-border">
                         {filtered.length === 0 ? (
                             <p className="py-6 text-center text-sm text-muted-foreground">
-                                {t('sales.product_placeholder')}
+                                {t('sales.product_search_placeholder')}
                             </p>
                         ) : (
                             filtered.map((product) => (
@@ -121,6 +119,41 @@ function ProductCombobox({
                     </div>
                 </div>
             )}
+        </div>
+    );
+}
+
+// ─── Day-of-week picker ───────────────────────────────────────────────────────
+
+function DayPicker({ error }: { error?: string }) {
+    const { t } = useTranslation();
+    const [selected, setSelected] = useState<string[]>([]);
+
+    return (
+        <div className="space-y-1.5">
+            {selected.map((d) => (
+                <input key={d} type="hidden" name="days[]" value={d} />
+            ))}
+
+            <ToggleGroup
+                type="multiple"
+                variant="outline"
+                value={selected}
+                onValueChange={setSelected}
+                className="flex-wrap justify-start gap-1"
+            >
+                {ALL_DAYS.map((day) => (
+                    <ToggleGroupItem
+                        key={day}
+                        value={String(day)}
+                        className="h-9 w-10 text-xs font-medium"
+                    >
+                        {t(`sales.day_${day}`)}
+                    </ToggleGroupItem>
+                ))}
+            </ToggleGroup>
+
+            {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
     );
 }
@@ -163,28 +196,32 @@ export default function CreateSale({ products }: Props) {
                                 <InputError message={errors.sale_price} />
                             </div>
 
+                            <div className="grid gap-2">
+                                <Label>{t('sales.days_label')}</Label>
+                                <DayPicker error={errors.days} />
+                            </div>
+
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="starts_at">{t('sales.starts_at_label')}</Label>
+                                    <Label htmlFor="start_time">{t('sales.start_time_label')}</Label>
                                     <Input
-                                        id="starts_at"
-                                        name="starts_at"
-                                        type="datetime-local"
+                                        id="start_time"
+                                        name="start_time"
+                                        type="time"
                                         required
-                                        defaultValue={toDatetimeLocal(new Date().toISOString())}
                                     />
-                                    <InputError message={errors.starts_at} />
+                                    <InputError message={errors.start_time} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="ends_at">{t('sales.ends_at_label')}</Label>
+                                    <Label htmlFor="end_time">{t('sales.end_time_label')}</Label>
                                     <Input
-                                        id="ends_at"
-                                        name="ends_at"
-                                        type="datetime-local"
+                                        id="end_time"
+                                        name="end_time"
+                                        type="time"
                                         required
                                     />
-                                    <InputError message={errors.ends_at} />
+                                    <InputError message={errors.end_time} />
                                 </div>
                             </div>
 

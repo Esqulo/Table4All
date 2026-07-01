@@ -16,8 +16,8 @@ class SaleController extends Controller
     public function index(Request $request): Response
     {
         $sales = Sale::where('user_id', $request->user()->id)
-            ->with('product:id,name,price,price_type,picture')
-            ->orderByDesc('starts_at')
+            ->with('product:id,name,price,price_type')
+            ->orderBy('start_time')
             ->get();
 
         return Inertia::render('restaurant/sales', [

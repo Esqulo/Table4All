@@ -11,8 +11,9 @@ final class Sale extends Model
         'user_id',
         'product_id',
         'sale_price',
-        'starts_at',
-        'ends_at',
+        'days',
+        'start_time',
+        'end_time',
     ];
 
     /** @return BelongsTo<Product, $this> */
@@ -31,8 +32,7 @@ final class Sale extends Model
     {
         return [
             'sale_price' => 'float',
-            'starts_at'  => 'datetime',
-            'ends_at'    => 'datetime',
+            'days'       => 'array',
         ];
     }
 }
