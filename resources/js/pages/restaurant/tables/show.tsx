@@ -1,6 +1,6 @@
 import { Form, Head, Link, router } from '@inertiajs/react';
 import { Banknote, CreditCard, Clock, ImageOff, Minus, Plus, QrCode, Search, ShoppingCart, Tag, X } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import QueueItemController from '@/actions/App/Http/Controllers/Restaurant/QueueItemController';
 import TableController from '@/actions/App/Http/Controllers/Restaurant/TableController';
@@ -49,15 +49,16 @@ export default function ManageOrder({ table, products, queueItems }: Props) {
 
     const [quantities, setQuantities] = useState<Record<number, number>>(initial);
 
-    // Sync local quantities with server state whenever table.products actually changes
-    // (e.g. after a queue item is delivered and appears in the order).
+    // Sync local quantities when table.products changes (e.g. after a queue item is delivered).
+    // Using the setState-during-render pattern instead of useEffect to avoid cascading renders.
     const productsKey = table.products.map((p) => `${p.id}:${p.pivot.quantity}`).join(',');
-    useEffect(() => {
+    const [prevProductsKey, setPrevProductsKey] = useState(productsKey);
+    if (prevProductsKey !== productsKey) {
+        setPrevProductsKey(productsKey);
         const next: Record<number, number> = {};
         for (const item of table.products) next[item.id] = item.pivot.quantity;
         setQuantities(next);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [productsKey]);
+    }
     const [addProductsOpen, setAddProductsOpen] = useState(false);
     const [addPaymentOpen, setAddPaymentOpen] = useState(false);
     const [autoSubmitting, setAutoSubmitting] = useState(false);
@@ -400,9 +401,12 @@ function AddPaymentDialog({ open, table, remaining, onClose }: {
     const { t } = useTranslation();
     const [cents, setCents] = useState(0);
 
-    useEffect(() => {
+    // Reset cents to the remaining amount whenever the dialog opens.
+    const [prevOpen, setPrevOpen] = useState(open);
+    if (prevOpen !== open) {
+        setPrevOpen(open);
         if (open) setCents(remaining > 0 ? Math.round(remaining * 100) : 0);
-    }, [open, remaining]);
+    }
 
     const displayValue = cents > 0
         ? (cents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
