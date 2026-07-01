@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Restaurant;
 
+use App\Enums\QueueItemStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Restaurant\QueueRequest;
+use App\Models\QueueItem;
 use App\Models\RestaurantQueue;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -39,6 +41,25 @@ class QueueController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => 'queues.msg_created']);
 
         return to_route('restaurant.queues.index');
+    }
+
+    public function show(Request $request, RestaurantQueue $queue): Response
+    {
+        abort_unless($queue->user_id === $request->user()->id, 403);
+
+        $items = QueueItem::where('queue_id', $queue->id)
+            ->whereIn('status', [QueueItemStatus::PENDING->value, QueueItemStatus::DONE->value])
+            ->with([
+                'product:id,name,picture,price,price_type',
+                'restaurantTable:id,title',
+            ])
+            ->orderBy('created_at')
+            ->get();
+
+        return Inertia::render('restaurant/queues/show', [
+            'queue' => $queue,
+            'items' => $items,
+        ]);
     }
 
     public function edit(Request $request, RestaurantQueue $queue): Response

@@ -56,6 +56,28 @@ export type OrderItem = Pick<Product, 'id' | 'name' | 'picture' | 'picture_url' 
     pivot: { quantity: number };
 };
 
+export type QueueItemStatus = 'pending' | 'done' | 'delivered';
+
+export type QueueItem = {
+    id: number;
+    restaurant_table_id: number;
+    product_id: number;
+    product: {
+        id: number;
+        name: string;
+        picture_url: string | null;
+        price: number;
+        price_type: PriceType;
+    };
+    queue_id: number;
+    queue: { id: number; name: string };
+    restaurant_table?: { id: number; title: string };
+    quantity: number;
+    status: QueueItemStatus;
+    created_at: string;
+    updated_at: string;
+};
+
 export type PaymentMethod = 'cash' | 'pix' | 'card' | 'coupon';
 
 export type PaymentRegistrar = 'waiter' | 'restaurant' | 'app';

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Restaurant;
 
 use App\Enums\PaymentMethod;
+use App\Enums\QueueItemStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Restaurant\TableRequest;
 use App\Models\Product;
+use App\Models\QueueItem;
 use App\Models\RestaurantTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -69,12 +71,23 @@ class TableController extends Controller
         ]);
 
         $products = Product::where('user_id', $request->user()->effectiveRestaurantId())
+            ->with('queue:id,name')
             ->orderBy('name')
-            ->get(['id', 'name', 'picture', 'price', 'price_type']);
+            ->get(['id', 'name', 'picture', 'price', 'price_type', 'queue_id']);
+
+        $queueItems = QueueItem::where('restaurant_table_id', $table->id)
+            ->whereIn('status', [QueueItemStatus::PENDING->value, QueueItemStatus::DONE->value])
+            ->with([
+                'product:id,name,picture,price,price_type',
+                'queue:id,name',
+            ])
+            ->orderBy('created_at')
+            ->get();
 
         return Inertia::render('restaurant/tables/show', [
-            'table'    => $table,
-            'products' => $products,
+            'table'      => $table,
+            'products'   => $products,
+            'queueItems' => $queueItems,
         ]);
     }
 
@@ -159,9 +172,12 @@ class TableController extends Controller
 
     private function syncOrder(TableRequest $request, RestaurantTable $table): void
     {
+        $ownerId = $request->user()->effectiveRestaurantId();
+
+        // Full sync of direct order products (restaurant_table_product pivot)
         $submitted = $request->input('products', []);
 
-        $validIds = Product::where('user_id', $request->user()->effectiveRestaurantId())
+        $validIds = Product::where('user_id', $ownerId)
             ->pluck('id')
             ->map(fn ($id) => (string) $id)
             ->toArray();
@@ -175,5 +191,31 @@ class TableController extends Controller
         }
 
         $table->products()->sync($sync);
+
+        // Create queue items for products selected from the add-products dialog
+        $queueAdditions = $request->input('queue_additions', []);
+        if (empty($queueAdditions)) {
+            return;
+        }
+
+        $queueProducts = Product::where('user_id', $ownerId)
+            ->whereIn('id', array_keys($queueAdditions))
+            ->whereNotNull('queue_id')
+            ->get(['id', 'queue_id']);
+
+        foreach ($queueProducts as $product) {
+            $qty = (int) ($queueAdditions[$product->id] ?? 0);
+            if ($qty <= 0) {
+                continue;
+            }
+
+            QueueItem::create([
+                'restaurant_table_id' => $table->id,
+                'product_id'          => $product->id,
+                'queue_id'            => $product->queue_id,
+                'quantity'            => $qty,
+                'status'              => QueueItemStatus::PENDING->value,
+            ]);
+        }
     }
 }

@@ -1,5 +1,5 @@
 import { Form, Head, Link } from '@inertiajs/react';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { ChefHat, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import QueueController from '@/actions/App/Http/Controllers/Restaurant/QueueController';
 import Heading from '@/components/heading';
@@ -57,6 +57,12 @@ function QueueRow({ queue }: { queue: RestaurantQueue }) {
             </div>
 
             <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" asChild>
+                    <Link href={QueueController.show.url({ queue: queue.id })}>
+                        <ChefHat className="mr-1 h-3.5 w-3.5" />
+                        {t('queues.view_kitchen')}
+                    </Link>
+                </Button>
                 <Button variant="outline" size="sm" asChild>
                     <Link href={QueueController.edit.url({ queue: queue.id })}>
                         <Pencil className="mr-1 h-3.5 w-3.5" />

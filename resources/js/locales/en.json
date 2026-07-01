@@ -252,9 +252,21 @@
         "breadcrumb_index": "Queues",
         "breadcrumb_create": "New queue",
         "breadcrumb_edit": "Edit queue",
+        "breadcrumb_show": "Kitchen view",
         "msg_created": "Queue created successfully.",
         "msg_updated": "Queue updated successfully.",
-        "msg_deleted": "Queue deleted successfully."
+        "msg_deleted": "Queue deleted successfully.",
+        "kitchen_subtitle": "Mark items as done and deliver them to the table.",
+        "items_title": "In preparation",
+        "items_empty": "No items in preparation.",
+        "status_pending": "Pending",
+        "status_done": "Ready to serve",
+        "item_mark_done": "Mark done",
+        "item_mark_delivered": "Deliver",
+        "item_done": "Item marked as done.",
+        "item_delivered": "Item delivered to the table.",
+        "back_to_queues": "Back to queues",
+        "view_kitchen": "Kitchen"
     },
     "tables": {
         "title": "Tables",

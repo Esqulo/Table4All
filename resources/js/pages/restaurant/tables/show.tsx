@@ -1,7 +1,8 @@
 import { Form, Head, Link, router } from '@inertiajs/react';
-import { Banknote, CreditCard, ImageOff, Minus, Plus, QrCode, Search, ShoppingCart, Tag, X } from 'lucide-react';
+import { Banknote, CreditCard, Clock, ImageOff, Minus, Plus, QrCode, Search, ShoppingCart, Tag, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import QueueItemController from '@/actions/App/Http/Controllers/Restaurant/QueueItemController';
 import TableController from '@/actions/App/Http/Controllers/Restaurant/TableController';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -14,13 +15,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import type { PaymentMethod, Product, RestaurantTable, TablePayment } from '@/types';
+import type { PaymentMethod, Product, QueueItem, RestaurantTable, TablePayment } from '@/types';
 
-type AvailableProduct = Pick<Product, 'id' | 'name' | 'picture_url' | 'price' | 'price_type'>;
+type AvailableProduct = Pick<Product, 'id' | 'name' | 'picture_url' | 'price' | 'price_type' | 'queue_id'> & {
+    queue: { id: number; name: string } | null;
+};
 
 type Props = {
     table: RestaurantTable;
     products: AvailableProduct[];
+    queueItems: QueueItem[];
 };
 
 const fmt = (n: number) =>
@@ -37,13 +41,23 @@ const PAYMENT_METHODS: PaymentMethod[] = ['cash', 'pix', 'card', 'coupon'];
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-export default function ManageOrder({ table, products }: Props) {
+export default function ManageOrder({ table, products, queueItems }: Props) {
     const { t } = useTranslation();
 
     const initial: Record<number, number> = {};
     for (const item of table.products) initial[item.id] = item.pivot.quantity;
 
     const [quantities, setQuantities] = useState<Record<number, number>>(initial);
+
+    // Sync local quantities with server state whenever table.products actually changes
+    // (e.g. after a queue item is delivered and appears in the order).
+    const productsKey = table.products.map((p) => `${p.id}:${p.pivot.quantity}`).join(',');
+    useEffect(() => {
+        const next: Record<number, number> = {};
+        for (const item of table.products) next[item.id] = item.pivot.quantity;
+        setQuantities(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [productsKey]);
     const [addProductsOpen, setAddProductsOpen] = useState(false);
     const [addPaymentOpen, setAddPaymentOpen] = useState(false);
     const [autoSubmitting, setAutoSubmitting] = useState(false);
@@ -58,17 +72,27 @@ export default function ManageOrder({ table, products }: Props) {
         });
 
     const handleAddProducts = (pending: Record<number, number>) => {
+        // Split pending into direct-order (non-queue) and queue additions
         const merged = { ...quantities };
+        const queueAdditions: Record<number, number> = {};
+
         for (const [rawId, qty] of Object.entries(pending)) {
             const id = Number(rawId);
-            if (qty > 0) merged[id] = (merged[id] ?? 0) + qty;
+            if (qty <= 0) continue;
+            const product = products.find((p) => p.id === id);
+            if (product?.queue_id) {
+                queueAdditions[id] = qty;
+            } else {
+                merged[id] = (merged[id] ?? 0) + qty;
+            }
         }
+
         setAutoSubmitting(true);
         setQuantities(merged);
         setAddProductsOpen(false);
         router.patch(
             TableController.update.url({ table: table.id }),
-            { products: merged },
+            { products: merged, queue_additions: queueAdditions },
             { onFinish: () => setAutoSubmitting(false) },
         );
     };
@@ -112,6 +136,58 @@ export default function ManageOrder({ table, products }: Props) {
                     <h1 className="text-xl font-semibold">{table.title}</h1>
                     <p className="mt-0.5 text-sm text-muted-foreground">{t('tables.manage_products')}</p>
                 </div>
+
+                {/* ── Queue items section ── */}
+                {queueItems.length > 0 && (
+                    <div className="space-y-3">
+                        <p className="text-sm font-semibold">{t('queues.items_title')}</p>
+                        <div className="overflow-hidden rounded-xl border border-border">
+                            {queueItems.map((item, idx) => (
+                                <div
+                                    key={item.id}
+                                    className={[
+                                        'flex items-center gap-3 px-4 py-3',
+                                        idx > 0 ? 'border-t border-border' : '',
+                                    ].join(' ')}
+                                >
+                                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
+                                        {item.product.picture_url ? (
+                                            <img src={item.product.picture_url} alt={item.product.name} className="h-full w-full object-cover" />
+                                        ) : (
+                                            <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                                                <ImageOff className="h-3.5 w-3.5 opacity-40" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="truncate text-sm font-medium">{item.product.name}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {item.queue.name} · x{item.quantity}
+                                        </p>
+                                    </div>
+                                    {item.status === 'pending' ? (
+                                        <Form {...QueueItemController.markDone.form({ queueItem: item.id })}>
+                                            {({ processing }) => (
+                                                <Button type="submit" size="sm" variant="outline" disabled={processing} className="shrink-0">
+                                                    <Clock className="mr-1.5 h-3.5 w-3.5" />
+                                                    {t('queues.item_mark_done')}
+                                                </Button>
+                                            )}
+                                        </Form>
+                                    ) : (
+                                        <Form {...QueueItemController.markDelivered.form({ queueItem: item.id })}>
+                                            {({ processing }) => (
+                                                <Button type="submit" size="sm" disabled={processing} className="shrink-0">
+                                                    {t('queues.item_mark_delivered')}
+                                                </Button>
+                                            )}
+                                        </Form>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2">
 
@@ -378,7 +454,7 @@ function AddPaymentDialog({ open, table, remaining, onClose }: {
     );
 }
 
-// ─── Add products dialog (unchanged) ─────────────────────────────────────────
+// ─── Add products dialog ──────────────────────────────────────────────────────
 
 type DialogProps = {
     open: boolean;
@@ -458,7 +534,14 @@ function AddProductsDialog({ open, products, onConfirm, onClose }: DialogProps) 
                                 </div>
                                 <div className="min-w-0 flex-1">
                                     <p className="truncate text-sm font-medium">{product.name}</p>
-                                    <p className="text-xs text-muted-foreground">{fmt(product.price)} / {suffix}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {fmt(product.price)} / {suffix}
+                                        {product.queue_id && (
+                                            <span className="ml-1.5 rounded bg-muted px-1 py-0.5 text-[10px] font-medium">
+                                                {product.queue?.name}
+                                            </span>
+                                        )}
+                                    </p>
                                 </div>
                                 {qty === 0 ? (
                                     <Button type="button" size="sm" variant="outline" onClick={() => setPendingQty(product.id, 1)}>
