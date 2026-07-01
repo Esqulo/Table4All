@@ -47,7 +47,7 @@ class QueueItemController extends Controller
 
         if ($existingProduct) {
             $table->products()->updateExistingPivot($queueItem->product_id, [
-                'quantity' => $existingProduct->pivot->quantity + $queueItem->quantity,
+                'quantity' => (int) $existingProduct->pivot->getAttribute('quantity') + $queueItem->quantity,
             ]);
         } else {
             $table->products()->attach($queueItem->product_id, [
