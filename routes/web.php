@@ -5,6 +5,7 @@ use App\Http\Controllers\Restaurant\MenuController;
 use App\Http\Controllers\Restaurant\ProductController;
 use App\Http\Controllers\Restaurant\QueueController;
 use App\Http\Controllers\Restaurant\QueueItemController;
+use App\Http\Controllers\Restaurant\SaleController;
 use App\Http\Controllers\Restaurant\TableController;
 use App\Http\Controllers\Restaurant\WaiterController;
 use App\Http\Controllers\WaiterInvitationController;
@@ -72,6 +73,10 @@ Route::middleware(['auth', 'verified', EnsureRestaurant::class])
         Route::resource('filas', QueueController::class)
             ->names('queues')
             ->parameters(['filas' => 'queue']);
+        Route::resource('promocoes', SaleController::class)
+            ->only(['index', 'create', 'store', 'destroy'])
+            ->names('sales')
+            ->parameters(['promocoes' => 'sale']);
     });
 
 Route::middleware(['auth', 'verified', EnsureAdmin::class])

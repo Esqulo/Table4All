@@ -93,6 +93,18 @@ export type TablePayment = {
     created_at: string;
 };
 
+export type Sale = {
+    id: number;
+    user_id: number;
+    product_id: number;
+    product: Pick<Product, 'id' | 'name' | 'price' | 'price_type' | 'picture_url'>;
+    sale_price: number;
+    starts_at: string;
+    ends_at: string;
+    created_at: string;
+    updated_at: string;
+};
+
 export type RestaurantTable = {
     id: number;
     user_id: number;
