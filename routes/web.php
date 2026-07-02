@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Restaurant\DashboardController;
 use App\Http\Controllers\Restaurant\MenuController;
 use App\Http\Controllers\Restaurant\ProductController;
 use App\Http\Controllers\Restaurant\QueueController;
@@ -53,6 +54,8 @@ Route::middleware(['auth', 'verified', EnsureRestaurant::class])
     ->prefix('restaurant')
     ->name('restaurant.')
     ->group(function () {
+        Route::get('painel', [DashboardController::class, 'index'])->name('dashboards.index');
+
         // cancelInvitation must be declared before the resource so it's matched first
         Route::delete('garcons/convites/{invitation}', [WaiterController::class, 'cancelInvitation'])
             ->name('waiters.cancel-invitation');

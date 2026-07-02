@@ -62,6 +62,7 @@
     },
     "nav": {
         "dashboard": "Dashboard",
+        "dashboards": "Dashboards",
         "categories": "Categories",
         "menus": "Menu",
         "tables": "Tables",
@@ -381,6 +382,23 @@
         "type_scheduled": "Event (one-time)",
         "starts_at_label": "Start date & time",
         "ends_at_label": "End date & time"
+    },
+    "dashboards": {
+        "title": "Dashboards",
+        "breadcrumb_index": "Dashboards",
+        "period_7": "7 days",
+        "period_30": "30 days",
+        "period_90": "90 days",
+        "total_revenue": "Total Revenue",
+        "tables_closed": "Tables Closed",
+        "items_sold": "Items Sold",
+        "avg_table_revenue": "Avg. per Table",
+        "revenue_by_day": "Revenue by Day",
+        "top_products": "Top Products",
+        "payment_methods": "Payment Methods",
+        "recent_tables": "Recently Closed Tables",
+        "no_data": "No data for this period.",
+        "items": "items"
     },
     "language": {
         "toggle_label": "Language",
