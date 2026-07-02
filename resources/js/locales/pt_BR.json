@@ -76,6 +76,11 @@
         "log_out": "Sair"
     },
     "settings": {
+        "title": "Configurações",
+        "description": "Gerencie seu perfil e configurações de conta",
+        "nav_profile": "Perfil",
+        "nav_security": "Segurança",
+        "nav_appearance": "Aparência",
         "profile": {
             "title": "Configurações de perfil",
             "head": "Configurações de perfil",

@@ -76,6 +76,11 @@
         "log_out": "Log out"
     },
     "settings": {
+        "title": "Settings",
+        "description": "Manage your profile and account settings",
+        "nav_profile": "Profile",
+        "nav_security": "Security",
+        "nav_appearance": "Appearance",
         "profile": {
             "title": "Profile settings",
             "head": "Profile settings",
