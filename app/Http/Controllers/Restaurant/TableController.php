@@ -9,9 +9,11 @@ use App\Http\Requests\Restaurant\TableRequest;
 use App\Models\Product;
 use App\Models\QueueItem;
 use App\Models\RestaurantTable;
+use App\Models\Sale;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -25,7 +27,7 @@ class TableController extends Controller
             ->whereNull('closed_at')
             ->with([
                 'products' => fn ($q) => $q
-                    ->select('products.id', 'name', 'picture', 'price', 'price_type')
+                    ->select('products.id', 'products.name', 'products.picture', 'products.price', 'products.price_type')
                     ->withPivot('quantity'),
                 'payments:id,restaurant_table_id,method,amount',
             ])
@@ -64,9 +66,6 @@ class TableController extends Controller
         }
 
         $table->load([
-            'products' => fn ($q) => $q
-                ->select('products.id', 'name', 'picture', 'price', 'price_type')
-                ->withPivot('quantity'),
             'payments' => fn ($q) => $q->with('registeredBy:id,name'),
         ]);
 
@@ -74,6 +73,50 @@ class TableController extends Controller
             ->with('queue:id,name')
             ->orderBy('name')
             ->get(['id', 'name', 'picture', 'price', 'price_type', 'queue_id']);
+
+        // Raw query so the same product can appear on multiple rows at different prices.
+        // Eloquent BelongsToMany de-duplicates on product_id and would collapse them.
+        $orderLines = DB::table('restaurant_table_product')
+            ->where('restaurant_table_id', $table->id)
+            ->join('products', 'products.id', '=', 'restaurant_table_product.product_id')
+            ->select(
+                'products.id',
+                'products.name',
+                'products.picture',
+                'products.price_type',
+                'restaurant_table_product.price',
+                'restaurant_table_product.quantity',
+            )
+            ->get()
+            ->map(fn ($row) => [
+                'id'          => $row->id,
+                'name'        => $row->name,
+                'picture'     => $row->picture,
+                'picture_url' => $row->picture ? Storage::disk('public')->url($row->picture) : null,
+                'price_type'  => $row->price_type,
+                'price'       => (float) $row->price,
+                'quantity'    => (int) $row->quantity,
+            ]);
+
+        $now         = now();
+        $currentDay  = (int) $now->dayOfWeek;
+        $currentTime = $now->format('H:i:s');
+        $nowDatetime = $now->format('Y-m-d H:i:s');
+
+        $activeSales = Sale::where('user_id', $request->user()->effectiveRestaurantId())
+            ->where(function ($q) use ($currentDay, $currentTime, $nowDatetime) {
+                $q->where(function ($q) use ($currentDay, $currentTime) {
+                    $q->where('type', 'periodic')
+                      ->whereJsonContains('days', [$currentDay])
+                      ->where('start_time', '<=', $currentTime)
+                      ->where('end_time', '>=', $currentTime);
+                })->orWhere(function ($q) use ($nowDatetime) {
+                    $q->where('type', 'scheduled')
+                      ->where('starts_at', '<=', $nowDatetime)
+                      ->where('ends_at', '>=', $nowDatetime);
+                });
+            })
+            ->get(['product_id', 'sale_price']);
 
         $queueItems = QueueItem::where('restaurant_table_id', $table->id)
             ->whereIn('status', [QueueItemStatus::PENDING->value, QueueItemStatus::DONE->value])
@@ -85,9 +128,11 @@ class TableController extends Controller
             ->get();
 
         return Inertia::render('restaurant/tables/show', [
-            'table'      => $table,
-            'products'   => $products,
-            'queueItems' => $queueItems,
+            'table'       => $table,
+            'products'    => $products,
+            'orderLines'  => $orderLines,
+            'activeSales' => $activeSales,
+            'queueItems'  => $queueItems,
         ]);
     }
 
@@ -142,9 +187,8 @@ class TableController extends Controller
         abort_if($table->closed_at !== null, 422, 'Table is already closed.');
 
         $productTotal = (float) DB::table('restaurant_table_product')
-            ->join('products', 'products.id', '=', 'restaurant_table_product.product_id')
-            ->where('restaurant_table_product.restaurant_table_id', $table->id)
-            ->sum(DB::raw('products.price * restaurant_table_product.quantity'));
+            ->where('restaurant_table_id', $table->id)
+            ->sum(DB::raw('price * quantity'));
 
         $paymentTotal = (float) $table->payments()->sum('amount');
 
@@ -172,39 +216,60 @@ class TableController extends Controller
 
     private function syncOrder(TableRequest $request, RestaurantTable $table): void
     {
-        $ownerId = $request->user()->effectiveRestaurantId();
+        $ownerId  = $request->user()->effectiveRestaurantId();
+        $validIds = Product::where('user_id', $ownerId)->pluck('id')->toArray();
 
-        // Full sync of direct order products (restaurant_table_product pivot)
+        // Full replace: delete all existing pivot rows then re-insert with explicit prices.
         $submitted = $request->input('products', []);
 
-        $validIds = Product::where('user_id', $ownerId)
-            ->pluck('id')
-            ->map(fn ($id) => (string) $id)
-            ->toArray();
+        DB::table('restaurant_table_product')
+            ->where('restaurant_table_id', $table->id)
+            ->delete();
 
-        $sync = [];
-        foreach ($submitted as $productId => $quantity) {
-            $qty = (int) $quantity;
-            if (in_array((string) $productId, $validIds, true) && $qty > 0) {
-                $sync[(int) $productId] = ['quantity' => $qty];
+        $rows = [];
+        foreach ($submitted as $item) {
+            $productId = (int) ($item['product_id'] ?? 0);
+            $qty       = (int) ($item['quantity'] ?? 0);
+            $price     = (float) ($item['price'] ?? 0);
+
+            if (!in_array($productId, $validIds, true) || $qty <= 0 || $price < 0) {
+                continue;
             }
+
+            $rows[] = [
+                'restaurant_table_id' => $table->id,
+                'product_id'          => $productId,
+                'quantity'            => $qty,
+                'price'               => $price,
+            ];
         }
 
-        $table->products()->sync($sync);
+        if (!empty($rows)) {
+            DB::table('restaurant_table_product')->insert($rows);
+        }
 
-        // Create queue items for products selected from the add-products dialog
         $queueAdditions = $request->input('queue_additions', []);
         if (empty($queueAdditions)) {
             return;
         }
 
-        $queueProducts = Product::where('user_id', $ownerId)
-            ->whereIn('id', array_keys($queueAdditions))
+        $queueProductIds = array_column($queueAdditions, 'product_id');
+        $queueProducts   = Product::where('user_id', $ownerId)
+            ->whereIn('id', $queueProductIds)
             ->whereNotNull('queue_id')
             ->get(['id', 'queue_id']);
 
         foreach ($queueProducts as $product) {
-            $qty = (int) ($queueAdditions[$product->id] ?? 0);
+            $additionItem = null;
+            foreach ($queueAdditions as $item) {
+                if (($item['product_id'] ?? null) === $product->id) {
+                    $additionItem = $item;
+                    break;
+                }
+            }
+            $qty   = (int) ($additionItem['quantity'] ?? 0);
+            $price = (float) ($additionItem['price'] ?? 0);
+
             if ($qty <= 0) {
                 continue;
             }
@@ -214,6 +279,7 @@ class TableController extends Controller
                 'product_id'          => $product->id,
                 'queue_id'            => $product->queue_id,
                 'quantity'            => $qty,
+                'price'               => $price,
                 'status'              => QueueItemStatus::PENDING->value,
             ]);
         }

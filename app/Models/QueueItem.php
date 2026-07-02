@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property QueueItemStatus $status
+ * @property float $price
  */
 final class QueueItem extends Model
 {
@@ -16,6 +17,7 @@ final class QueueItem extends Model
         'product_id',
         'queue_id',
         'quantity',
+        'price',
         'status',
     ];
 
