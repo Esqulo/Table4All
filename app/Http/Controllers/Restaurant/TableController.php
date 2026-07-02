@@ -260,9 +260,15 @@ class TableController extends Controller
             ->get(['id', 'queue_id']);
 
         foreach ($queueProducts as $product) {
-            $additionItem = collect($queueAdditions)->firstWhere('product_id', $product->id);
-            $qty          = (int) ($additionItem['quantity'] ?? 0);
-            $price        = (float) ($additionItem['price'] ?? 0);
+            $additionItem = null;
+            foreach ($queueAdditions as $item) {
+                if (($item['product_id'] ?? null) === $product->id) {
+                    $additionItem = $item;
+                    break;
+                }
+            }
+            $qty   = (int) ($additionItem['quantity'] ?? 0);
+            $price = (float) ($additionItem['price'] ?? 0);
 
             if ($qty <= 0) {
                 continue;

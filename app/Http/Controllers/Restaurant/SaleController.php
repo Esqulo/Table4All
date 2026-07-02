@@ -82,6 +82,8 @@ class SaleController extends Controller
     }
 
     /** Null out fields that don't belong to this sale type and cast days to ints. */
+    /** @param  array<string, mixed> $data
+     *  @return array<string, mixed> */
     private function normalizeByType(array $data): array
     {
         if (($data['type'] ?? 'periodic') === 'periodic') {
