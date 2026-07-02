@@ -15,10 +15,14 @@ return new class extends Migration
             $table->dateTime('ends_at')->nullable()->after('starts_at');
         });
 
-        // Make periodic-only columns nullable so scheduled sales can leave them null.
-        DB::statement('ALTER TABLE sales ALTER COLUMN days DROP NOT NULL');
-        DB::statement('ALTER TABLE sales ALTER COLUMN start_time DROP NOT NULL');
-        DB::statement('ALTER TABLE sales ALTER COLUMN end_time DROP NOT NULL');
+        // Make periodic-only columns nullable so scheduled sales can omit them.
+        // SQLite does not support ALTER COLUMN — the columns were created nullable
+        // in the original migration for SQLite, so we only need this for PostgreSQL.
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE sales ALTER COLUMN days DROP NOT NULL');
+            DB::statement('ALTER TABLE sales ALTER COLUMN start_time DROP NOT NULL');
+            DB::statement('ALTER TABLE sales ALTER COLUMN end_time DROP NOT NULL');
+        }
     }
 
     public function down(): void
@@ -27,8 +31,10 @@ return new class extends Migration
             $table->dropColumn(['type', 'starts_at', 'ends_at']);
         });
 
-        DB::statement('ALTER TABLE sales ALTER COLUMN days SET NOT NULL');
-        DB::statement('ALTER TABLE sales ALTER COLUMN start_time SET NOT NULL');
-        DB::statement('ALTER TABLE sales ALTER COLUMN end_time SET NOT NULL');
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE sales ALTER COLUMN days SET NOT NULL');
+            DB::statement('ALTER TABLE sales ALTER COLUMN start_time SET NOT NULL');
+            DB::statement('ALTER TABLE sales ALTER COLUMN end_time SET NOT NULL');
+        }
     }
 };
