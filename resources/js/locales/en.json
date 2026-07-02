@@ -51,6 +51,13 @@
             "confirm_password_placeholder": "Confirm password",
             "submit": "Reset password"
         },
+        "confirm_password": {
+            "title": "Confirm password",
+            "description": "This is a secure area of the application. Please confirm your password before continuing.",
+            "head": "Confirm password",
+            "password_label": "Password",
+            "submit": "Confirm password"
+        },
         "verify_email": {
             "title": "Email verification",
             "description": "Please verify your email address by clicking on the link we just emailed to you.",
@@ -387,6 +394,32 @@
         "type_scheduled": "Event (one-time)",
         "starts_at_label": "Start date & time",
         "ends_at_label": "End date & time"
+    },
+    "two_factor": {
+        "title": "Two-factor authentication",
+        "description": "Manage your two-factor authentication settings",
+        "enabled_info": "You will be prompted for a secure, random pin during login, which you can retrieve from the TOTP-supported application on your phone.",
+        "disabled_info": "When you enable two-factor authentication, you will be prompted for a secure pin during login. This pin can be retrieved from a TOTP-supported application on your phone.",
+        "disable": "Disable 2FA",
+        "enable": "Enable 2FA",
+        "continue_setup": "Continue setup",
+        "modal_enable_title": "Enable two-factor authentication",
+        "modal_enable_description": "To finish enabling two-factor authentication, scan the QR code or enter the setup key in your authenticator app",
+        "modal_enabled_title": "Two-factor authentication enabled",
+        "modal_enabled_description": "Two-factor authentication is now enabled. Scan the QR code or enter the setup key in your authenticator app.",
+        "modal_verify_title": "Verify authentication code",
+        "modal_verify_description": "Enter the 6-digit code from your authenticator app",
+        "modal_close": "Close",
+        "modal_continue": "Continue",
+        "modal_back": "Back",
+        "modal_confirm": "Confirm",
+        "manual_code_separator": "or, enter the code manually",
+        "recovery_title": "2FA recovery codes",
+        "recovery_description": "Recovery codes let you regain access if you lose your 2FA device. Store them in a secure password manager.",
+        "recovery_view": "View recovery codes",
+        "recovery_hide": "Hide recovery codes",
+        "recovery_regenerate": "Regenerate codes",
+        "recovery_warning": "Each recovery code can be used once to access your account and will be removed after use. If you need more, click Regenerate codes above."
     },
     "dashboards": {
         "title": "Dashboards",

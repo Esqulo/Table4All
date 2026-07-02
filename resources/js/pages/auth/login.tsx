@@ -1,7 +1,6 @@
 import { Form, Head } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import InputError from '@/components/input-error';
-import PasskeyVerify from '@/components/passkey-verify';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
@@ -24,8 +23,6 @@ export default function Login({ status, canResetPassword }: Props) {
     return (
         <>
             <Head title={t('auth.login.head')} />
-
-            <PasskeyVerify />
 
             <Form
                 {...store.form()}

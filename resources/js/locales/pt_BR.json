@@ -51,6 +51,13 @@
             "confirm_password_placeholder": "Confirmar senha",
             "submit": "Redefinir senha"
         },
+        "confirm_password": {
+            "title": "Confirmar senha",
+            "description": "Esta é uma área segura da aplicação. Por favor, confirme sua senha antes de continuar.",
+            "head": "Confirmar senha",
+            "password_label": "Senha",
+            "submit": "Confirmar senha"
+        },
         "verify_email": {
             "title": "Verificação de e-mail",
             "description": "Por favor, verifique seu endereço de e-mail clicando no link que acabamos de enviar para você.",
@@ -387,6 +394,32 @@
         "type_scheduled": "Evento (data única)",
         "starts_at_label": "Data e hora de início",
         "ends_at_label": "Data e hora de término"
+    },
+    "two_factor": {
+        "title": "Autenticação de dois fatores",
+        "description": "Gerencie as configurações de autenticação de dois fatores",
+        "enabled_info": "Você será solicitado a inserir um pin aleatório e seguro durante o login, que pode ser obtido no aplicativo autenticador no seu celular.",
+        "disabled_info": "Ao ativar a autenticação de dois fatores, você será solicitado a inserir um pin seguro durante o login. Este pin pode ser obtido em um aplicativo autenticador no seu celular.",
+        "disable": "Desativar 2FA",
+        "enable": "Ativar 2FA",
+        "continue_setup": "Continuar configuração",
+        "modal_enable_title": "Ativar autenticação de dois fatores",
+        "modal_enable_description": "Para concluir a ativação, escaneie o código QR ou insira a chave de configuração no seu aplicativo autenticador",
+        "modal_enabled_title": "Autenticação de dois fatores ativada",
+        "modal_enabled_description": "A autenticação de dois fatores foi ativada. Escaneie o código QR ou insira a chave de configuração no seu aplicativo autenticador.",
+        "modal_verify_title": "Verificar código de autenticação",
+        "modal_verify_description": "Digite o código de 6 dígitos do seu aplicativo autenticador",
+        "modal_close": "Fechar",
+        "modal_continue": "Continuar",
+        "modal_back": "Voltar",
+        "modal_confirm": "Confirmar",
+        "manual_code_separator": "ou, insira o código manualmente",
+        "recovery_title": "Códigos de recuperação 2FA",
+        "recovery_description": "Os códigos de recuperação permitem recuperar o acesso caso você perca seu dispositivo 2FA. Guarde-os em um gerenciador de senhas seguro.",
+        "recovery_view": "Ver códigos de recuperação",
+        "recovery_hide": "Ocultar códigos de recuperação",
+        "recovery_regenerate": "Regenerar códigos",
+        "recovery_warning": "Cada código de recuperação pode ser usado uma vez e será removido após o uso. Se precisar de mais, clique em Regenerar códigos acima."
     },
     "dashboards": {
         "title": "Painel",
