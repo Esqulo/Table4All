@@ -1,5 +1,5 @@
 import { Form, Head, Link, router } from '@inertiajs/react';
-import { Banknote, CreditCard, Clock, ImageOff, Minus, Plus, QrCode, Search, ShoppingCart, Tag, X } from 'lucide-react';
+import { ArrowLeft, Banknote, CreditCard, Clock, ImageOff, Minus, Plus, QrCode, Search, ShoppingCart, Tag, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import QueueItemController from '@/actions/App/Http/Controllers/Restaurant/QueueItemController';
@@ -207,9 +207,16 @@ export default function ManageOrder({ table, products, orderLines, activeSales, 
             />
 
             <div className="mx-auto max-w-4xl space-y-6 p-6">
-                <div>
-                    <h1 className="text-xl font-semibold">{table.title}</h1>
-                    <p className="mt-0.5 text-sm text-muted-foreground">{t('tables.manage_products')}</p>
+                <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="icon" asChild>
+                        <Link href={TableController.index.url()}>
+                            <ArrowLeft className="h-4 w-4" />
+                        </Link>
+                    </Button>
+                    <div>
+                        <h1 className="text-xl font-semibold">{table.title}</h1>
+                        <p className="mt-0.5 text-sm text-muted-foreground">{t('tables.manage_products')}</p>
+                    </div>
                 </div>
 
                 {/* ── Queue items section ── */}
@@ -417,9 +424,7 @@ export default function ManageOrder({ table, products, orderLines, activeSales, 
                             </Button>
                         )}
                     </Form>
-                    <Button variant="ghost" size="sm" className="w-full" asChild>
-                        <Link href={TableController.index.url()}>{t('tables.cancel')}</Link>
-                    </Button>
+
                 </div>
             </div>
         </>
