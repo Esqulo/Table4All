@@ -305,7 +305,29 @@ export default function ManageOrder({ table, products, orderLines, activeSales, 
                                                 <Minus className="h-3 w-3" />
                                             </Button>
                                             <span className="w-6 text-center text-sm tabular-nums">{line.quantity}</span>
-                                            <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => adjust(key, +1)}>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="icon"
+                                                className="h-7 w-7"
+                                                onClick={() => {
+                                                    const currentPrice = effectivePriceFor(line.productId);
+                                                    if (currentPrice !== line.price) {
+                                                        // Redirect the addition to the current-price line.
+                                                        const targetKey = lineKey(line.productId, currentPrice);
+                                                        setOrderState((prev) => ({
+                                                            ...prev,
+                                                            [targetKey]: {
+                                                                productId: line.productId,
+                                                                price: currentPrice,
+                                                                quantity: (prev[targetKey]?.quantity ?? 0) + 1,
+                                                            },
+                                                        }));
+                                                    } else {
+                                                        adjust(key, +1);
+                                                    }
+                                                }}
+                                            >
                                                 <Plus className="h-3 w-3" />
                                             </Button>
                                         </div>
