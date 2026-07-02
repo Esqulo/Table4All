@@ -62,6 +62,7 @@
     },
     "nav": {
         "dashboard": "Painel",
+        "dashboards": "Painel",
         "categories": "Categorias",
         "menus": "Cardápio",
         "tables": "Mesas",
@@ -381,6 +382,23 @@
         "type_scheduled": "Evento (data única)",
         "starts_at_label": "Data e hora de início",
         "ends_at_label": "Data e hora de término"
+    },
+    "dashboards": {
+        "title": "Painel",
+        "breadcrumb_index": "Painel",
+        "period_7": "7 dias",
+        "period_30": "30 dias",
+        "period_90": "90 dias",
+        "total_revenue": "Receita Total",
+        "tables_closed": "Mesas Fechadas",
+        "items_sold": "Itens Vendidos",
+        "avg_table_revenue": "Ticket Médio",
+        "revenue_by_day": "Receita por Dia",
+        "top_products": "Produtos Mais Vendidos",
+        "payment_methods": "Formas de Pagamento",
+        "recent_tables": "Mesas Fechadas Recentemente",
+        "no_data": "Nenhum dado para este período.",
+        "items": "itens"
     },
     "language": {
         "toggle_label": "Idioma",

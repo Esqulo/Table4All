@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid, ListOrdered, Percent, ScrollText, ShoppingBag, Tag, Users, UtensilsCrossed } from 'lucide-react';
+import { BarChart3, BookOpen, FolderGit2, LayoutGrid, ListOrdered, Percent, ScrollText, ShoppingBag, Tag, Users, UtensilsCrossed } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -15,6 +15,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import CategoryController from '@/actions/App/Http/Controllers/Admin/CategoryController';
+import DashboardController from '@/actions/App/Http/Controllers/Restaurant/DashboardController';
 import MenuController from '@/actions/App/Http/Controllers/Restaurant/MenuController';
 import ProductController from '@/actions/App/Http/Controllers/Restaurant/ProductController';
 import QueueController from '@/actions/App/Http/Controllers/Restaurant/QueueController';
@@ -41,6 +42,11 @@ export function AppSidebar() {
           ]
         : isRestaurant
           ? [
+                {
+                    title: t('nav.dashboards'),
+                    href: DashboardController.index.url(),
+                    icon: BarChart3,
+                },
                 {
                     title: t('nav.tables'),
                     href: TableController.index.url(),
