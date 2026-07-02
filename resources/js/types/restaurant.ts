@@ -56,6 +56,18 @@ export type OrderItem = Pick<Product, 'id' | 'name' | 'picture' | 'picture_url' 
     pivot: { quantity: number };
 };
 
+// A single priced line in a table's order (one row in restaurant_table_product).
+// The same product can appear more than once if it was ordered at different prices.
+export type TableOrderLine = {
+    id: number;
+    name: string;
+    picture: string | null;
+    picture_url: string | null;
+    price_type: PriceType;
+    price: number;
+    quantity: number;
+};
+
 export type QueueItemStatus = 'pending' | 'done' | 'delivered';
 
 export type QueueItem = {
@@ -73,6 +85,7 @@ export type QueueItem = {
     queue: { id: number; name: string };
     restaurant_table?: { id: number; title: string };
     quantity: number;
+    price: number;
     status: QueueItemStatus;
     created_at: string;
     updated_at: string;

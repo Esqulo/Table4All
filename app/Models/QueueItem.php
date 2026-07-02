@@ -16,6 +16,7 @@ final class QueueItem extends Model
         'product_id',
         'queue_id',
         'quantity',
+        'price',
         'status',
     ];
 

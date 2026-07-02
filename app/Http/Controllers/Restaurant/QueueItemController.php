@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\QueueItem;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class QueueItemController extends Controller
@@ -43,15 +44,28 @@ class QueueItemController extends Controller
         $queueItem->update(['status' => QueueItemStatus::DELIVERED]);
 
         $table = $queueItem->restaurantTable;
-        $existingProduct = $table->products()->withPivot('quantity')->find($queueItem->product_id);
+        $price = (float) $queueItem->price;
 
-        if ($existingProduct) {
-            $table->products()->updateExistingPivot($queueItem->product_id, [
-                'quantity' => (int) $existingProduct->pivot->getAttribute('quantity') + $queueItem->quantity,
-            ]);
+        // Match by (product_id, price) so happy-hour and regular orders
+        // remain as separate lines in the table's order.
+        $existing = DB::table('restaurant_table_product')
+            ->where('restaurant_table_id', $table->id)
+            ->where('product_id', $queueItem->product_id)
+            ->where('price', $price)
+            ->first();
+
+        if ($existing) {
+            DB::table('restaurant_table_product')
+                ->where('restaurant_table_id', $table->id)
+                ->where('product_id', $queueItem->product_id)
+                ->where('price', $price)
+                ->update(['quantity' => $existing->quantity + $queueItem->quantity]);
         } else {
-            $table->products()->attach($queueItem->product_id, [
-                'quantity' => $queueItem->quantity,
+            DB::table('restaurant_table_product')->insert([
+                'restaurant_table_id' => $table->id,
+                'product_id'          => $queueItem->product_id,
+                'price'               => $price,
+                'quantity'            => $queueItem->quantity,
             ]);
         }
 

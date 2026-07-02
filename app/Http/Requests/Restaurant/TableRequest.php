@@ -11,15 +11,19 @@ class TableRequest extends FormRequest
         return true;
     }
 
-    /** @return array<string, array<int, string>> */
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         return [
-            'title'           => ['sometimes', 'required', 'string', 'max:255'],
-            'products'        => ['nullable', 'array'],
-            'products.*'      => ['integer'],
-            'queue_additions'    => ['nullable', 'array'],
-            'queue_additions.*'  => ['integer'],
+            'title'                        => ['sometimes', 'required', 'string', 'max:255'],
+            'products'                     => ['nullable', 'array'],
+            'products.*.product_id'        => ['required', 'integer'],
+            'products.*.price'             => ['required', 'numeric', 'min:0'],
+            'products.*.quantity'          => ['required', 'integer', 'min:1'],
+            'queue_additions'              => ['nullable', 'array'],
+            'queue_additions.*.product_id' => ['required', 'integer'],
+            'queue_additions.*.price'      => ['required', 'numeric', 'min:0'],
+            'queue_additions.*.quantity'   => ['required', 'integer', 'min:1'],
         ];
     }
 }

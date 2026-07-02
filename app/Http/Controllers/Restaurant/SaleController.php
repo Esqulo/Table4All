@@ -38,8 +38,11 @@ class SaleController extends Controller
 
     public function store(SaleRequest $request): RedirectResponse
     {
+        $data = $request->validated();
+        $data['days'] = array_map('intval', $data['days']);
+
         Sale::create([
-            ...$request->validated(),
+            ...$data,
             'user_id' => $request->user()->id,
         ]);
 
@@ -66,7 +69,10 @@ class SaleController extends Controller
     {
         abort_unless($sale->user_id === $request->user()->id, 403);
 
-        $sale->update($request->validated());
+        $data = $request->validated();
+        $data['days'] = array_map('intval', $data['days']);
+
+        $sale->update($data);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'sales.msg_updated']);
 
