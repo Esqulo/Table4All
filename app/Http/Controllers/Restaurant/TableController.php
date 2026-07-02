@@ -101,11 +101,21 @@ class TableController extends Controller
         $now         = now();
         $currentDay  = (int) $now->dayOfWeek;
         $currentTime = $now->format('H:i:s');
+        $nowDatetime = $now->format('Y-m-d H:i:s');
 
         $activeSales = Sale::where('user_id', $request->user()->effectiveRestaurantId())
-            ->whereJsonContains('days', [$currentDay])
-            ->where('start_time', '<=', $currentTime)
-            ->where('end_time', '>=', $currentTime)
+            ->where(function ($q) use ($currentDay, $currentTime, $nowDatetime) {
+                $q->where(function ($q) use ($currentDay, $currentTime) {
+                    $q->where('type', 'periodic')
+                      ->whereJsonContains('days', [$currentDay])
+                      ->where('start_time', '<=', $currentTime)
+                      ->where('end_time', '>=', $currentTime);
+                })->orWhere(function ($q) use ($nowDatetime) {
+                    $q->where('type', 'scheduled')
+                      ->where('starts_at', '<=', $nowDatetime)
+                      ->where('ends_at', '>=', $nowDatetime);
+                });
+            })
             ->get(['product_id', 'sale_price']);
 
         $queueItems = QueueItem::where('restaurant_table_id', $table->id)

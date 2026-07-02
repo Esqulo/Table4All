@@ -10,10 +10,13 @@ final class Sale extends Model
     protected $fillable = [
         'user_id',
         'product_id',
+        'type',
         'sale_price',
         'days',
         'start_time',
         'end_time',
+        'starts_at',
+        'ends_at',
     ];
 
     /** @return BelongsTo<Product, $this> */
@@ -33,6 +36,8 @@ final class Sale extends Model
         return [
             'sale_price' => 'float',
             'days'       => 'array',
+            'starts_at'  => 'datetime',
+            'ends_at'    => 'datetime',
         ];
     }
 }

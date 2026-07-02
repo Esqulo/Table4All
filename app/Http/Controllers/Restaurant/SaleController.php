@@ -17,7 +17,9 @@ class SaleController extends Controller
     {
         $sales = Sale::where('user_id', $request->user()->id)
             ->with('product:id,name,price,price_type')
+            ->orderBy('type')
             ->orderBy('start_time')
+            ->orderBy('starts_at')
             ->get();
 
         return Inertia::render('restaurant/sales', [
@@ -39,7 +41,7 @@ class SaleController extends Controller
     public function store(SaleRequest $request): RedirectResponse
     {
         $data = $request->validated();
-        $data['days'] = array_map('intval', $data['days']);
+        $data = $this->normalizeByType($data);
 
         Sale::create([
             ...$data,
@@ -70,13 +72,29 @@ class SaleController extends Controller
         abort_unless($sale->user_id === $request->user()->id, 403);
 
         $data = $request->validated();
-        $data['days'] = array_map('intval', $data['days']);
+        $data = $this->normalizeByType($data);
 
         $sale->update($data);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'sales.msg_updated']);
 
         return to_route('restaurant.sales.index');
+    }
+
+    /** Null out fields that don't belong to this sale type and cast days to ints. */
+    private function normalizeByType(array $data): array
+    {
+        if (($data['type'] ?? 'periodic') === 'periodic') {
+            $data['days']       = array_map('intval', $data['days'] ?? []);
+            $data['starts_at']  = null;
+            $data['ends_at']    = null;
+        } else {
+            $data['days']       = null;
+            $data['start_time'] = null;
+            $data['end_time']   = null;
+        }
+
+        return $data;
     }
 
     public function destroy(Request $request, Sale $sale): RedirectResponse

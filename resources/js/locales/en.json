@@ -375,7 +375,12 @@
         "day_3": "Wed",
         "day_4": "Thu",
         "day_5": "Fri",
-        "day_6": "Sat"
+        "day_6": "Sat",
+        "type_label": "Sale type",
+        "type_periodic": "Happy hour (recurring)",
+        "type_scheduled": "Event (one-time)",
+        "starts_at_label": "Start date & time",
+        "ends_at_label": "End date & time"
     },
     "language": {
         "toggle_label": "Language",

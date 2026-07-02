@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import type { Product } from '@/types';
+import type { Product, SaleType } from '@/types';
 
 type ProductOption = Pick<Product, 'id' | 'name' | 'price' | 'price_type'>;
 
@@ -18,6 +18,15 @@ type Props = {
 };
 
 const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6] as const;
+
+// Parse a datetime-local string (local time) and return UTC ISO string.
+function localToUtcIso(localStr: string): string {
+    if (!localStr) return '';
+    const [datePart, timePart] = localStr.split('T');
+    const [y, m, d] = datePart.split('-').map(Number);
+    const [h, min] = timePart.split(':').map(Number);
+    return new Date(y, m - 1, d, h, min).toISOString();
+}
 
 // ─── Searchable product combobox ──────────────────────────────────────────────
 
@@ -159,10 +168,40 @@ function DayPicker({ error }: { error?: string }) {
     );
 }
 
+// ─── UTC datetime field ───────────────────────────────────────────────────────
+// Shows local time to the user; submits a hidden field with the UTC ISO string.
+
+function DatetimeField({
+    name,
+    label,
+    error,
+}: {
+    name: string;
+    label: string;
+    error?: string;
+}) {
+    const [local, setLocal] = useState('');
+
+    return (
+        <div className="grid gap-2">
+            <Label htmlFor={name}>{label}</Label>
+            <input type="hidden" name={name} value={localToUtcIso(local)} />
+            <Input
+                id={name}
+                type="datetime-local"
+                value={local}
+                onChange={(e) => setLocal(e.target.value)}
+            />
+            <InputError message={error} />
+        </div>
+    );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function CreateSale({ products }: Props) {
     const { t } = useTranslation();
+    const [saleType, setSaleType] = useState<SaleType>('periodic');
 
     return (
         <>
@@ -177,6 +216,26 @@ export default function CreateSale({ products }: Props) {
                 >
                     {({ processing, errors }) => (
                         <>
+                            <input type="hidden" name="type" value={saleType} />
+
+                            <div className="grid gap-2">
+                                <Label>{t('sales.type_label')}</Label>
+                                <ToggleGroup
+                                    type="single"
+                                    variant="outline"
+                                    value={saleType}
+                                    onValueChange={(v) => v && setSaleType(v as SaleType)}
+                                    className="justify-start gap-1"
+                                >
+                                    <ToggleGroupItem value="periodic" className="text-sm px-4">
+                                        {t('sales.type_periodic')}
+                                    </ToggleGroupItem>
+                                    <ToggleGroupItem value="scheduled" className="text-sm px-4">
+                                        {t('sales.type_scheduled')}
+                                    </ToggleGroupItem>
+                                </ToggleGroup>
+                            </div>
+
                             <div className="grid gap-2">
                                 <Label htmlFor="product_id">{t('sales.product_label')}</Label>
                                 <ProductCombobox products={products} error={errors.product_id} />
@@ -189,34 +248,51 @@ export default function CreateSale({ products }: Props) {
                                 <InputError message={errors.sale_price} />
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label>{t('sales.days_label')}</Label>
-                                <DayPicker error={errors.days} />
-                            </div>
+                            {saleType === 'periodic' && (
+                                <>
+                                    <div className="grid gap-2">
+                                        <Label>{t('sales.days_label')}</Label>
+                                        <DayPicker error={errors.days} />
+                                    </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="grid gap-2">
-                                    <Label htmlFor="start_time">{t('sales.start_time_label')}</Label>
-                                    <Input
-                                        id="start_time"
-                                        name="start_time"
-                                        type="time"
-                                        required
-                                    />
-                                    <InputError message={errors.start_time} />
-                                </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="start_time">{t('sales.start_time_label')}</Label>
+                                            <Input
+                                                id="start_time"
+                                                name="start_time"
+                                                type="time"
+                                            />
+                                            <InputError message={errors.start_time} />
+                                        </div>
 
-                                <div className="grid gap-2">
-                                    <Label htmlFor="end_time">{t('sales.end_time_label')}</Label>
-                                    <Input
-                                        id="end_time"
-                                        name="end_time"
-                                        type="time"
-                                        required
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="end_time">{t('sales.end_time_label')}</Label>
+                                            <Input
+                                                id="end_time"
+                                                name="end_time"
+                                                type="time"
+                                            />
+                                            <InputError message={errors.end_time} />
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
+                            {saleType === 'scheduled' && (
+                                <div className="grid grid-cols-2 gap-4">
+                                    <DatetimeField
+                                        name="starts_at"
+                                        label={t('sales.starts_at_label')}
+                                        error={errors.starts_at}
                                     />
-                                    <InputError message={errors.end_time} />
+                                    <DatetimeField
+                                        name="ends_at"
+                                        label={t('sales.ends_at_label')}
+                                        error={errors.ends_at}
+                                    />
                                 </div>
-                            </div>
+                            )}
 
                             <div className="flex gap-3 pt-2">
                                 <Button type="submit" disabled={processing}>

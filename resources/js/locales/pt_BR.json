@@ -375,7 +375,12 @@
         "day_3": "Qua",
         "day_4": "Qui",
         "day_5": "Sex",
-        "day_6": "Sáb"
+        "day_6": "Sáb",
+        "type_label": "Tipo de promoção",
+        "type_periodic": "Happy hour (recorrente)",
+        "type_scheduled": "Evento (data única)",
+        "starts_at_label": "Data e hora de início",
+        "ends_at_label": "Data e hora de término"
     },
     "language": {
         "toggle_label": "Idioma",

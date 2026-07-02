@@ -13,11 +13,14 @@ type Props = {
 
 function isActiveNow(sale: Sale): boolean {
     const now = new Date();
-    const currentDay = now.getDay(); // 0=Sun … 6=Sat
+    if (sale.type === 'scheduled') {
+        if (!sale.starts_at || !sale.ends_at) return false;
+        return now >= new Date(sale.starts_at) && now <= new Date(sale.ends_at);
+    }
+    if (!sale.days || !sale.start_time || !sale.end_time) return false;
+    const currentDay = now.getDay();
     const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    const start = sale.start_time.slice(0, 5); // "HH:MM"
-    const end = sale.end_time.slice(0, 5);
-    return sale.days.includes(currentDay) && currentTime >= start && currentTime < end;
+    return sale.days.includes(currentDay) && currentTime >= sale.start_time.slice(0, 5) && currentTime < sale.end_time.slice(0, 5);
 }
 
 function formatCurrency(value: number) {
@@ -58,6 +61,13 @@ export default function Sales({ sales }: Props) {
     );
 }
 
+function formatDatetime(iso: string) {
+    return new Intl.DateTimeFormat('pt-BR', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit',
+    }).format(new Date(iso));
+}
+
 function SaleRow({ sale }: { sale: Sale }) {
     const { t } = useTranslation();
     const active = isActiveNow(sale);
@@ -66,13 +76,17 @@ function SaleRow({ sale }: { sale: Sale }) {
         ? Math.round((1 - sale.sale_price / sale.product.price) * 100)
         : 0;
 
-    const dayLabels = sale.days
-        .slice()
-        .sort((a, b) => a - b)
-        .map((d) => t(`sales.day_${d}`))
-        .join(', ');
-
-    const timeRange = `${sale.start_time.slice(0, 5)} – ${sale.end_time.slice(0, 5)}`;
+    const scheduleLabel = sale.type === 'scheduled'
+        ? (sale.starts_at && sale.ends_at
+            ? `${formatDatetime(sale.starts_at)} – ${formatDatetime(sale.ends_at)}`
+            : '')
+        : (() => {
+            const days = (sale.days ?? []).slice().sort((a, b) => a - b).map((d) => t(`sales.day_${d}`)).join(', ');
+            const time = sale.start_time && sale.end_time
+                ? `${sale.start_time.slice(0, 5)} – ${sale.end_time.slice(0, 5)}`
+                : '';
+            return [days, time].filter(Boolean).join(' · ');
+        })();
 
     return (
         <div className="flex items-center gap-4 px-4 py-3">
@@ -95,10 +109,12 @@ function SaleRow({ sale }: { sale: Sale }) {
                         {' '}
                         <span className="font-semibold text-primary">{formatCurrency(sale.sale_price)}</span>
                     </span>
-                    <span className="hidden sm:inline">·</span>
-                    <span>{dayLabels}</span>
-                    <span className="hidden sm:inline">·</span>
-                    <span>{timeRange}</span>
+                    {scheduleLabel && (
+                        <>
+                            <span className="hidden sm:inline">·</span>
+                            <span>{scheduleLabel}</span>
+                        </>
+                    )}
                 </div>
             </div>
 

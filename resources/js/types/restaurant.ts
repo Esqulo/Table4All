@@ -106,15 +106,22 @@ export type TablePayment = {
     created_at: string;
 };
 
+export type SaleType = 'periodic' | 'scheduled';
+
 export type Sale = {
     id: number;
     user_id: number;
     product_id: number;
     product: Pick<Product, 'id' | 'name' | 'price' | 'price_type'>;
+    type: SaleType;
     sale_price: number;
-    days: number[];       // 0=Sun, 1=Mon, …, 6=Sat
-    start_time: string;   // "HH:MM:SS"
-    end_time: string;     // "HH:MM:SS"
+    // periodic
+    days: number[] | null;
+    start_time: string | null;
+    end_time: string | null;
+    // scheduled
+    starts_at: string | null;
+    ends_at: string | null;
     created_at: string;
     updated_at: string;
 };
