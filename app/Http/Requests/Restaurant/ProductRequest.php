@@ -13,6 +13,14 @@ class ProductRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'category_id' => $this->category_id !== '' ? $this->category_id : null,
+            'queue_id'    => $this->queue_id !== '' ? $this->queue_id : null,
+        ]);
+    }
+
     /** @return array<string, mixed> */
     public function rules(): array
     {

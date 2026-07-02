@@ -89,6 +89,7 @@ export default function CreateProduct({ categories, queues }: Props) {
                                             <SelectValue placeholder={t('products.category_none')} />
                                         </SelectTrigger>
                                         <SelectContent>
+                                            <SelectItem value="">{t('products.category_none')}</SelectItem>
                                             {categories.map((cat) => (
                                                 <SelectItem key={cat.id} value={String(cat.id)}>
                                                     {cat.name}
@@ -108,6 +109,7 @@ export default function CreateProduct({ categories, queues }: Props) {
                                             <SelectValue placeholder={t('products.queue_none')} />
                                         </SelectTrigger>
                                         <SelectContent>
+                                            <SelectItem value="">{t('products.queue_none')}</SelectItem>
                                             {queues.map((q) => (
                                                 <SelectItem key={q.id} value={String(q.id)}>
                                                     {q.name}
