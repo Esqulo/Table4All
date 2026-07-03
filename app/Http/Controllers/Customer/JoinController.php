@@ -87,6 +87,7 @@ class JoinController extends Controller
                 'name'       => $item->product->name,
                 'price'      => (float) $item->price,
                 'quantity'   => (int) $item->quantity,
+                'has_queue'  => $item->queue_id !== null,
                 'ordered_by' => $item->orderedBy?->name ?? $item->orderedBy?->email ?? null,
             ]);
 
@@ -136,33 +137,17 @@ class JoinController extends Controller
                 continue;
             }
 
-            if ($product->queue_id) {
-                QueueItem::create([
-                    'restaurant_table_id' => $table->id,
-                    'product_id'          => $product->id,
-                    'queue_id'            => $product->queue_id,
-                    'ordered_by_user_id'  => $userId,
-                    'quantity'            => $quantity,
-                    'price'               => (float) $product->price,
-                    'status'              => QueueItemStatus::PENDING->value,
-                ]);
-            } else {
-                $affected = DB::table('restaurant_table_product')
-                    ->where('restaurant_table_id', $table->id)
-                    ->where('product_id', $product->id)
-                    ->where('ordered_by_user_id', $userId)
-                    ->increment('quantity', $quantity);
-
-                if ($affected === 0) {
-                    DB::table('restaurant_table_product')->insert([
-                        'restaurant_table_id' => $table->id,
-                        'product_id'          => $product->id,
-                        'ordered_by_user_id'  => $userId,
-                        'quantity'            => $quantity,
-                        'price'               => (float) $product->price,
-                    ]);
-                }
-            }
+            // All customer orders go through queue_items (queue_id is null for non-kitchen products).
+            // Items reach restaurant_table_product only after a waiter marks them as delivered.
+            QueueItem::create([
+                'restaurant_table_id' => $table->id,
+                'product_id'          => $product->id,
+                'queue_id'            => $product->queue_id ?: null,
+                'ordered_by_user_id'  => $userId,
+                'quantity'            => $quantity,
+                'price'               => (float) $product->price,
+                'status'              => QueueItemStatus::PENDING->value,
+            ]);
         }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'join_table.order_success']);

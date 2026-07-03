@@ -244,10 +244,10 @@ export default function ManageOrder({ table, products, orderLines, activeSales, 
                                     <div className="min-w-0 flex-1">
                                         <p className="truncate text-sm font-medium">{item.product.name}</p>
                                         <p className="text-xs text-muted-foreground">
-                                            {item.queue.name} · x{item.quantity} · {fmt(item.price)}
+                                            {item.queue ? `${item.queue.name} · ` : ''}x{item.quantity} · {fmt(item.price)}
                                         </p>
                                     </div>
-                                    {item.status === 'pending' ? (
+                                    {item.status === 'pending' && item.queue_id !== null ? (
                                         <Form {...QueueItemController.markDone.form({ queueItem: item.id })}>
                                             {({ processing }) => (
                                                 <Button type="submit" size="sm" variant="outline" disabled={processing} className="shrink-0">
@@ -256,7 +256,7 @@ export default function ManageOrder({ table, products, orderLines, activeSales, 
                                                 </Button>
                                             )}
                                         </Form>
-                                    ) : (
+                                    ) : item.status !== 'delivered' ? (
                                         <Form {...QueueItemController.markDelivered.form({ queueItem: item.id })}>
                                             {({ processing }) => (
                                                 <Button type="submit" size="sm" disabled={processing} className="shrink-0">
@@ -264,7 +264,7 @@ export default function ManageOrder({ table, products, orderLines, activeSales, 
                                                 </Button>
                                             )}
                                         </Form>
-                                    )}
+                                    ) : null}
                                 </div>
                             ))}
                         </div>

@@ -36,7 +36,7 @@ type OrderLine = {
     ordered_by: string | null;
 };
 
-type PreparingItem = { name: string; price: number; quantity: number; ordered_by: string | null };
+type PreparingItem = { name: string; price: number; quantity: number; ordered_by: string | null; has_queue: boolean };
 
 type Props = {
     code: string;
@@ -170,38 +170,23 @@ export default function CustomerShow({ code, menu, products, preparing, total, p
                             </Button>
                         </div>
 
-                        {preparing.length > 0 && (
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                    <span className="relative flex h-2 w-2 shrink-0">
-                                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
-                                        <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
-                                    </span>
-                                    <p className="text-xs font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400">
-                                        {t('join_table.preparing_title')}
-                                    </p>
-                                </div>
-                                <div className="divide-y divide-amber-100 rounded-xl border border-amber-200 bg-amber-50 dark:divide-amber-900/40 dark:border-amber-900/50 dark:bg-amber-950/20">
-                                    {preparing.map((item, i) => (
-                                        <div key={i} className="flex items-center justify-between px-4 py-2.5 text-sm">
-                                            <div>
-                                                <span>
-                                                    {item.name}
-                                                    {item.quantity > 1 && (
-                                                        <span className="ml-1 text-xs text-amber-500">×{item.quantity}</span>
-                                                    )}
-                                                </span>
-                                                {item.ordered_by && (
-                                                    <p className="text-xs text-amber-500/80">{item.ordered_by}</p>
-                                                )}
-                                            </div>
-                                            <span className="font-medium tabular-nums text-amber-700 dark:text-amber-300">
-                                                {fmt(item.price)}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
+                        {preparing.some((i) => i.has_queue) && (
+                            <PreparingSection
+                                items={preparing.filter((i) => i.has_queue)}
+                                fmt={fmt}
+                                label={t('join_table.preparing_title')}
+                                colorClass="amber"
+                                pulse
+                            />
+                        )}
+
+                        {preparing.some((i) => !i.has_queue) && (
+                            <PreparingSection
+                                items={preparing.filter((i) => !i.has_queue)}
+                                fmt={fmt}
+                                label={t('join_table.pending_delivery_title')}
+                                colorClass="blue"
+                            />
                         )}
 
                         {products.length > 0 && (
@@ -465,6 +450,81 @@ function OrderCard({ line, fmt }: { line: OrderLine; fmt: (n: number) => string 
                     </p>
                     <span className="text-xs text-muted-foreground">× {line.quantity}</span>
                 </div>
+            </div>
+        </div>
+    );
+}
+
+function PreparingSection({
+    items,
+    fmt,
+    label,
+    colorClass,
+    pulse = false,
+}: {
+    items: PreparingItem[];
+    fmt: (n: number) => string;
+    label: string;
+    colorClass: 'amber' | 'blue';
+    pulse?: boolean;
+}) {
+    const colors = {
+        amber: {
+            dot:    'bg-amber-500',
+            ping:   'bg-amber-400',
+            label:  'text-amber-600 dark:text-amber-400',
+            border: 'border-amber-200 dark:border-amber-900/50',
+            bg:     'bg-amber-50 dark:bg-amber-950/20',
+            divide: 'divide-amber-100 dark:divide-amber-900/40',
+            qty:    'text-amber-500',
+            by:     'text-amber-500/80',
+            price:  'text-amber-700 dark:text-amber-300',
+        },
+        blue: {
+            dot:    'bg-blue-500',
+            ping:   'bg-blue-400',
+            label:  'text-blue-600 dark:text-blue-400',
+            border: 'border-blue-200 dark:border-blue-900/50',
+            bg:     'bg-blue-50 dark:bg-blue-950/20',
+            divide: 'divide-blue-100 dark:divide-blue-900/40',
+            qty:    'text-blue-500',
+            by:     'text-blue-500/80',
+            price:  'text-blue-700 dark:text-blue-300',
+        },
+    }[colorClass];
+
+    return (
+        <div className="space-y-2">
+            <div className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2 shrink-0">
+                    {pulse && (
+                        <span className={`absolute inline-flex h-full w-full animate-ping rounded-full ${colors.ping} opacity-75`} />
+                    )}
+                    <span className={`relative inline-flex h-2 w-2 rounded-full ${colors.dot}`} />
+                </span>
+                <p className={`text-xs font-semibold uppercase tracking-wide ${colors.label}`}>
+                    {label}
+                </p>
+            </div>
+            <div className={`divide-y ${colors.divide} rounded-xl border ${colors.border} ${colors.bg}`}>
+                {items.map((item, i) => (
+                    <div key={i} className="flex items-center justify-between px-4 py-2.5 text-sm">
+                        <div>
+                            <span>
+                                {item.name}
+                                {item.quantity > 1 && (
+                                    <span className={`ml-1 text-xs ${colors.qty}`}>×{item.quantity}</span>
+                                )}
+                            </span>
+                            {item.ordered_by && (
+                                <p className={`text-xs ${colors.by}`}>{item.ordered_by}</p>
+                            )}
+                        </div>
+                        <span className={`font-medium tabular-nums ${colors.price}`}>
+                            {fmt(item.price)}
+                        </span>
+                    </div>
+                ))}
             </div>
         </div>
     );
