@@ -115,9 +115,9 @@ export default function DeliveryIndex({ items }: Props) {
                                             <div className="min-w-0 flex-1">
                                                 <div className="flex items-baseline gap-1.5">
                                                     <p className="truncate text-sm font-medium">{item.product}</p>
-                                                    {item.quantity > 1 && (
-                                                        <span className="shrink-0 text-xs text-muted-foreground">×{item.quantity}</span>
-                                                    )}
+                                                    <span className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold tabular-nums text-primary-foreground">
+                                                        {item.quantity}
+                                                    </span>
                                                 </div>
                                                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                                     {item.ordered_by && (
