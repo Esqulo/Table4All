@@ -130,6 +130,7 @@ export type RestaurantTable = {
     id: number;
     user_id: number;
     title: string;
+    access_code: string | null;
     closed_at: string | null;
     products: OrderItem[];
     payments: TablePayment[];

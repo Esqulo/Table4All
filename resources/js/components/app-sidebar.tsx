@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BarChart3, BookOpen, FolderGit2, LayoutGrid, ListOrdered, Percent, ScrollText, ShoppingBag, Tag, Users, UtensilsCrossed } from 'lucide-react';
+import { BarChart3, BookOpen, FolderGit2, LayoutGrid, ListOrdered, Percent, QrCode, ScrollText, ShoppingBag, Tag, Users, UtensilsCrossed } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -15,6 +15,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import CategoryController from '@/actions/App/Http/Controllers/Admin/CategoryController';
+import CustomerJoinController from '@/actions/App/Http/Controllers/Customer/JoinController';
 import DashboardController from '@/actions/App/Http/Controllers/Restaurant/DashboardController';
 import MenuController from '@/actions/App/Http/Controllers/Restaurant/MenuController';
 import ProductController from '@/actions/App/Http/Controllers/Restaurant/ProductController';
@@ -31,6 +32,7 @@ export function AppSidebar() {
     const isAdmin = auth.user.account_type === 'admin';
     const isRestaurant = auth.user.account_type === 'restaurant';
     const isWaiter = auth.user.account_type === 'waiter';
+    const isCustomer = auth.user.account_type === 'customer';
 
     const mainNavItems: NavItem[] = isAdmin
         ? [
@@ -91,6 +93,14 @@ export function AppSidebar() {
                     icon: ShoppingBag,
                 },
             ]
+          : isCustomer
+          ? [
+                {
+                    title: t('nav.join_table'),
+                    href: CustomerJoinController.index.url(),
+                    icon: QrCode,
+                },
+            ]
           : [
                 {
                     title: t('nav.dashboard'),
@@ -118,7 +128,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={isAdmin ? CategoryController.index.url() : isRestaurant ? ProductController.index.url() : isWaiter ? TableController.index.url() : dashboard()} prefetch>
+                            <Link href={isAdmin ? CategoryController.index.url() : isRestaurant ? ProductController.index.url() : isWaiter ? TableController.index.url() : isCustomer ? CustomerJoinController.index.url() : dashboard()} prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>
