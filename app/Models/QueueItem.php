@@ -16,6 +16,7 @@ final class QueueItem extends Model
         'restaurant_table_id',
         'product_id',
         'queue_id',
+        'ordered_by_user_id',
         'quantity',
         'price',
         'status',
@@ -44,5 +45,11 @@ final class QueueItem extends Model
     public function queue(): BelongsTo
     {
         return $this->belongsTo(RestaurantQueue::class, 'queue_id');
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function orderedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'ordered_by_user_id');
     }
 }

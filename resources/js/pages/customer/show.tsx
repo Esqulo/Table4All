@@ -33,9 +33,10 @@ type OrderLine = {
     price_type: string;
     quantity: number;
     picture_url: string | null;
+    ordered_by: string | null;
 };
 
-type PreparingItem = { name: string; price: number; quantity: number };
+type PreparingItem = { name: string; price: number; quantity: number; ordered_by: string | null };
 
 type Props = {
     code: string;
@@ -183,12 +184,17 @@ export default function CustomerShow({ code, menu, products, preparing, total, p
                                 <div className="divide-y divide-amber-100 rounded-xl border border-amber-200 bg-amber-50 dark:divide-amber-900/40 dark:border-amber-900/50 dark:bg-amber-950/20">
                                     {preparing.map((item, i) => (
                                         <div key={i} className="flex items-center justify-between px-4 py-2.5 text-sm">
-                                            <span>
-                                                {item.name}
-                                                {item.quantity > 1 && (
-                                                    <span className="ml-1 text-xs text-amber-500">×{item.quantity}</span>
+                                            <div>
+                                                <span>
+                                                    {item.name}
+                                                    {item.quantity > 1 && (
+                                                        <span className="ml-1 text-xs text-amber-500">×{item.quantity}</span>
+                                                    )}
+                                                </span>
+                                                {item.ordered_by && (
+                                                    <p className="text-xs text-amber-500/80">{item.ordered_by}</p>
                                                 )}
-                                            </span>
+                                            </div>
                                             <span className="font-medium tabular-nums text-amber-700 dark:text-amber-300">
                                                 {fmt(item.price)}
                                             </span>
@@ -445,6 +451,9 @@ function OrderCard({ line, fmt }: { line: OrderLine; fmt: (n: number) => string 
                     <p className="font-medium leading-snug">{line.name}</p>
                     {line.description && (
                         <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">{line.description}</p>
+                    )}
+                    {line.ordered_by && (
+                        <p className="mt-0.5 text-xs text-muted-foreground/70">{line.ordered_by}</p>
                     )}
                 </div>
                 <div className="flex items-baseline justify-between">

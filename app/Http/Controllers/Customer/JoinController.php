@@ -54,6 +54,7 @@ class JoinController extends Controller
         $products = DB::table('restaurant_table_product')
             ->where('restaurant_table_id', $table->id)
             ->join('products', 'products.id', '=', 'restaurant_table_product.product_id')
+            ->leftJoin('users', 'users.id', '=', 'restaurant_table_product.ordered_by_user_id')
             ->select(
                 'products.id',
                 'products.name',
@@ -62,6 +63,8 @@ class JoinController extends Controller
                 'products.price_type',
                 'restaurant_table_product.price',
                 'restaurant_table_product.quantity',
+                'users.name as ordered_by_name',
+                'users.email as ordered_by_email',
             )
             ->get()
             ->map(fn ($row) => [
@@ -72,17 +75,19 @@ class JoinController extends Controller
                 'price_type'  => $row->price_type,
                 'quantity'    => (int) $row->quantity,
                 'picture_url' => $row->picture ? Storage::disk('public')->url($row->picture) : null,
+                'ordered_by'  => $row->ordered_by_name ?? $row->ordered_by_email ?? null,
             ]);
 
         $preparing = QueueItem::where('restaurant_table_id', $table->id)
             ->whereIn('status', [QueueItemStatus::PENDING->value, QueueItemStatus::DONE->value])
-            ->with('product:id,name')
+            ->with(['product:id,name', 'orderedBy:id,name,email'])
             ->orderBy('created_at')
             ->get()
             ->map(fn ($item) => [
-                'name'     => $item->product->name,
-                'price'    => (float) $item->price,
-                'quantity' => (int) $item->quantity,
+                'name'       => $item->product->name,
+                'price'      => (float) $item->price,
+                'quantity'   => (int) $item->quantity,
+                'ordered_by' => $item->orderedBy?->name ?? $item->orderedBy?->email ?? null,
             ]);
 
         $total = (float) DB::table('restaurant_table_product')
@@ -121,6 +126,8 @@ class JoinController extends Controller
             ->get()
             ->keyBy('id');
 
+        $userId = auth()->id();
+
         foreach ($validated['items'] as $item) {
             $product  = $products->get($item['product_id']);
             $quantity = $item['quantity'];
@@ -134,6 +141,7 @@ class JoinController extends Controller
                     'restaurant_table_id' => $table->id,
                     'product_id'          => $product->id,
                     'queue_id'            => $product->queue_id,
+                    'ordered_by_user_id'  => $userId,
                     'quantity'            => $quantity,
                     'price'               => (float) $product->price,
                     'status'              => QueueItemStatus::PENDING->value,
@@ -142,12 +150,14 @@ class JoinController extends Controller
                 $affected = DB::table('restaurant_table_product')
                     ->where('restaurant_table_id', $table->id)
                     ->where('product_id', $product->id)
+                    ->where('ordered_by_user_id', $userId)
                     ->increment('quantity', $quantity);
 
                 if ($affected === 0) {
                     DB::table('restaurant_table_product')->insert([
                         'restaurant_table_id' => $table->id,
                         'product_id'          => $product->id,
+                        'ordered_by_user_id'  => $userId,
                         'quantity'            => $quantity,
                         'price'               => (float) $product->price,
                     ]);
