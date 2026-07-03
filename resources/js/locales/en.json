@@ -406,6 +406,10 @@
         "all_categories": "All",
         "other_category": "Other",
         "no_products": "No products available.",
+        "confirm_order": "Place Order",
+        "review_title": "Review Order",
+        "next": "Next",
+        "back": "Back",
         "qr_button": "QR Code",
         "qr_dialog_title": "Table QR Code",
         "qr_dialog_description": "Print or display this for customers to join the table.",
@@ -420,6 +424,7 @@
         "products_title": "Items on the table",
         "preparing_title": "Preparing",
         "my_order": "My Order",
+        "search_placeholder": "Search products...",
         "order_button": "Order",
         "order_success": "Item added to your order"
     },

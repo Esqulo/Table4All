@@ -1,6 +1,6 @@
 import { Head, router } from '@inertiajs/react';
-import { ImageOff, Minus, Plus, ShoppingBag } from 'lucide-react';
-import { useState } from 'react';
+import { ImageOff, Minus, Plus, Search, ShoppingBag } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import JoinController from '@/actions/App/Http/Controllers/Customer/JoinController';
 import { Button } from '@/components/ui/button';
@@ -10,9 +10,13 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 type MenuItem = {
     id: number;
+    category_id: number | null;
+    category_name: string | null;
     name: string;
     description: string | null;
     price: number;
@@ -48,17 +52,102 @@ export default function CustomerShow({ code, menu, products, preparing, total, p
     const locale = i18n.language === 'pt_BR' ? 'pt-BR' : 'en-US';
     const [people, setPeople] = useState(1);
     const [menuOpen, setMenuOpen] = useState(false);
+    const [search, setSearch] = useState('');
+    const [activeCategory, setActiveCategory] = useState<number | null>(null);
+    const [cart, setCart] = useState<Record<number, number>>({});
+    const [step, setStep] = useState<'menu' | 'review'>('menu');
+    const [submitting, setSubmitting] = useState(false);
+
+    const categories = useMemo(() => {
+        const seen = new Set<number>();
+        return menu
+            .filter((item) => item.category_id !== null && item.category_name !== null)
+            .filter((item) => {
+                if (seen.has(item.category_id!)) return false;
+                seen.add(item.category_id!);
+                return true;
+            })
+            .map((item) => ({ id: item.category_id!, name: item.category_name! }));
+    }, [menu]);
+
+    const filteredMenu = useMemo(() => {
+        const q = search.trim().toLowerCase();
+        return menu.filter((item) => {
+            const matchesSearch =
+                q === '' ||
+                item.name.toLowerCase().includes(q) ||
+                (item.description?.toLowerCase().includes(q) ?? false);
+            const matchesCategory =
+                activeCategory === null || item.category_id === activeCategory;
+            return matchesSearch && matchesCategory;
+        });
+    }, [menu, search, activeCategory]);
+
+    const totalCartItems = useMemo(
+        () => Object.values(cart).reduce((sum, qty) => sum + qty, 0),
+        [cart],
+    );
 
     const fmt = (n: number) =>
         new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL' }).format(n);
 
     const perPerson = people > 0 ? remaining / people : 0;
 
-    function addToOrder(productId: number) {
+    function increment(id: number) {
+        setCart((prev) => ({ ...prev, [id]: (prev[id] ?? 0) + 1 }));
+    }
+
+    function decrement(id: number) {
+        setCart((prev) => {
+            if ((prev[id] ?? 0) <= 1) {
+                const next = { ...prev };
+                delete next[id];
+                return next;
+            }
+            return { ...prev, [id]: prev[id] - 1 };
+        });
+    }
+
+    const cartLines = useMemo(
+        () =>
+            Object.entries(cart)
+                .map(([id, qty]) => {
+                    const item = menu.find((m) => m.id === Number(id));
+                    return item ? { item, quantity: qty } : null;
+                })
+                .filter(Boolean) as { item: MenuItem; quantity: number }[],
+        [cart, menu],
+    );
+
+    const cartTotal = useMemo(
+        () => cartLines.reduce((sum, { item, quantity }) => sum + item.price * quantity, 0),
+        [cartLines],
+    );
+
+    function closeModal() {
+        setMenuOpen(false);
+        setCart({});
+        setStep('menu');
+        setSearch('');
+        setActiveCategory(null);
+    }
+
+    function submitOrder() {
+        if (totalCartItems === 0 || submitting) return;
+        setSubmitting(true);
         router.post(
             JoinController.order.url(code),
-            { product_id: productId },
-            { preserveScroll: true, preserveState: true },
+            {
+                items: Object.entries(cart).map(([productId, quantity]) => ({
+                    product_id: Number(productId),
+                    quantity,
+                })),
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => closeModal(),
+                onFinish: () => setSubmitting(false),
+            },
         );
     }
 
@@ -187,24 +276,139 @@ export default function CustomerShow({ code, menu, products, preparing, total, p
             </div>
 
             {/* Order modal */}
-            <Dialog open={menuOpen} onOpenChange={setMenuOpen}>
+            <Dialog open={menuOpen} onOpenChange={(open) => { if (!open) closeModal(); else setMenuOpen(true); }}>
                 <DialogContent className="flex max-h-[85vh] flex-col gap-0 p-0 sm:max-w-lg">
                     <DialogHeader className="shrink-0 border-b border-border px-6 py-4">
-                        <DialogTitle>{t('join_table.menu_title')}</DialogTitle>
+                        <DialogTitle>
+                            {step === 'menu' ? t('join_table.menu_title') : t('join_table.review_title')}
+                        </DialogTitle>
                     </DialogHeader>
-                    <div className="flex-1 overflow-y-auto">
-                        {menu.length === 0 ? (
-                            <p className="py-12 text-center text-sm text-muted-foreground">
-                                {t('join_table.no_products')}
-                            </p>
-                        ) : (
-                            <div className="divide-y divide-border">
-                                {menu.map((item) => (
-                                    <MenuRow key={item.id} item={item} fmt={fmt} onAdd={addToOrder} />
-                                ))}
+
+                    {step === 'menu' ? (
+                        <>
+                            {/* Search + category filters */}
+                            <div className="shrink-0 space-y-3 border-b border-border px-4 py-3">
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Input
+                                        placeholder={t('join_table.search_placeholder')}
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        className="pl-9"
+                                    />
+                                </div>
+
+                                {categories.length > 0 && (
+                                    <div className="flex gap-1.5 overflow-x-auto scrollbar-none pb-0.5">
+                                        <button
+                                            onClick={() => setActiveCategory(null)}
+                                            className={cn(
+                                                'shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors',
+                                                activeCategory === null
+                                                    ? 'bg-primary text-primary-foreground'
+                                                    : 'bg-muted text-muted-foreground hover:bg-muted/80',
+                                            )}
+                                        >
+                                            {t('join_table.all_categories')}
+                                        </button>
+                                        {categories.map((cat) => (
+                                            <button
+                                                key={cat.id}
+                                                onClick={() => setActiveCategory(cat.id)}
+                                                className={cn(
+                                                    'shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors',
+                                                    activeCategory === cat.id
+                                                        ? 'bg-primary text-primary-foreground'
+                                                        : 'bg-muted text-muted-foreground hover:bg-muted/80',
+                                                )}
+                                            >
+                                                {cat.name}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
+
+                            {/* Product list */}
+                            <div className="flex-1 overflow-y-auto">
+                                {filteredMenu.length === 0 ? (
+                                    <p className="py-12 text-center text-sm text-muted-foreground">
+                                        {t('join_table.no_products')}
+                                    </p>
+                                ) : (
+                                    <div className="divide-y divide-border">
+                                        {filteredMenu.map((item) => (
+                                            <MenuRow
+                                                key={item.id}
+                                                item={item}
+                                                fmt={fmt}
+                                                quantity={cart[item.id] ?? 0}
+                                                onIncrement={() => increment(item.id)}
+                                                onDecrement={() => decrement(item.id)}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Next footer */}
+                            {totalCartItems > 0 && (
+                                <div className="shrink-0 border-t border-border p-4">
+                                    <Button
+                                        className="w-full gap-2"
+                                        onClick={() => setStep('review')}
+                                    >
+                                        {t('join_table.next')}
+                                        <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary-foreground/20 px-1.5 text-xs font-bold tabular-nums text-primary-foreground">
+                                            {totalCartItems}
+                                        </span>
+                                    </Button>
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <>
+                            {/* Review list */}
+                            <div className="flex-1 overflow-y-auto">
+                                <div className="divide-y divide-border">
+                                    {cartLines.map(({ item, quantity }) => (
+                                        <ReviewRow
+                                            key={item.id}
+                                            item={item}
+                                            fmt={fmt}
+                                            quantity={quantity}
+                                            onIncrement={() => increment(item.id)}
+                                            onDecrement={() => decrement(item.id)}
+                                        />
+                                    ))}
+                                </div>
+
+                                <div className="flex items-baseline justify-between border-t border-border px-4 py-3">
+                                    <span className="text-sm font-semibold">{t('join_table.total')}</span>
+                                    <span className="text-lg font-bold tabular-nums">{fmt(cartTotal)}</span>
+                                </div>
+                            </div>
+
+                            {/* Confirm footer */}
+                            <div className="shrink-0 grid grid-cols-2 gap-3 border-t border-border p-4">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setStep('menu')}
+                                    disabled={submitting}
+                                >
+                                    {t('join_table.back')}
+                                </Button>
+                                <Button
+                                    className="gap-2"
+                                    onClick={submitOrder}
+                                    disabled={submitting}
+                                >
+                                    <ShoppingBag className="h-4 w-4" />
+                                    {t('join_table.confirm_order')}
+                                </Button>
+                            </div>
+                        </>
+                    )}
                 </DialogContent>
             </Dialog>
         </>
@@ -257,14 +461,69 @@ function OrderCard({ line, fmt }: { line: OrderLine; fmt: (n: number) => string 
     );
 }
 
-function MenuRow({
+function ReviewRow({
     item,
     fmt,
-    onAdd,
+    quantity,
+    onIncrement,
+    onDecrement,
 }: {
     item: MenuItem;
     fmt: (n: number) => string;
-    onAdd: (id: number) => void;
+    quantity: number;
+    onIncrement: () => void;
+    onDecrement: () => void;
+}) {
+    return (
+        <div className="flex items-center gap-3 px-4 py-3">
+            <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted">
+                {item.picture_url ? (
+                    <img src={item.picture_url} alt={item.name} className="h-full w-full object-cover" />
+                ) : (
+                    <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                        <ImageOff className="h-4 w-4 opacity-30" />
+                    </div>
+                )}
+            </div>
+
+            <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{item.name}</p>
+                <p className="text-xs font-semibold text-primary tabular-nums">
+                    {fmt(item.price * quantity)}
+                </p>
+            </div>
+
+            <div className="flex shrink-0 items-center gap-1.5">
+                <button
+                    onClick={onDecrement}
+                    className="flex h-7 w-7 items-center justify-center rounded-full border border-border bg-muted text-muted-foreground transition-colors hover:bg-muted/80 active:scale-95"
+                >
+                    <Minus className="h-3.5 w-3.5" />
+                </button>
+                <span className="w-5 text-center text-sm font-bold tabular-nums">{quantity}</span>
+                <button
+                    onClick={onIncrement}
+                    className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity hover:opacity-90 active:scale-95"
+                >
+                    <Plus className="h-3.5 w-3.5" />
+                </button>
+            </div>
+        </div>
+    );
+}
+
+function MenuRow({
+    item,
+    fmt,
+    quantity,
+    onIncrement,
+    onDecrement,
+}: {
+    item: MenuItem;
+    fmt: (n: number) => string;
+    quantity: number;
+    onIncrement: () => void;
+    onDecrement: () => void;
 }) {
     const suffix: Record<string, string> = {
         unit: 'un.',
@@ -299,12 +558,30 @@ function MenuRow({
                 </p>
             </div>
 
-            <button
-                onClick={() => onAdd(item.id)}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity hover:opacity-90 active:scale-95"
-            >
-                <Plus className="h-4 w-4" />
-            </button>
+            {quantity === 0 ? (
+                <button
+                    onClick={onIncrement}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity hover:opacity-90 active:scale-95"
+                >
+                    <Plus className="h-4 w-4" />
+                </button>
+            ) : (
+                <div className="flex shrink-0 items-center gap-1.5">
+                    <button
+                        onClick={onDecrement}
+                        className="flex h-7 w-7 items-center justify-center rounded-full border border-border bg-muted text-muted-foreground transition-colors hover:bg-muted/80 active:scale-95"
+                    >
+                        <Minus className="h-3.5 w-3.5" />
+                    </button>
+                    <span className="w-5 text-center text-sm font-bold tabular-nums">{quantity}</span>
+                    <button
+                        onClick={onIncrement}
+                        className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity hover:opacity-90 active:scale-95"
+                    >
+                        <Plus className="h-3.5 w-3.5" />
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

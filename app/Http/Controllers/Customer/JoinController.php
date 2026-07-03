@@ -36,16 +36,19 @@ class JoinController extends Controller
         }
 
         $menu = Product::where('user_id', $table->user_id)
+            ->with('category:id,name')
             ->orderBy('name')
-            ->get(['id', 'name', 'description', 'picture', 'price', 'price_type', 'queue_id'])
+            ->get(['id', 'category_id', 'name', 'description', 'picture', 'price', 'price_type', 'queue_id'])
             ->map(fn ($p) => [
-                'id'          => $p->id,
-                'name'        => $p->name,
-                'description' => $p->description,
-                'price'       => (float) $p->price,
-                'price_type'  => $p->price_type,
-                'has_queue'   => $p->queue_id !== null,
-                'picture_url' => $p->picture ? Storage::disk('public')->url($p->picture) : null,
+                'id'            => $p->id,
+                'category_id'   => $p->category_id,
+                'category_name' => $p->category?->name,
+                'name'          => $p->name,
+                'description'   => $p->description,
+                'price'         => (float) $p->price,
+                'price_type'    => $p->price_type,
+                'has_queue'     => $p->queue_id !== null,
+                'picture_url'   => $p->picture ? Storage::disk('public')->url($p->picture) : null,
             ]);
 
         $products = DB::table('restaurant_table_product')
@@ -107,34 +110,48 @@ class JoinController extends Controller
             ->firstOrFail();
 
         $validated = $request->validate([
-            'product_id' => ['required', 'integer'],
+            'items'                => ['required', 'array', 'min:1'],
+            'items.*.product_id'   => ['required', 'integer'],
+            'items.*.quantity'     => ['required', 'integer', 'min:1', 'max:99'],
         ]);
 
-        $product = Product::where('user_id', $table->user_id)
-            ->findOrFail($validated['product_id']);
+        $productIds = array_column($validated['items'], 'product_id');
+        $products   = Product::where('user_id', $table->user_id)
+            ->whereIn('id', $productIds)
+            ->get()
+            ->keyBy('id');
 
-        if ($product->queue_id) {
-            QueueItem::create([
-                'restaurant_table_id' => $table->id,
-                'product_id'          => $product->id,
-                'queue_id'            => $product->queue_id,
-                'quantity'            => 1,
-                'price'               => (float) $product->price,
-                'status'              => QueueItemStatus::PENDING->value,
-            ]);
-        } else {
-            $affected = DB::table('restaurant_table_product')
-                ->where('restaurant_table_id', $table->id)
-                ->where('product_id', $product->id)
-                ->increment('quantity');
+        foreach ($validated['items'] as $item) {
+            $product  = $products->get($item['product_id']);
+            $quantity = $item['quantity'];
 
-            if ($affected === 0) {
-                DB::table('restaurant_table_product')->insert([
+            if (! $product) {
+                continue;
+            }
+
+            if ($product->queue_id) {
+                QueueItem::create([
                     'restaurant_table_id' => $table->id,
                     'product_id'          => $product->id,
-                    'quantity'            => 1,
+                    'queue_id'            => $product->queue_id,
+                    'quantity'            => $quantity,
                     'price'               => (float) $product->price,
+                    'status'              => QueueItemStatus::PENDING->value,
                 ]);
+            } else {
+                $affected = DB::table('restaurant_table_product')
+                    ->where('restaurant_table_id', $table->id)
+                    ->where('product_id', $product->id)
+                    ->increment('quantity', $quantity);
+
+                if ($affected === 0) {
+                    DB::table('restaurant_table_product')->insert([
+                        'restaurant_table_id' => $table->id,
+                        'product_id'          => $product->id,
+                        'quantity'            => $quantity,
+                        'price'               => (float) $product->price,
+                    ]);
+                }
             }
         }
 
