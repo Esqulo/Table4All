@@ -92,7 +92,7 @@ class JoinController extends Controller
                 'price'      => (float) $item->price,
                 'quantity'   => (int) $item->quantity,
                 'has_queue'  => $item->queue_id !== null,
-                'ordered_by' => $item->orderedBy?->name ?? $item->orderedBy?->email ?? null,
+                'ordered_by' => $item->orderedBy !== null ? ($item->orderedBy->name ?? $item->orderedBy->email) : null,
             ]);
 
         $total = (float) DB::table('restaurant_table_product')
@@ -159,7 +159,11 @@ class JoinController extends Controller
         return redirect()->route('customer.table', $code);
     }
 
-    /** Returns a map of product_id → sale_price for currently active sales. */
+    /**
+     * Returns a map of product_id → sale_price for currently active sales.
+     *
+     * @return Collection<int, float>
+     */
     private function activeSalesFor(int $restaurantUserId): Collection
     {
         $now         = now();

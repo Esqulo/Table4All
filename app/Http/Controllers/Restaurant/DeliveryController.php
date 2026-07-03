@@ -47,7 +47,7 @@ class DeliveryController extends Controller
                 'quantity'    => $item->quantity,
                 'price'       => (float) $item->price,
                 'status'      => $item->status->value,
-                'ordered_by'  => $item->orderedBy?->name ?? $item->orderedBy?->email ?? null,
+                'ordered_by'  => $item->orderedBy !== null ? ($item->orderedBy->name ?? $item->orderedBy->email) : null,
                 'waiting_since' => $item->updated_at->toISOString(),
             ]);
 
