@@ -61,11 +61,16 @@ export default function CustomerShow({ code, menu, products, preparing, total, p
 
     const categories = useMemo(() => {
         const seen = new Set<number>();
+
         return menu
             .filter((item) => item.category_id !== null && item.category_name !== null)
             .filter((item) => {
-                if (seen.has(item.category_id!)) return false;
+                if (seen.has(item.category_id!)) {
+return false;
+}
+
                 seen.add(item.category_id!);
+
                 return true;
             })
             .map((item) => ({ id: item.category_id!, name: item.category_name! }));
@@ -73,6 +78,7 @@ export default function CustomerShow({ code, menu, products, preparing, total, p
 
     const filteredMenu = useMemo(() => {
         const q = search.trim().toLowerCase();
+
         return menu.filter((item) => {
             const matchesSearch =
                 q === '' ||
@@ -80,6 +86,7 @@ export default function CustomerShow({ code, menu, products, preparing, total, p
                 (item.description?.toLowerCase().includes(q) ?? false);
             const matchesCategory =
                 activeCategory === null || item.category_id === activeCategory;
+
             return matchesSearch && matchesCategory;
         });
     }, [menu, search, activeCategory]);
@@ -103,8 +110,10 @@ export default function CustomerShow({ code, menu, products, preparing, total, p
             if ((prev[id] ?? 0) <= 1) {
                 const next = { ...prev };
                 delete next[id];
+
                 return next;
             }
+
             return { ...prev, [id]: prev[id] - 1 };
         });
     }
@@ -114,6 +123,7 @@ export default function CustomerShow({ code, menu, products, preparing, total, p
             Object.entries(cart)
                 .map(([id, qty]) => {
                     const item = menu.find((m) => m.id === Number(id));
+
                     return item ? { item, quantity: qty } : null;
                 })
                 .filter(Boolean) as { item: MenuItem; quantity: number }[],
@@ -134,7 +144,10 @@ export default function CustomerShow({ code, menu, products, preparing, total, p
     }
 
     function submitOrder() {
-        if (totalCartItems === 0 || submitting) return;
+        if (totalCartItems === 0 || submitting) {
+return;
+}
+
         setSubmitting(true);
         router.post(
             JoinController.order.url(code),
@@ -267,7 +280,13 @@ export default function CustomerShow({ code, menu, products, preparing, total, p
             </div>
 
             {/* Order modal */}
-            <Dialog open={menuOpen} onOpenChange={(open) => { if (!open) closeModal(); else setMenuOpen(true); }}>
+            <Dialog open={menuOpen} onOpenChange={(open) => {
+ if (!open) {
+closeModal();
+} else {
+setMenuOpen(true);
+} 
+}}>
                 <DialogContent className="flex max-h-[85vh] flex-col gap-0 p-0 sm:max-w-lg">
                     <DialogHeader className="shrink-0 border-b border-border px-6 py-4">
                         <DialogTitle>

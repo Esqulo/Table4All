@@ -1,10 +1,9 @@
-import { router, usePage } from '@inertiajs/react';
+import { Form, Head, router } from '@inertiajs/react';
 import { Check, CheckCheck, ConciergeBell, ImageOff, PackageCheck } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import QueueItemController from '@/actions/App/Http/Controllers/Restaurant/QueueItemController';
 import DeliveryController from '@/actions/App/Http/Controllers/Restaurant/DeliveryController';
-import { Form, Head } from '@inertiajs/react';
+import QueueItemController from '@/actions/App/Http/Controllers/Restaurant/QueueItemController';
 import { Button } from '@/components/ui/button';
 
 type DeliveryItem = {
@@ -22,14 +21,18 @@ type DeliveryItem = {
 
 type Props = { items: DeliveryItem[] };
 
-const fmt = (n: number) =>
-    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n);
-
 function waitingLabel(iso: string): string {
     const diffMs = Date.now() - new Date(iso).getTime();
     const mins = Math.floor(diffMs / 60_000);
-    if (mins < 1) return '< 1 min';
-    if (mins === 1) return '1 min';
+
+    if (mins < 1) {
+        return '< 1 min';
+    }
+
+    if (mins === 1) {
+        return '1 min';
+    }
+
     return `${mins} min`;
 }
 
@@ -41,17 +44,21 @@ export default function DeliveryIndex({ items }: Props) {
         const id = setInterval(() => {
             router.reload({ only: ['items'] });
         }, 30_000);
+
         return () => clearInterval(id);
     }, []);
 
     const byTable = useMemo(() => {
         const map = new Map<number, { title: string; items: DeliveryItem[] }>();
+
         for (const item of items) {
             if (!map.has(item.table_id)) {
                 map.set(item.table_id, { title: item.table_title, items: [] });
             }
+
             map.get(item.table_id)!.items.push(item);
         }
+
         return [...map.entries()].map(([id, group]) => ({ id, ...group }));
     }, [items]);
 

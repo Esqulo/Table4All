@@ -93,6 +93,7 @@ QueueShow.layout = {
 
 function PendingCard({ item, pos }: { item: QueueItem; pos: number }) {
     const { t } = useTranslation();
+
     return (
         <div className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
             {/* Image banner with overlaid badges */}
@@ -150,6 +151,7 @@ function PendingCard({ item, pos }: { item: QueueItem; pos: number }) {
 
 function DoneCard({ item, pos }: { item: QueueItem; pos: number }) {
     const { t } = useTranslation();
+
     return (
         <div className="flex items-center gap-4 overflow-hidden rounded-2xl border border-border bg-card px-5 py-4 shadow-sm">
             {/* Order number */}

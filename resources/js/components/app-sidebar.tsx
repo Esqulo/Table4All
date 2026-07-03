@@ -1,6 +1,16 @@
 import { Link, usePage } from '@inertiajs/react';
 import { BarChart3, BookOpen, ConciergeBell, FolderGit2, LayoutGrid, ListOrdered, Percent, QrCode, ScrollText, ShoppingBag, Tag, Users, UtensilsCrossed } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import CategoryController from '@/actions/App/Http/Controllers/Admin/CategoryController';
+import CustomerJoinController from '@/actions/App/Http/Controllers/Customer/JoinController';
+import DashboardController from '@/actions/App/Http/Controllers/Restaurant/DashboardController';
+import DeliveryController from '@/actions/App/Http/Controllers/Restaurant/DeliveryController';
+import MenuController from '@/actions/App/Http/Controllers/Restaurant/MenuController';
+import ProductController from '@/actions/App/Http/Controllers/Restaurant/ProductController';
+import QueueController from '@/actions/App/Http/Controllers/Restaurant/QueueController';
+import SaleController from '@/actions/App/Http/Controllers/Restaurant/SaleController';
+import TableController from '@/actions/App/Http/Controllers/Restaurant/TableController';
+import WaiterController from '@/actions/App/Http/Controllers/Restaurant/WaiterController';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -14,16 +24,6 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import CategoryController from '@/actions/App/Http/Controllers/Admin/CategoryController';
-import CustomerJoinController from '@/actions/App/Http/Controllers/Customer/JoinController';
-import DashboardController from '@/actions/App/Http/Controllers/Restaurant/DashboardController';
-import MenuController from '@/actions/App/Http/Controllers/Restaurant/MenuController';
-import ProductController from '@/actions/App/Http/Controllers/Restaurant/ProductController';
-import DeliveryController from '@/actions/App/Http/Controllers/Restaurant/DeliveryController';
-import QueueController from '@/actions/App/Http/Controllers/Restaurant/QueueController';
-import SaleController from '@/actions/App/Http/Controllers/Restaurant/SaleController';
-import TableController from '@/actions/App/Http/Controllers/Restaurant/TableController';
-import WaiterController from '@/actions/App/Http/Controllers/Restaurant/WaiterController';
 import { dashboard } from '@/routes';
 import type { Auth, NavItem } from '@/types';
 
