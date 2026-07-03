@@ -1,5 +1,5 @@
 import { Form, Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, Banknote, CreditCard, Clock, ImageOff, Minus, Plus, QrCode, Search, ShoppingCart, Tag, X } from 'lucide-react';
+import { ArrowLeft, Banknote, ConciergeBell, CreditCard, ImageOff, Minus, Plus, QrCode, Search, ShoppingCart, Tag, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import QueueItemController from '@/actions/App/Http/Controllers/Restaurant/QueueItemController';
@@ -63,10 +63,12 @@ export default function ManageOrder({ table, products, orderLines, activeSales, 
 
     const buildState = (lines: TableOrderLine[]): OrderState => {
         const state: OrderState = {};
+
         for (const line of lines) {
             const key = lineKey(line.id, line.price);
             state[key] = { productId: line.id, price: line.price, quantity: line.quantity };
         }
+
         return state;
     };
 
@@ -75,6 +77,7 @@ export default function ManageOrder({ table, products, orderLines, activeSales, 
     // Sync local state when the server pushes updated orderLines (e.g. after queue delivery).
     const linesKey = orderLines.map((l) => `${l.id}:${l.price}:${l.quantity}`).join(',');
     const [prevLinesKey, setPrevLinesKey] = useState(linesKey);
+
     if (prevLinesKey !== linesKey) {
         setPrevLinesKey(linesKey);
         setOrderState(buildState(orderLines));
@@ -87,17 +90,27 @@ export default function ManageOrder({ table, products, orderLines, activeSales, 
     const effectivePriceFor = (productId: number): number => {
         const sale = activeSales.find((s) => s.product_id === productId);
         const product = products.find((p) => p.id === productId);
+
         return sale?.sale_price ?? product?.price ?? 0;
     };
 
     const adjust = (key: string, delta: number) =>
         setOrderState((prev) => {
             const line = prev[key];
-            if (!line) return prev;
+
+            if (!line) {
+return prev;
+}
+
             const next = Math.max(0, line.quantity + delta);
             const updated = { ...prev };
-            if (next === 0) delete updated[key];
-            else updated[key] = { ...line, quantity: next };
+
+            if (next === 0) {
+delete updated[key];
+} else {
+updated[key] = { ...line, quantity: next };
+}
+
             return updated;
         });
 
@@ -107,8 +120,12 @@ export default function ManageOrder({ table, products, orderLines, activeSales, 
         const queueAdditions: { product_id: number; price: number; quantity: number }[] = [];
 
         for (const item of items) {
-            if (item.quantity <= 0) continue;
+            if (item.quantity <= 0) {
+continue;
+}
+
             const product = products.find((p) => p.id === item.productId);
+
             if (product?.queue_id) {
                 queueAdditions.push({ product_id: item.productId, price: item.price, quantity: item.quantity });
             } else {
@@ -140,26 +157,36 @@ export default function ManageOrder({ table, products, orderLines, activeSales, 
 
     const handleSaveOrder = () => {
         const savedByKey: Record<string, number> = {};
-        for (const line of orderLines) savedByKey[lineKey(line.id, line.price)] = line.quantity;
+
+        for (const line of orderLines) {
+savedByKey[lineKey(line.id, line.price)] = line.quantity;
+}
 
         const directProducts: { product_id: number; price: number; quantity: number }[] = [];
         const queueAdditions: { product_id: number; price: number; quantity: number }[] = [];
 
         for (const line of Object.values(orderState)) {
             const product = products.find((p) => p.id === line.productId);
+
             if (product?.queue_id) {
                 // For delivered queue items: keep what's in the pivot; any increase is a new queue addition.
                 const key = lineKey(line.productId, line.price);
                 const deliveredQty = savedByKey[key] ?? 0;
                 const directQty = Math.min(line.quantity, deliveredQty);
                 const delta = line.quantity - deliveredQty;
-                if (directQty > 0) directProducts.push({ product_id: line.productId, price: line.price, quantity: directQty });
+
+                if (directQty > 0) {
+directProducts.push({ product_id: line.productId, price: line.price, quantity: directQty });
+}
+
                 if (delta > 0) {
                     const currentPrice = effectivePriceFor(line.productId);
                     queueAdditions.push({ product_id: line.productId, price: currentPrice, quantity: delta });
                 }
             } else {
-                if (line.quantity > 0) directProducts.push({ product_id: line.productId, price: line.price, quantity: line.quantity });
+                if (line.quantity > 0) {
+directProducts.push({ product_id: line.productId, price: line.price, quantity: line.quantity });
+}
             }
         }
 
@@ -173,11 +200,19 @@ export default function ManageOrder({ table, products, orderLines, activeSales, 
 
     const isDirty = useMemo(() => {
         const savedByKey: Record<string, number> = {};
-        for (const line of orderLines) savedByKey[lineKey(line.id, line.price)] = line.quantity;
+
+        for (const line of orderLines) {
+savedByKey[lineKey(line.id, line.price)] = line.quantity;
+}
+
         const allKeys = new Set([...Object.keys(orderState), ...Object.keys(savedByKey)]);
+
         for (const k of allKeys) {
-            if ((orderState[k]?.quantity ?? 0) !== (savedByKey[k] ?? 0)) return true;
+            if ((orderState[k]?.quantity ?? 0) !== (savedByKey[k] ?? 0)) {
+return true;
+}
         }
+
         return false;
     }, [orderState, orderLines]);
 
@@ -244,19 +279,19 @@ export default function ManageOrder({ table, products, orderLines, activeSales, 
                                     <div className="min-w-0 flex-1">
                                         <p className="truncate text-sm font-medium">{item.product.name}</p>
                                         <p className="text-xs text-muted-foreground">
-                                            {item.queue.name} · x{item.quantity} · {fmt(item.price)}
+                                            {item.queue ? `${item.queue.name} · ` : ''}x{item.quantity} · {fmt(item.price)}
                                         </p>
                                     </div>
-                                    {item.status === 'pending' ? (
+                                    {item.status === 'pending' && item.queue_id !== null ? (
                                         <Form {...QueueItemController.markDone.form({ queueItem: item.id })}>
                                             {({ processing }) => (
                                                 <Button type="submit" size="sm" variant="outline" disabled={processing} className="shrink-0">
-                                                    <Clock className="mr-1.5 h-3.5 w-3.5" />
+                                                    <ConciergeBell className="mr-1.5 h-3.5 w-3.5" />
                                                     {t('queues.item_mark_done')}
                                                 </Button>
                                             )}
                                         </Form>
-                                    ) : (
+                                    ) : item.status !== 'delivered' ? (
                                         <Form {...QueueItemController.markDelivered.form({ queueItem: item.id })}>
                                             {({ processing }) => (
                                                 <Button type="submit" size="sm" disabled={processing} className="shrink-0">
@@ -264,7 +299,7 @@ export default function ManageOrder({ table, products, orderLines, activeSales, 
                                                 </Button>
                                             )}
                                         </Form>
-                                    )}
+                                    ) : null}
                                 </div>
                             ))}
                         </div>
@@ -283,6 +318,7 @@ export default function ManageOrder({ table, products, orderLines, activeSales, 
                                 const product = products.find((p) => p.id === line.productId);
                                 const suffix = t(`products.price_suffix.${product?.price_type ?? 'unit'}`);
                                 const key = lineKey(line.productId, line.price);
+
                                 return (
                                     <div
                                         key={key}
@@ -319,6 +355,7 @@ export default function ManageOrder({ table, products, orderLines, activeSales, 
                                                 className="h-7 w-7"
                                                 onClick={() => {
                                                     const currentPrice = effectivePriceFor(line.productId);
+
                                                     if (currentPrice !== line.price) {
                                                         // Redirect the addition to the current-price line.
                                                         const targetKey = lineKey(line.productId, currentPrice);
@@ -442,6 +479,7 @@ ManageOrder.layout = {
 
 function PaymentRow({ payment, idx }: { payment: TablePayment; idx: number }) {
     const { t } = useTranslation();
+
     return (
         <div className={['flex items-center gap-3 px-4 py-3', idx > 0 ? 'border-t border-border' : ''].join(' ')}>
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
@@ -472,9 +510,13 @@ function AddPaymentDialog({ open, table, remaining, onClose }: {
     const [cents, setCents] = useState(0);
 
     const [prevOpen, setPrevOpen] = useState(open);
+
     if (prevOpen !== open) {
         setPrevOpen(open);
-        if (open) setCents(remaining > 0 ? Math.round(remaining * 100) : 0);
+
+        if (open) {
+setCents(remaining > 0 ? Math.round(remaining * 100) : 0);
+}
     }
 
     const displayValue = cents > 0
@@ -487,7 +529,11 @@ function AddPaymentDialog({ open, table, remaining, onClose }: {
     };
 
     return (
-        <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+        <Dialog open={open} onOpenChange={(o) => {
+ if (!o) {
+onClose();
+} 
+}}>
             <DialogContent className="max-w-sm">
                 <DialogHeader>
                     <DialogTitle>{t('tables.payment_add')}</DialogTitle>
@@ -581,12 +627,19 @@ function AddProductsDialog({ open, products, activeSales, onConfirm, onClose }: 
         setPending((prev) => {
             const next = Math.max(0, (prev[id] ?? 0) + delta);
             const updated = { ...prev };
-            if (next === 0) delete updated[id];
-            else updated[id] = next;
+
+            if (next === 0) {
+delete updated[id];
+} else {
+updated[id] = next;
+}
+
             return updated;
         });
 
-    const reset = () => { setSearch(''); setPending({}); };
+    const reset = () => {
+ setSearch(''); setPending({}); 
+};
 
     const handleConfirm = () => {
         const items = Object.entries(pending)
@@ -594,16 +647,23 @@ function AddProductsDialog({ open, products, activeSales, onConfirm, onClose }: 
             .map(([id, quantity]) => {
                 const productId = Number(id);
                 const product = products.find((p) => p.id === productId)!;
+
                 return { productId, price: effectivePrice(product), quantity };
             });
         onConfirm(items);
         reset();
     };
 
-    const handleClose = () => { reset(); onClose(); };
+    const handleClose = () => {
+ reset(); onClose(); 
+};
 
     return (
-        <Dialog open={open} onOpenChange={(o) => { if (!o) handleClose(); }}>
+        <Dialog open={open} onOpenChange={(o) => {
+ if (!o) {
+handleClose();
+} 
+}}>
             <DialogContent className="flex max-h-[85vh] max-w-lg flex-col gap-4 p-0">
                 <DialogHeader className="px-6 pt-6">
                     <DialogTitle>{t('tables.add_products')}</DialogTitle>
@@ -630,6 +690,7 @@ function AddProductsDialog({ open, products, activeSales, onConfirm, onClose }: 
                         const suffix = t(`products.price_suffix.${product.price_type}`);
                         const price = effectivePrice(product);
                         const onSale = isOnSale(product);
+
                         return (
                             <div
                                 key={product.id}

@@ -77,6 +77,7 @@
         "queues": "Filas",
         "waiters": "Garçons",
         "sales": "Promoções",
+        "delivery": "Entregas",
         "join_table": "Entrar na Mesa",
         "repository": "Repositório",
         "documentation": "Documentação",
@@ -406,6 +407,11 @@
         "all_categories": "Todos",
         "other_category": "Outros",
         "no_products": "Nenhum produto disponível.",
+        "confirm_order": "Confirmar Pedido",
+        "pending_delivery_title": "Aguardando Entrega",
+        "review_title": "Revisar Pedido",
+        "next": "Próximo",
+        "back": "Voltar",
         "qr_button": "QR Code",
         "qr_dialog_title": "QR Code da Mesa",
         "qr_dialog_description": "Imprima ou exiba para os clientes entrarem na mesa.",
@@ -418,7 +424,11 @@
         "people": "Pessoas",
         "each_pays": "Cada um paga",
         "products_title": "Itens na mesa",
-        "preparing_title": "Preparando"
+        "preparing_title": "Preparando",
+        "my_order": "Meu Pedido",
+        "search_placeholder": "Buscar produtos...",
+        "order_button": "Pedir",
+        "order_success": "Item adicionado ao seu pedido"
     },
     "two_factor": {
         "title": "Autenticação de dois fatores",
@@ -467,5 +477,16 @@
         "toggle_label": "Idioma",
         "pt_BR": "PT",
         "en": "EN"
+    },
+    "delivery": {
+        "title": "Entregas",
+        "subtitle": "Itens prontos aguardando entrega nas mesas",
+        "empty_title": "Tudo entregue!",
+        "empty_subtitle": "Nenhum item aguardando entrega no momento.",
+        "deliver": "Entregar",
+        "item": "item",
+        "items": "itens",
+        "status_done": "Pronto na cozinha",
+        "status_pending": "Aguardando garçom"
     }
 }

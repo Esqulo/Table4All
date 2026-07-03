@@ -43,27 +43,24 @@ class QueueItemController extends Controller
 
         $queueItem->update(['status' => QueueItemStatus::DELIVERED]);
 
-        $table = $queueItem->restaurantTable;
-        $price = (float) $queueItem->price;
+        $table  = $queueItem->restaurantTable;
+        $price  = (float) $queueItem->price;
+        $userId = $queueItem->ordered_by_user_id;
 
-        // Match by (product_id, price) so happy-hour and regular orders
-        // remain as separate lines in the table's order.
-        $existing = DB::table('restaurant_table_product')
+        $query = DB::table('restaurant_table_product')
             ->where('restaurant_table_id', $table->id)
             ->where('product_id', $queueItem->product_id)
-            ->where('price', $price)
-            ->first();
+            ->where('ordered_by_user_id', $userId);
+
+        $existing = $query->first();
 
         if ($existing) {
-            DB::table('restaurant_table_product')
-                ->where('restaurant_table_id', $table->id)
-                ->where('product_id', $queueItem->product_id)
-                ->where('price', $price)
-                ->update(['quantity' => $existing->quantity + $queueItem->quantity]);
+            $query->update(['quantity' => $existing->quantity + $queueItem->quantity]);
         } else {
             DB::table('restaurant_table_product')->insert([
                 'restaurant_table_id' => $table->id,
                 'product_id'          => $queueItem->product_id,
+                'ordered_by_user_id'  => $userId,
                 'price'               => $price,
                 'quantity'            => $queueItem->quantity,
             ]);

@@ -81,8 +81,8 @@ export type QueueItem = {
         price: number;
         price_type: PriceType;
     };
-    queue_id: number;
-    queue: { id: number; name: string };
+    queue_id: number | null;
+    queue: { id: number; name: string } | null;
     restaurant_table?: { id: number; title: string };
     quantity: number;
     price: number;

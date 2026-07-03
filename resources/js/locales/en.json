@@ -77,6 +77,7 @@
         "queues": "Queues",
         "waiters": "Waiters",
         "sales": "Sales",
+        "delivery": "Delivery",
         "join_table": "Join Table",
         "repository": "Repository",
         "documentation": "Documentation",
@@ -406,6 +407,11 @@
         "all_categories": "All",
         "other_category": "Other",
         "no_products": "No products available.",
+        "confirm_order": "Place Order",
+        "pending_delivery_title": "Pending Delivery",
+        "review_title": "Review Order",
+        "next": "Next",
+        "back": "Back",
         "qr_button": "QR Code",
         "qr_dialog_title": "Table QR Code",
         "qr_dialog_description": "Print or display this for customers to join the table.",
@@ -418,7 +424,11 @@
         "people": "People",
         "each_pays": "Each pays",
         "products_title": "Items on the table",
-        "preparing_title": "Preparing"
+        "preparing_title": "Preparing",
+        "my_order": "My Order",
+        "search_placeholder": "Search products...",
+        "order_button": "Order",
+        "order_success": "Item added to your order"
     },
     "two_factor": {
         "title": "Two-factor authentication",
@@ -467,5 +477,16 @@
         "toggle_label": "Language",
         "pt_BR": "PT",
         "en": "EN"
+    },
+    "delivery": {
+        "title": "Delivery",
+        "subtitle": "Items ready and waiting to be delivered to tables",
+        "empty_title": "All caught up!",
+        "empty_subtitle": "No items are pending delivery right now.",
+        "deliver": "Deliver",
+        "item": "item",
+        "items": "items",
+        "status_done": "Ready in kitchen",
+        "status_pending": "Waiting for waiter"
     }
 }
