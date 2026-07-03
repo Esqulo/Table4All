@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Customer\JoinController as CustomerJoinController;
 use App\Http\Controllers\TableJoinController;
 use App\Http\Controllers\Restaurant\DashboardController;
 use App\Http\Controllers\Restaurant\MenuController;
@@ -31,6 +32,13 @@ Route::post('/garcom/aceitar/{token}', [WaiterInvitationController::class, 'stor
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
+
+    Route::prefix('customer')
+        ->name('customer.')
+        ->group(function () {
+            Route::get('mesa', [CustomerJoinController::class, 'index'])->name('join');
+            Route::get('mesa/{code}', [CustomerJoinController::class, 'show'])->name('table');
+        });
 });
 
 // Tables (full CRUD) + product listing: accessible by restaurant and waiter
