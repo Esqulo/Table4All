@@ -47,9 +47,12 @@ class TableController extends Controller
 
     public function store(TableRequest $request): RedirectResponse
     {
+        $restaurantId = $request->user()->effectiveRestaurantId();
+
         RestaurantTable::create([
-            'user_id' => $request->user()->effectiveRestaurantId(),
-            'title'   => $request->validated('title'),
+            'user_id'     => $restaurantId,
+            'title'       => $request->validated('title'),
+            'access_code' => RestaurantTable::generateUniqueCode($restaurantId),
         ]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'tables.msg_created']);
@@ -197,7 +200,8 @@ class TableController extends Controller
             return to_route('restaurant.tables.show', $table);
         }
 
-        $table->closed_at = now();
+        $table->closed_at  = now();
+        $table->access_code = null;
         $table->save();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'tables.msg_closed']);

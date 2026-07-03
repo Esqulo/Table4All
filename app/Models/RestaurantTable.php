@@ -17,7 +17,21 @@ final class RestaurantTable extends Model
     protected $fillable = [
         'user_id',
         'title',
+        'access_code',
     ];
+
+    public static function generateUniqueCode(int $restaurantId): string
+    {
+        do {
+            $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            $exists = self::where('user_id', $restaurantId)
+                ->whereNull('closed_at')
+                ->where('access_code', $code)
+                ->exists();
+        } while ($exists);
+
+        return $code;
+    }
 
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo

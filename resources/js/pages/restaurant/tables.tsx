@@ -1,9 +1,18 @@
 import { Head, Link } from '@inertiajs/react';
-import { ImageOff, Pencil, Plus, ShoppingBag } from 'lucide-react';
+import { ImageOff, Pencil, Plus, QrCode, ShoppingBag } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import TableController from '@/actions/App/Http/Controllers/Restaurant/TableController';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import type { RestaurantTable } from '@/types';
 
 type Props = {
@@ -47,20 +56,64 @@ export default function Tables({ tables }: Props) {
 const fmt = (n: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n);
 
+function TableQrDialog({ table, open, onClose }: { table: RestaurantTable; open: boolean; onClose: () => void }) {
+    const { t } = useTranslation();
+    const url = `${window.location.origin}/mesa/${table.access_code}`;
+
+    return (
+        <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+            <DialogContent className="max-w-xs text-center">
+                <DialogHeader className="items-center">
+                    <DialogTitle>{t('join_table.qr_dialog_title')}</DialogTitle>
+                    <DialogDescription>{t('join_table.qr_dialog_description')}</DialogDescription>
+                </DialogHeader>
+                <div className="flex flex-col items-center gap-4 py-2">
+                    <div className="rounded-xl border border-border bg-white p-3">
+                        <QRCodeSVG value={url} size={180} />
+                    </div>
+                    <div className="text-center">
+                        <p className="text-xs text-muted-foreground">{t('join_table.access_code_label')}</p>
+                        <p className="font-mono text-3xl font-bold tracking-widest">{table.access_code}</p>
+                    </div>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
 function TableCard({ table }: { table: RestaurantTable }) {
     const { t } = useTranslation();
+    const [qrOpen, setQrOpen] = useState(false);
 
     const total = table.products.reduce((sum, p) => sum + p.price * p.pivot.quantity, 0);
     const paid = table.payments.reduce((sum, p) => sum + p.amount, 0);
     const remaining = total - paid;
 
     return (
+        <>
+            {table.access_code && (
+                <TableQrDialog table={table} open={qrOpen} onClose={() => setQrOpen(false)} />
+            )}
         <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-xs">
-            <div className="p-4">
-                <p className="text-lg font-semibold leading-tight">{table.title}</p>
-                <p className="text-xs text-muted-foreground">
-                    {t('tables.products_count', { count: table.products_count })}
-                </p>
+            <div className="flex items-start justify-between gap-2 p-4">
+                <div>
+                    <p className="text-lg font-semibold leading-tight">{table.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                        {t('tables.products_count', { count: table.products_count })}
+                    </p>
+                </div>
+                {table.access_code && (
+                    <button
+                        onClick={() => setQrOpen(true)}
+                        className="flex shrink-0 flex-col items-center gap-0.5 rounded-lg border border-border px-2 py-1 text-muted-foreground transition-colors hover:bg-muted"
+                        title={t('join_table.qr_button')}
+                    >
+                        <QrCode className="h-4 w-4" />
+                        <span className="font-mono text-[10px] leading-none tracking-widest">
+                            {table.access_code}
+                        </span>
+                    </button>
+                )}
             </div>
 
             {table.products.length > 0 && (
@@ -129,6 +182,7 @@ function TableCard({ table }: { table: RestaurantTable }) {
                 </Button>
             </div>
         </div>
+        </>
     );
 }
 

@@ -395,6 +395,21 @@
         "starts_at_label": "Data e hora de início",
         "ends_at_label": "Data e hora de término"
     },
+    "join_table": {
+        "title": "Entrar na Mesa",
+        "heading": "Escaneie ou digite o código da mesa",
+        "description": "Digite o código de 6 dígitos exibido na sua mesa",
+        "invalid_code": "Este código não é válido ou a mesa já foi fechada.",
+        "table_at": "Você está na",
+        "menu_title": "Cardápio",
+        "all_categories": "Todos",
+        "other_category": "Outros",
+        "no_products": "Nenhum produto disponível.",
+        "qr_button": "QR Code",
+        "qr_dialog_title": "QR Code da Mesa",
+        "qr_dialog_description": "Imprima ou exiba para os clientes entrarem na mesa.",
+        "access_code_label": "Código"
+    },
     "two_factor": {
         "title": "Autenticação de dois fatores",
         "description": "Gerencie as configurações de autenticação de dois fatores",

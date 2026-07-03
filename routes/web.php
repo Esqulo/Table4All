@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\TableJoinController;
 use App\Http\Controllers\Restaurant\DashboardController;
 use App\Http\Controllers\Restaurant\MenuController;
 use App\Http\Controllers\Restaurant\ProductController;
@@ -18,6 +19,9 @@ use Illuminate\Support\Facades\Route;
 Route::inertia('/', 'welcome')->name('home');
 
 Route::get('/menu/{menu}', [MenuController::class, 'show'])->name('menu.show');
+
+Route::get('/mesa', [TableJoinController::class, 'index'])->name('table.join');
+Route::get('/mesa/{code}', [TableJoinController::class, 'show'])->name('table.show');
 
 // Public waiter invitation acceptance
 Route::get('/garcom/aceitar/{token}', [WaiterInvitationController::class, 'show'])

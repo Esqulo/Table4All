@@ -395,6 +395,21 @@
         "starts_at_label": "Start date & time",
         "ends_at_label": "End date & time"
     },
+    "join_table": {
+        "title": "Join Table",
+        "heading": "Scan or enter the table code",
+        "description": "Type the 6-digit code shown on your table",
+        "invalid_code": "This code is not valid or the table is already closed.",
+        "table_at": "You're at",
+        "menu_title": "Menu",
+        "all_categories": "All",
+        "other_category": "Other",
+        "no_products": "No products available.",
+        "qr_button": "QR Code",
+        "qr_dialog_title": "Table QR Code",
+        "qr_dialog_description": "Print or display this for customers to join the table.",
+        "access_code_label": "Code"
+    },
     "two_factor": {
         "title": "Two-factor authentication",
         "description": "Manage your two-factor authentication settings",
