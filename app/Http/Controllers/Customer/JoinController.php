@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Customer;
 
 use App\Enums\QueueItemStatus;
 use App\Http\Controllers\Controller;
+use App\Models\Product;
 use App\Models\QueueItem;
 use App\Models\RestaurantTable;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -24,7 +26,7 @@ class JoinController extends Controller
         $table = RestaurantTable::where('access_code', $code)
             ->whereNull('closed_at')
             ->whereNull('deleted_at')
-            ->with(['user:id,name,avatar', 'payments'])
+            ->with(['payments'])
             ->first();
 
         if (! $table) {
@@ -32,6 +34,19 @@ class JoinController extends Controller
 
             return redirect()->route('customer.join');
         }
+
+        $menu = Product::where('user_id', $table->user_id)
+            ->orderBy('name')
+            ->get(['id', 'name', 'description', 'picture', 'price', 'price_type', 'queue_id'])
+            ->map(fn ($p) => [
+                'id'          => $p->id,
+                'name'        => $p->name,
+                'description' => $p->description,
+                'price'       => (float) $p->price,
+                'price_type'  => $p->price_type,
+                'has_queue'   => $p->queue_id !== null,
+                'picture_url' => $p->picture ? Storage::disk('public')->url($p->picture) : null,
+            ]);
 
         $products = DB::table('restaurant_table_product')
             ->where('restaurant_table_id', $table->id)
@@ -62,8 +77,9 @@ class JoinController extends Controller
             ->orderBy('created_at')
             ->get()
             ->map(fn ($item) => [
-                'name'  => $item->product->name,
-                'price' => (float) $item->price,
+                'name'     => $item->product->name,
+                'price'    => (float) $item->price,
+                'quantity' => (int) $item->quantity,
             ]);
 
         $total = (float) DB::table('restaurant_table_product')
@@ -73,11 +89,57 @@ class JoinController extends Controller
         $paid = (float) $table->payments->sum('amount');
 
         return Inertia::render('customer/show', [
-            'products'   => $products,
-            'preparing'  => $preparing,
-            'total'      => $total,
-            'paid'       => $paid,
-            'remaining'  => max(0.0, $total - $paid),
+            'code'      => $code,
+            'menu'      => $menu,
+            'products'  => $products,
+            'preparing' => $preparing,
+            'total'     => $total,
+            'paid'      => $paid,
+            'remaining' => max(0.0, $total - $paid),
         ]);
+    }
+
+    public function order(Request $request, string $code): RedirectResponse
+    {
+        $table = RestaurantTable::where('access_code', $code)
+            ->whereNull('closed_at')
+            ->whereNull('deleted_at')
+            ->firstOrFail();
+
+        $validated = $request->validate([
+            'product_id' => ['required', 'integer'],
+        ]);
+
+        $product = Product::where('user_id', $table->user_id)
+            ->findOrFail($validated['product_id']);
+
+        if ($product->queue_id) {
+            QueueItem::create([
+                'restaurant_table_id' => $table->id,
+                'product_id'          => $product->id,
+                'queue_id'            => $product->queue_id,
+                'quantity'            => 1,
+                'price'               => (float) $product->price,
+                'status'              => QueueItemStatus::PENDING->value,
+            ]);
+        } else {
+            $affected = DB::table('restaurant_table_product')
+                ->where('restaurant_table_id', $table->id)
+                ->where('product_id', $product->id)
+                ->increment('quantity');
+
+            if ($affected === 0) {
+                DB::table('restaurant_table_product')->insert([
+                    'restaurant_table_id' => $table->id,
+                    'product_id'          => $product->id,
+                    'quantity'            => 1,
+                    'price'               => (float) $product->price,
+                ]);
+            }
+        }
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'join_table.order_success']);
+
+        return redirect()->route('customer.table', $code);
     }
 }

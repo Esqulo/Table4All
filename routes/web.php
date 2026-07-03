@@ -38,6 +38,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->group(function () {
             Route::get('mesa', [CustomerJoinController::class, 'index'])->name('join');
             Route::get('mesa/{code}', [CustomerJoinController::class, 'show'])->name('table');
+            Route::post('mesa/{code}/pedido', [CustomerJoinController::class, 'order'])->name('order');
         });
 });
 

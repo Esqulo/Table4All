@@ -418,7 +418,10 @@
         "people": "People",
         "each_pays": "Each pays",
         "products_title": "Items on the table",
-        "preparing_title": "Preparing"
+        "preparing_title": "Preparing",
+        "my_order": "My Order",
+        "order_button": "Order",
+        "order_success": "Item added to your order"
     },
     "two_factor": {
         "title": "Two-factor authentication",

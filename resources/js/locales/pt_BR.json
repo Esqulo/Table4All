@@ -418,7 +418,10 @@
         "people": "Pessoas",
         "each_pays": "Cada um paga",
         "products_title": "Itens na mesa",
-        "preparing_title": "Preparando"
+        "preparing_title": "Preparando",
+        "my_order": "Meu Pedido",
+        "order_button": "Pedir",
+        "order_success": "Item adicionado ao seu pedido"
     },
     "two_factor": {
         "title": "Autenticação de dois fatores",
