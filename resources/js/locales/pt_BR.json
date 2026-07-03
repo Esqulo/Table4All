@@ -409,7 +409,15 @@
         "qr_button": "QR Code",
         "qr_dialog_title": "QR Code da Mesa",
         "qr_dialog_description": "Imprima ou exiba para os clientes entrarem na mesa.",
-        "access_code_label": "Código"
+        "access_code_label": "Código",
+        "summary_title": "Resumo da Conta",
+        "total": "Total",
+        "paid": "Pago",
+        "remaining": "Restante",
+        "split_title": "Dividir Conta",
+        "people": "Pessoas",
+        "each_pays": "Cada um paga",
+        "products_title": "Itens na mesa"
     },
     "two_factor": {
         "title": "Autenticação de dois fatores",

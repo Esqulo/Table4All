@@ -409,7 +409,15 @@
         "qr_button": "QR Code",
         "qr_dialog_title": "Table QR Code",
         "qr_dialog_description": "Print or display this for customers to join the table.",
-        "access_code_label": "Code"
+        "access_code_label": "Code",
+        "summary_title": "Account Summary",
+        "total": "Total",
+        "paid": "Paid",
+        "remaining": "Remaining",
+        "split_title": "Split Bill",
+        "people": "People",
+        "each_pays": "Each pays",
+        "products_title": "Items on the table"
     },
     "two_factor": {
         "title": "Two-factor authentication",
