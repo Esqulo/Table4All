@@ -14,14 +14,17 @@ type OrderLine = {
     picture_url: string | null;
 };
 
+type PreparingItem = { name: string; price: number };
+
 type Props = {
     products: OrderLine[];
+    preparing: PreparingItem[];
     total: number;
     paid: number;
     remaining: number;
 };
 
-export default function CustomerShow({ products, total, paid, remaining }: Props) {
+export default function CustomerShow({ products, preparing, total, paid, remaining }: Props) {
     const { t, i18n } = useTranslation();
     const locale = i18n.language === 'pt_BR' ? 'pt-BR' : 'en-US';
     const [people, setPeople] = useState(1);
@@ -38,18 +41,40 @@ export default function CustomerShow({ products, total, paid, remaining }: Props
             <div className="mx-auto max-w-5xl px-4 py-6">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
 
-                    {/* Left — products */}
-                    <div className="flex-1 space-y-3">
-                        <p className="text-sm font-semibold">{t('join_table.products_title')}</p>
-                        {products.length === 0 ? (
-                            <p className="py-16 text-center text-sm text-muted-foreground">
-                                {t('join_table.no_products')}
-                            </p>
-                        ) : (
-                            products.map((product) => (
-                                <ProductCard key={product.id} product={product} />
-                            ))
+                    {/* Left — preparing + products */}
+                    <div className="flex-1 space-y-6">
+
+                        {/* Preparing */}
+                        {preparing.length > 0 && (
+                            <div className="space-y-3">
+                                <p className="text-sm font-semibold">{t('join_table.preparing_title')}</p>
+                                <div className="rounded-xl border border-border bg-card divide-y divide-border">
+                                    {preparing.map((item, i) => (
+                                        <div key={i} className="flex items-center justify-between px-4 py-3">
+                                            <span className="text-sm">{item.name}</span>
+                                            <span className="text-sm font-semibold tabular-nums text-primary">
+                                                {fmt(item.price)}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         )}
+
+                        {/* Products on the table */}
+                        <div className="space-y-3">
+                            <p className="text-sm font-semibold">{t('join_table.products_title')}</p>
+                            {products.length === 0 ? (
+                                <p className="py-8 text-center text-sm text-muted-foreground">
+                                    {t('join_table.no_products')}
+                                </p>
+                            ) : (
+                                products.map((product) => (
+                                    <ProductCard key={product.id} product={product} />
+                                ))
+                            )}
+                        </div>
+
                     </div>
 
                     {/* Right — summary + splitter */}

@@ -417,7 +417,8 @@
         "split_title": "Split Bill",
         "people": "People",
         "each_pays": "Each pays",
-        "products_title": "Items on the table"
+        "products_title": "Items on the table",
+        "preparing_title": "Preparing"
     },
     "two_factor": {
         "title": "Two-factor authentication",

@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Enums\QueueItemStatus;
 use App\Http\Controllers\Controller;
+use App\Models\QueueItem;
 use App\Models\RestaurantTable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -54,6 +56,16 @@ class JoinController extends Controller
                 'picture_url' => $row->picture ? Storage::disk('public')->url($row->picture) : null,
             ]);
 
+        $preparing = QueueItem::where('restaurant_table_id', $table->id)
+            ->whereIn('status', [QueueItemStatus::PENDING->value, QueueItemStatus::DONE->value])
+            ->with('product:id,name')
+            ->orderBy('created_at')
+            ->get()
+            ->map(fn ($item) => [
+                'name'  => $item->product->name,
+                'price' => (float) $item->price,
+            ]);
+
         $total = (float) DB::table('restaurant_table_product')
             ->where('restaurant_table_id', $table->id)
             ->sum(DB::raw('price * quantity'));
@@ -61,10 +73,11 @@ class JoinController extends Controller
         $paid = (float) $table->payments->sum('amount');
 
         return Inertia::render('customer/show', [
-            'products'  => $products,
-            'total'     => $total,
-            'paid'      => $paid,
-            'remaining' => max(0.0, $total - $paid),
+            'products'   => $products,
+            'preparing'  => $preparing,
+            'total'      => $total,
+            'paid'       => $paid,
+            'remaining'  => max(0.0, $total - $paid),
         ]);
     }
 }

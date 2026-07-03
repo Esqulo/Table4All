@@ -417,7 +417,8 @@
         "split_title": "Dividir Conta",
         "people": "Pessoas",
         "each_pays": "Cada um paga",
-        "products_title": "Itens na mesa"
+        "products_title": "Itens na mesa",
+        "preparing_title": "Preparando"
     },
     "two_factor": {
         "title": "Autenticação de dois fatores",
