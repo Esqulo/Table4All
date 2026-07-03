@@ -77,6 +77,7 @@
         "queues": "Filas",
         "waiters": "Garçons",
         "sales": "Promoções",
+        "delivery": "Entregas",
         "join_table": "Entrar na Mesa",
         "repository": "Repositório",
         "documentation": "Documentação",
@@ -476,5 +477,16 @@
         "toggle_label": "Idioma",
         "pt_BR": "PT",
         "en": "EN"
+    },
+    "delivery": {
+        "title": "Entregas",
+        "subtitle": "Itens prontos aguardando entrega nas mesas",
+        "empty_title": "Tudo entregue!",
+        "empty_subtitle": "Nenhum item aguardando entrega no momento.",
+        "deliver": "Entregar",
+        "item": "item",
+        "items": "itens",
+        "status_done": "Pronto na cozinha",
+        "status_pending": "Aguardando garçom"
     }
 }

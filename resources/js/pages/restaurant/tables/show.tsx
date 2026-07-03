@@ -1,5 +1,5 @@
 import { Form, Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, Banknote, CreditCard, Clock, ImageOff, Minus, Plus, QrCode, Search, ShoppingCart, Tag, X } from 'lucide-react';
+import { ArrowLeft, Banknote, ConciergeBell, CreditCard, ImageOff, Minus, Plus, QrCode, Search, ShoppingCart, Tag, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import QueueItemController from '@/actions/App/Http/Controllers/Restaurant/QueueItemController';
@@ -251,7 +251,7 @@ export default function ManageOrder({ table, products, orderLines, activeSales, 
                                         <Form {...QueueItemController.markDone.form({ queueItem: item.id })}>
                                             {({ processing }) => (
                                                 <Button type="submit" size="sm" variant="outline" disabled={processing} className="shrink-0">
-                                                    <Clock className="mr-1.5 h-3.5 w-3.5" />
+                                                    <ConciergeBell className="mr-1.5 h-3.5 w-3.5" />
                                                     {t('queues.item_mark_done')}
                                                 </Button>
                                             )}

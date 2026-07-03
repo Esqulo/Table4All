@@ -77,6 +77,7 @@
         "queues": "Queues",
         "waiters": "Waiters",
         "sales": "Sales",
+        "delivery": "Delivery",
         "join_table": "Join Table",
         "repository": "Repository",
         "documentation": "Documentation",
@@ -476,5 +477,16 @@
         "toggle_label": "Language",
         "pt_BR": "PT",
         "en": "EN"
+    },
+    "delivery": {
+        "title": "Delivery",
+        "subtitle": "Items ready and waiting to be delivered to tables",
+        "empty_title": "All caught up!",
+        "empty_subtitle": "No items are pending delivery right now.",
+        "deliver": "Deliver",
+        "item": "item",
+        "items": "items",
+        "status_done": "Ready in kitchen",
+        "status_pending": "Waiting for waiter"
     }
 }

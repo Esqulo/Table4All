@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Customer\JoinController as CustomerJoinController;
 use App\Http\Controllers\TableJoinController;
 use App\Http\Controllers\Restaurant\DashboardController;
+use App\Http\Controllers\Restaurant\DeliveryController;
 use App\Http\Controllers\Restaurant\MenuController;
 use App\Http\Controllers\Restaurant\ProductController;
 use App\Http\Controllers\Restaurant\QueueController;
@@ -47,6 +48,7 @@ Route::middleware(['auth', 'verified', EnsureRestaurantOrWaiter::class])
     ->prefix('restaurant')
     ->name('restaurant.')
     ->group(function () {
+        Route::get('entregas', [DeliveryController::class, 'index'])->name('delivery.index');
         Route::resource('mesas', TableController::class)
             ->names('tables')
             ->parameters(['mesas' => 'table']);

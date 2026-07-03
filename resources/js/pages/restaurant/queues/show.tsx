@@ -1,5 +1,5 @@
 import { Form, Head, Link } from '@inertiajs/react';
-import { CheckCircle2, Clock, ImageOff } from 'lucide-react';
+import { CheckCircle2, Clock, ConciergeBell, ImageOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import QueueController from '@/actions/App/Http/Controllers/Restaurant/QueueController';
 import QueueItemController from '@/actions/App/Http/Controllers/Restaurant/QueueItemController';
@@ -138,7 +138,7 @@ function PendingCard({ item, pos }: { item: QueueItem; pos: number }) {
                             disabled={processing}
                             className="h-11 w-full text-base"
                         >
-                            <Clock className="mr-2 h-4 w-4" />
+                            <ConciergeBell className="mr-2 h-4 w-4" />
                             {t('queues.item_mark_done')}
                         </Button>
                     )}
