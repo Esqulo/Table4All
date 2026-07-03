@@ -7,7 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\QueueItem;
 use App\Models\RestaurantTable;
+use App\Models\Sale;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -35,6 +37,8 @@ class JoinController extends Controller
             return redirect()->route('customer.join');
         }
 
+        $activeSales = $this->activeSalesFor($table->user_id);
+
         $menu = Product::where('user_id', $table->user_id)
             ->with('category:id,name')
             ->orderBy('name')
@@ -45,7 +49,7 @@ class JoinController extends Controller
                 'category_name' => $p->category?->name,
                 'name'          => $p->name,
                 'description'   => $p->description,
-                'price'         => (float) $p->price,
+                'price'         => (float) ($activeSales[$p->id] ?? $p->price),
                 'price_type'    => $p->price_type,
                 'has_queue'     => $p->queue_id !== null,
                 'picture_url'   => $p->picture ? Storage::disk('public')->url($p->picture) : null,
@@ -121,13 +125,13 @@ class JoinController extends Controller
             'items.*.quantity'     => ['required', 'integer', 'min:1', 'max:99'],
         ]);
 
-        $productIds = array_column($validated['items'], 'product_id');
-        $products   = Product::where('user_id', $table->user_id)
+        $productIds  = array_column($validated['items'], 'product_id');
+        $products    = Product::where('user_id', $table->user_id)
             ->whereIn('id', $productIds)
             ->get()
             ->keyBy('id');
-
-        $userId = auth()->id();
+        $activeSales = $this->activeSalesFor($table->user_id);
+        $userId      = auth()->id();
 
         foreach ($validated['items'] as $item) {
             $product  = $products->get($item['product_id']);
@@ -145,7 +149,7 @@ class JoinController extends Controller
                 'queue_id'            => $product->queue_id ?: null,
                 'ordered_by_user_id'  => $userId,
                 'quantity'            => $quantity,
-                'price'               => (float) $product->price,
+                'price'               => (float) ($activeSales[$product->id] ?? $product->price),
                 'status'              => QueueItemStatus::PENDING->value,
             ]);
         }
@@ -153,5 +157,29 @@ class JoinController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => 'join_table.order_success']);
 
         return redirect()->route('customer.table', $code);
+    }
+
+    /** Returns a map of product_id → sale_price for currently active sales. */
+    private function activeSalesFor(int $restaurantUserId): Collection
+    {
+        $now         = now();
+        $currentDay  = (int) $now->dayOfWeek;
+        $currentTime = $now->format('H:i:s');
+        $nowDatetime = $now->format('Y-m-d H:i:s');
+
+        return Sale::where('user_id', $restaurantUserId)
+            ->where(function ($q) use ($currentDay, $currentTime, $nowDatetime) {
+                $q->where(function ($q) use ($currentDay, $currentTime) {
+                    $q->where('type', 'periodic')
+                      ->whereJsonContains('days', [$currentDay])
+                      ->where('start_time', '<=', $currentTime)
+                      ->where('end_time', '>=', $currentTime);
+                })->orWhere(function ($q) use ($nowDatetime) {
+                    $q->where('type', 'scheduled')
+                      ->where('starts_at', '<=', $nowDatetime)
+                      ->where('ends_at', '>=', $nowDatetime);
+                });
+            })
+            ->pluck('sale_price', 'product_id');
     }
 }
