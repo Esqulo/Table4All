@@ -57,7 +57,7 @@ Every account has a role (`admin`, `restaurant`, `waiter`, `customer`) that dete
 - **Auth:** Laravel Fortify (2FA, passkeys)
 - **i18n:** `react-i18next` (en, pt-BR)
 
-## Getting started
+## Getting started (local development)
 
 **Requirements:** PHP 8.3+, Composer, Node 22+, PostgreSQL (or edit `.env` for another supported driver).
 
@@ -74,6 +74,38 @@ composer run dev
 ```
 
 `php artisan serve` (started by the command above) listens on `http://localhost:8000` by default.
+
+## Docker deployment
+
+The repo ships a self-contained Docker setup: one `app` container (nginx + PHP-FPM + a queue worker + a scheduler, all supervised) and one `db` container (PostgreSQL), wired together by [`docker-compose.yml`](docker-compose.yml). It's built for a straightforward `docker compose up` deploy to a single host (a VPS, an EC2/Droplet box, Coolify, etc.), not for a TLS-terminating edge — put a reverse proxy in front for HTTPS in production.
+
+**One-time setup:**
+
+```bash
+cp .env.docker.example .env.docker
+# edit .env.docker: at minimum set DB_DATABASE/DB_USERNAME/DB_PASSWORD and APP_URL
+
+docker compose --env-file .env.docker run --rm app php artisan key:generate --show
+# paste the printed key into APP_KEY in .env.docker
+```
+
+**Build and start the stack:**
+
+```bash
+docker compose --env-file .env.docker up -d --build
+```
+
+The app becomes available at `http://localhost:8080` (override the host port with `APP_PORT` in `.env.docker`). On every start, the `app` container automatically runs pending migrations and rebuilds the config/route/view cache from whatever is in `.env.docker` — no manual `artisan` step needed for a fresh deploy.
+
+Two named volumes persist data across `up`/`down` cycles: `db_data` (the Postgres database) and `storage_data` (uploaded product/avatar pictures, mounted at `storage/app/public` in the container). `docker compose ... down -v` deletes both — only do that if you actually mean to wipe the data.
+
+**Useful commands:**
+
+```bash
+docker compose --env-file .env.docker exec app php artisan tinker   # or any other artisan command
+docker compose --env-file .env.docker logs -f app                   # nginx + php-fpm + queue + scheduler logs
+docker compose --env-file .env.docker down                          # stop, keep volumes
+```
 
 ## Testing & code quality
 
