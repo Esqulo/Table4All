@@ -57,54 +57,92 @@ Every account has a role (`admin`, `restaurant`, `waiter`, `customer`) that dete
 - **Auth:** Laravel Fortify (2FA, passkeys)
 - **i18n:** `react-i18next` (en, pt-BR)
 
-## Getting started (local development)
+## Getting started
 
-**Requirements:** PHP 8.3+, Composer, Node 22+, PostgreSQL (or edit `.env` for another supported driver).
+Two ways to run the project: **Docker** (nothing to install but Docker itself — recommended, and the same on every machine) or a **native toolchain** on your host.
+
+### Option A — Docker (development)
+
+**Requirements:** Docker Desktop (or Docker Engine + Compose v2).
+
+```bash
+git clone https://github.com/Esqulo/Table4All.git
+cd Table4All
+docker compose up --build      # add -d to run in the background
+```
+
+That's the whole setup. `docker compose up` builds one `app` container (nginx + PHP-FPM + a `queue:listen` worker + the Vite dev server, supervised) and one `db` container (PostgreSQL), then:
+
+- installs PHP + JS dependencies inside the container,
+- waits for the database and runs migrations,
+- serves the app at **http://localhost:8080** with the Vite dev server on **http://localhost:5173**.
+
+The working tree is bind-mounted into the container, so **edits to PHP or React are picked up live** — Vite HMR for the frontend, no opcache for the backend. `php artisan serve`'s host is `8080` here, not `8000`.
+
+Configuration for this stack lives in [`.env.docker.dev`](.env.docker.dev) (committed, throwaway values). You do **not** need a `.env` file for it.
+
+**Everyday commands** (`app` is the service name):
+
+```bash
+docker compose exec app php artisan tinker        # any artisan command
+docker compose exec app php artisan migrate:fresh --seed
+docker compose exec app composer require vendor/pkg   # deps must be changed *inside* the container
+docker compose exec app npm install some-lib          # (host node_modules/vendor aren't shared)
+docker compose exec app supervisorctl status      # nginx / php-fpm / queue / vite
+docker compose logs -f app                         # combined logs
+docker compose down            # stop, keep data
+docker compose down -v         # stop and wipe the database + uploaded files
+```
+
+> **Windows/macOS:** the bind mount goes through a VM, so PHP is noticeably slower than native. If it bothers you, keep the repo inside the Docker VM's filesystem (WSL2 on Windows: clone under `\\wsl$\...`).
+
+### Connecting a SQL client (DBeaver, TablePlus, …)
+
+The `db` container publishes Postgres on host port **5433** (not 5432, so it won't clash with a Postgres you already have installed):
+
+| Field | Value |
+|---|---|
+| Host | `localhost` |
+| Port | `5433` |
+| Database | `table4all` |
+| User | `table4all` |
+| Password | `table4all` |
+
+### Option B — native toolchain
+
+**Requirements:** PHP 8.3+ (with `pdo_pgsql`), Composer, Node 22+, PostgreSQL.
 
 ```bash
 git clone https://github.com/Esqulo/Table4All.git
 cd Table4All
 composer run setup   # installs PHP + JS deps, creates .env, generates app key, migrates, builds assets
+composer run dev     # server + queue worker + Vite, on http://localhost:8000
 ```
 
-Then start everything (server, queue worker, Vite) with one command:
+## Docker (production)
 
-```bash
-composer run dev
-```
+The same image, built without the dev tooling, runs the production stack: one `app` container (nginx + PHP-FPM + queue worker + scheduler, assets baked in) and one `db` container. Built for a plain `docker compose up` deploy to a single host (VPS, EC2/Droplet, Coolify, …), not for a TLS-terminating edge — put a reverse proxy in front for HTTPS.
 
-`php artisan serve` (started by the command above) listens on `http://localhost:8000` by default.
-
-## Docker deployment
-
-The repo ships a self-contained Docker setup: one `app` container (nginx + PHP-FPM + a queue worker + a scheduler, all supervised) and one `db` container (PostgreSQL), wired together by [`docker-compose.yml`](docker-compose.yml). It's built for a straightforward `docker compose up` deploy to a single host (a VPS, an EC2/Droplet box, Coolify, etc.), not for a TLS-terminating edge — put a reverse proxy in front for HTTPS in production.
-
-**One-time setup:**
+Production runs the **base compose file only** — `-f docker-compose.yml` keeps the development `docker-compose.override.yml` from loading:
 
 ```bash
 cp .env.docker.example .env.docker
 # edit .env.docker: at minimum set DB_DATABASE/DB_USERNAME/DB_PASSWORD and APP_URL
 
-docker compose --env-file .env.docker run --rm app php artisan key:generate --show
+docker compose -f docker-compose.yml --env-file .env.docker run --rm app php artisan key:generate --show
 # paste the printed key into APP_KEY in .env.docker
+
+docker compose -f docker-compose.yml --env-file .env.docker up -d --build
 ```
 
-**Build and start the stack:**
+The app becomes available at `http://localhost:8080` (override the host port with `APP_PORT` in `.env.docker`). On every start the `app` container runs pending migrations and rebuilds the config/route/view cache from `.env.docker` — no manual `artisan` step for a fresh deploy.
+
+Two named volumes persist data across `up`/`down` cycles: `db_data` (the Postgres database) and `storage_data` (uploaded product/avatar pictures). `docker compose -f docker-compose.yml ... down -v` deletes both — only do that if you mean to wipe the data.
 
 ```bash
-docker compose --env-file .env.docker up -d --build
-```
-
-The app becomes available at `http://localhost:8080` (override the host port with `APP_PORT` in `.env.docker`). On every start, the `app` container automatically runs pending migrations and rebuilds the config/route/view cache from whatever is in `.env.docker` — no manual `artisan` step needed for a fresh deploy.
-
-Two named volumes persist data across `up`/`down` cycles: `db_data` (the Postgres database) and `storage_data` (uploaded product/avatar pictures, mounted at `storage/app/public` in the container). `docker compose ... down -v` deletes both — only do that if you actually mean to wipe the data.
-
-**Useful commands:**
-
-```bash
-docker compose --env-file .env.docker exec app php artisan tinker   # or any other artisan command
-docker compose --env-file .env.docker logs -f app                   # nginx + php-fpm + queue + scheduler logs
-docker compose --env-file .env.docker down                          # stop, keep volumes
+docker compose -f docker-compose.yml --env-file .env.docker exec app php artisan tinker
+docker compose -f docker-compose.yml --env-file .env.docker logs -f app
+docker compose -f docker-compose.yml --env-file .env.docker down
 ```
 
 ## Testing & code quality

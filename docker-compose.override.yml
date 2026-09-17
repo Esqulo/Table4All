@@ -1,0 +1,43 @@
+# Development overrides - loaded automatically by `docker compose up`.
+#
+#   docker compose up                        -> DEV  (this file + docker-compose.yml)
+#   docker compose -f docker-compose.yml ...   -> PROD (base file only)
+#
+# Dev differences vs. the production stack:
+#   - built from Dockerfile.dev (adds Node + the Vite dev server, keeps dev deps)
+#   - the working tree is bind-mounted, so code edits are live (no rebuild)
+#   - vendor/ and node_modules/ stay in named volumes, never shared from the host
+#   - APP_DEBUG on, opcache off, queue runs as `queue:listen`
+#   - config comes from .env.docker.dev (throwaway values, committed)
+services:
+  app:
+    # Distinct tag so the dev and prod images never shadow each other.
+    image: table4all-app:dev
+    build:
+      dockerfile: Dockerfile.dev
+    env_file:
+      - .env.docker.dev
+    ports:
+      - "5173:5173"   # Vite dev server (HMR)
+    volumes:
+      # Whole working tree is live-mounted...
+      - .:/var/www/html
+      # ...except these, which must stay Linux-native (host copies carry
+      # win32 binaries / a different PHP ABI). Named volumes, seeded from the image.
+      - dev_vendor:/var/www/html/vendor
+      - dev_node_modules:/var/www/html/node_modules
+      # Cancels the production "storage_data" volume so uploads land in the
+      # working tree where you can see them.
+      - ./storage/app/public:/var/www/html/storage/app/public
+
+  db:
+    environment:
+      POSTGRES_DB: table4all
+      POSTGRES_USER: table4all
+      POSTGRES_PASSWORD: table4all
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U table4all -d table4all"]
+
+volumes:
+  dev_vendor:
+  dev_node_modules:

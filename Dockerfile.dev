@@ -1,0 +1,56 @@
+# syntax=docker/dockerfile:1
+
+# ---- Development image ----
+# One container running nginx + php-fpm + a queue listener + the Vite dev server,
+# all supervised. The application source is NOT copied in - docker-compose.override.yml
+# bind-mounts the working tree over /var/www/html so edits are picked up live.
+# Only the dependency manifests are copied, so `vendor/` and `node_modules/` can be
+# baked into the image (and kept in named volumes) instead of shared from the host,
+# where they'd carry Windows-only binaries that break inside Linux.
+FROM php:8.3-fpm-alpine
+
+# Pinned Node, independent of whatever is (or isn't) installed on the host.
+COPY --from=node:24-alpine /usr/local/bin/node /usr/local/bin/node
+COPY --from=node:24-alpine /usr/local/lib/node_modules /usr/local/lib/node_modules
+RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
+    && ln -s /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx
+
+RUN apk add --no-cache \
+        nginx \
+        supervisor \
+        postgresql-client \
+        git \
+        unzip \
+    && apk add --no-cache --virtual .build-deps \
+        $PHPIZE_DEPS \
+        postgresql-dev \
+        oniguruma-dev \
+        linux-headers \
+    && docker-php-ext-install -j"$(nproc)" pdo_pgsql pgsql mbstring pcntl \
+    && apk del .build-deps \
+    && rm -rf /var/cache/apk/*
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+
+# Warm the dependency caches at build time so the first `up` isn't a cold install.
+# The entrypoint re-syncs both on every boot to catch lockfile changes.
+COPY composer.json composer.lock ./
+RUN composer install --no-interaction --no-progress --no-scripts --no-autoloader
+
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund \
+    && md5sum package-lock.json | cut -d' ' -f1 > node_modules/.lock-hash
+
+COPY docker/php/php.dev.ini /usr/local/etc/php/conf.d/99-app.ini
+COPY docker/php/www.conf /usr/local/etc/php-fpm.d/www.conf
+COPY docker/nginx/default.conf /etc/nginx/http.d/default.conf
+COPY docker/supervisord.dev.conf /etc/supervisord.conf
+COPY docker/entrypoint.dev.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+EXPOSE 80 5173
+
+ENTRYPOINT ["entrypoint.sh"]
+CMD ["supervisord", "-c", "/etc/supervisord.conf"]
