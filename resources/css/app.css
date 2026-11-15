@@ -258,3 +258,110 @@
         animation: none;
     }
 }
+
+/*
+ * Auth screens: same world as the welcome page. The shadcn tokens are remapped
+ * to the welcome palette inside this scope, so the existing forms adopt it.
+ */
+.t4a-auth {
+    --background: var(--w-ground);
+    --foreground: var(--w-ink);
+    --card: var(--w-paper);
+    --card-foreground: var(--w-paper-ink);
+    --muted: color-mix(in oklch, var(--w-ink) 7%, transparent);
+    --muted-foreground: var(--w-ink-soft);
+    --accent: color-mix(in oklch, var(--w-ink) 7%, transparent);
+    --accent-foreground: var(--w-ink);
+    --border: var(--w-rule);
+    --input: color-mix(in oklch, var(--w-ink) 26%, transparent);
+    --ring: var(--w-green);
+    --primary: var(--w-btn-bg);
+    --primary-foreground: var(--w-btn-fg);
+    --destructive: var(--w-error);
+
+    /* Tailwind v4 resolves --color-* once at :root, so remap them here too. */
+    --color-background: var(--w-ground);
+    --color-foreground: var(--w-ink);
+    --color-card: var(--w-paper);
+    --color-card-foreground: var(--w-paper-ink);
+    --color-muted: color-mix(in oklch, var(--w-ink) 7%, transparent);
+    --color-muted-foreground: var(--w-ink-soft);
+    --color-accent: color-mix(in oklch, var(--w-ink) 7%, transparent);
+    --color-accent-foreground: var(--w-ink);
+    --color-border: var(--w-rule);
+    --color-input: color-mix(in oklch, var(--w-ink) 26%, transparent);
+    --color-ring: var(--w-green);
+    --color-primary: var(--w-btn-bg);
+    --color-primary-foreground: var(--w-btn-fg);
+    --color-destructive: var(--w-error);
+}
+
+/* Text fields sit on paper, like the contact form, in both themes. */
+.t4a-auth [data-slot='input'] {
+    height: 3rem;
+    border-radius: 0.75rem;
+    border-color: var(--w-rule);
+    background-color: var(--w-paper);
+    color: var(--w-paper-ink);
+    padding-inline: 1rem;
+    font-size: 16px;
+    box-shadow: inset 0 1px 2px oklch(0.2 0.02 155 / 0.06);
+}
+
+.t4a-auth [data-slot='input']::placeholder {
+    color: var(--w-paper-soft);
+}
+
+.t4a-auth [data-slot='input'][type='file'] {
+    padding-block: 0.65rem;
+}
+
+.t4a-auth [data-slot='input']::file-selector-button {
+    margin-right: 0.75rem;
+    border: 1px solid var(--w-paper-rule);
+    border-radius: 9999px;
+    padding-inline: 0.85rem;
+    color: var(--w-paper-ink);
+    font-weight: 600;
+}
+
+.t4a-auth [data-slot='input'].rounded-l-none {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* Icons inside a paper field (password visibility toggle) use paper ink. */
+.t4a-auth [data-slot='input'] + button {
+    color: var(--w-paper-soft);
+}
+
+.t4a-auth [data-slot='input'] + button:hover {
+    color: var(--w-paper-ink);
+}
+
+.t4a-auth [data-slot='label'] {
+    font-size: 15px;
+}
+
+.t4a-auth button[type='submit'][data-slot='button'] {
+    height: 3rem;
+    border-radius: 9999px;
+    font-size: 15px;
+    font-weight: 600;
+    box-shadow:
+        0 1px 2px oklch(0.2 0.03 155 / 0.25),
+        0 8px 18px -8px oklch(0.3 0.08 157 / 0.55);
+}
+
+.t4a-auth button[type='submit'][data-slot='button']:hover:not(:disabled) {
+    background-color: var(--w-btn-bg-hover);
+}
+
+.t4a-auth a.underline {
+    text-decoration-color: color-mix(in oklch, var(--w-green) 45%, transparent);
+}
+
+.t4a-auth a.underline:hover {
+    color: var(--w-green);
+    text-decoration-color: var(--w-green);
+}

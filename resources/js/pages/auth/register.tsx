@@ -64,7 +64,7 @@ export default function Register({ passwordRules }: Props) {
                             <div className="grid gap-2">
                                 <Label htmlFor="phone">{t('auth.register.phone_label')}</Label>
                                 <div className="flex">
-                                    <span className="border-input bg-muted text-muted-foreground inline-flex h-9 items-center rounded-l-md border border-r-0 px-3 text-sm select-none">
+                                    <span className="inline-flex h-12 items-center rounded-l-xl border border-r-0 border-[var(--w-rule)] bg-[color-mix(in_oklch,var(--w-paper)_90%,var(--w-paper-ink))] px-4 text-[16px] text-[var(--w-paper-soft)] select-none">
                                         +55
                                     </span>
                                     <Input

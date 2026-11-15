@@ -65,6 +65,9 @@
             "link_sent": "Um novo link de verificação foi enviado para o endereço de e-mail que você forneceu durante o cadastro.",
             "resend": "Reenviar e-mail de verificação",
             "log_out": "Sair"
+        },
+        "panel": {
+            "lead": "Pedido pelo QR, fila da cozinha e pagamento dividido numa comanda só."
         }
     },
     "nav": {

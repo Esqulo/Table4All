@@ -65,6 +65,9 @@
             "link_sent": "A new verification link has been sent to the email address you provided during registration.",
             "resend": "Resend verification email",
             "log_out": "Log out"
+        },
+        "panel": {
+            "lead": "QR ordering, the kitchen queue and split payments on a single tab."
         }
     },
     "nav": {
