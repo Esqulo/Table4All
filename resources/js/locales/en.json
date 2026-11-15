@@ -21,8 +21,6 @@
             "email_label": "Email address",
             "phone_label": "Phone number",
             "phone_placeholder": "11 99999-9999",
-            "avatar_label": "Profile picture (optional)",
-            "avatar_preview_alt": "Avatar preview",
             "password_label": "Password",
             "password_placeholder": "Password",
             "confirm_password_label": "Confirm password",
@@ -494,7 +492,6 @@
         "status_pending": "Waiting for waiter"
     },
     "welcome": {
-        "head": "Table, order and bill management for bars and restaurants",
         "nav": {
             "how": "How it works",
             "owners": "For venues",
@@ -540,7 +537,6 @@
             "table": "Table 12",
             "opened": "Opened at 7:42 pm · 3 guests",
             "closed": "Closed at 11:10 pm",
-            "example": "Illustrative example",
             "items": {
                 "chopp": "Pilsner draft 300ml",
                 "pastel": "Cheese pastel (6 pcs)",

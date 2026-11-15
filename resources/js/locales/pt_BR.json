@@ -21,8 +21,6 @@
             "email_label": "Endereço de e-mail",
             "phone_label": "Número de telefone",
             "phone_placeholder": "11 99999-9999",
-            "avatar_label": "Foto de perfil (opcional)",
-            "avatar_preview_alt": "Prévia do avatar",
             "password_label": "Senha",
             "password_placeholder": "Senha",
             "confirm_password_label": "Confirmar senha",
@@ -494,7 +492,6 @@
         "status_pending": "Aguardando garçom"
     },
     "welcome": {
-        "head": "Gestão de mesas, pedidos e contas para estabelecimentos",
         "nav": {
             "how": "Como funciona",
             "owners": "Para estabelecimentos",
@@ -540,7 +537,6 @@
             "table": "Mesa 12",
             "opened": "Aberta às 19:42 · 3 pessoas",
             "closed": "Fechada às 23:10",
-            "example": "Exemplo ilustrativo",
             "items": {
                 "chopp": "Chopp Pilsen 300ml",
                 "pastel": "Pastel de queijo (6 un.)",

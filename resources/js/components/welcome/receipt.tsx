@@ -222,10 +222,6 @@ export function Receipt({
                         )}
                     </div>
                 )}
-
-                <p className="mt-6 text-center text-[11px] tracking-[0.14em] text-[var(--w-paper-soft)] uppercase">
-                    {t('welcome.receipt.example')}
-                </p>
             </div>
         </figure>
     );

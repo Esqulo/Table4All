@@ -11,7 +11,8 @@ import SettingsLayout from '@/layouts/settings/layout';
 const appName = import.meta.env.VITE_APP_NAME || 'Table4All';
 
 createInertiaApp({
-    title: (title) => (title ? `${title} - ${appName}` : appName),
+    // Pages without a title (the home page) show the brand name as written in the logo.
+    title: (title) => (title ? `${title} - ${appName}` : 'Table 4 all'),
     layout: (name) => {
         switch (true) {
             case name === 'welcome':

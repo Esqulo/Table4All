@@ -107,7 +107,7 @@ export default function Welcome() {
 
     return (
         <>
-            <Head title={t('welcome.head')} />
+            <Head />
 
             <SitePage>
                 {/* Hero + the night at the table, with the receipt following along */}
