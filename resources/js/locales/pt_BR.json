@@ -488,5 +488,111 @@
         "items": "itens",
         "status_done": "Pronto na cozinha",
         "status_pending": "Aguardando garçom"
+    },
+    "welcome": {
+        "head": "Gestão de mesas, pedidos e contas para bares",
+        "nav": {
+            "how": "Como funciona",
+            "owners": "Para bares",
+            "guests": "Para clientes",
+            "main": "Navegação principal"
+        },
+        "cta": {
+            "register": "Criar conta",
+            "login": "Entrar",
+            "dashboard": "Ir para o painel",
+            "owners_link": "Tem um bar? Veja como a conta fecha"
+        },
+        "hero": {
+            "title": "Toda mesa fecha com a conta certa.",
+            "lead": "O Table4All junta o pedido pelo QR, a fila da cozinha e o pagamento dividido numa comanda só. O dono sabe quanto entrou. O cliente pede sem esperar o garçom."
+        },
+        "steps": {
+            "label": "Uma noite de mesa, do pedido ao fechamento",
+            "order": {
+                "title": "O cliente pede pelo celular",
+                "body": "Cada mesa tem um QR. Quem senta escaneia, vê o cardápio com fotos e preços e manda o pedido. Ninguém precisa chamar o garçom, e nada é anotado errado."
+            },
+            "queue": {
+                "title": "Cada pedido vai para a fila certa",
+                "body": "O chopp cai na fila do bar, a porção na fila da cozinha. Quem prepara marca como pronto, quem serve marca como entregue. Item sem preparo vai direto para a entrega."
+            },
+            "price": {
+                "title": "O preço fica gravado na hora do pedido",
+                "body": "Promoção de happy hour ou de data marcada vale no momento em que o item é pedido. O happy hour acabou às 20h, mas o chopp pedido às 19:42 continua com o preço da promoção. Mudou o cardápio depois? A conta da mesa não muda."
+            },
+            "payments": {
+                "title": "Conta dividida, sem calculadora",
+                "body": "Cada um paga a sua parte em Pix, cartão, dinheiro ou cupom. A comanda mostra quanto já entrou e quanto falta, e o cliente vê o mesmo número no celular."
+            },
+            "close": {
+                "title": "A mesa só fecha quando a conta bate",
+                "body": "Só dá para fechar a mesa quando os pagamentos cobrem o total. Cada conta fechada vai para o painel: faturamento por dia, mais vendidos, ticket médio por mesa e formas de pagamento."
+            }
+        },
+        "receipt": {
+            "label": "Comanda de exemplo",
+            "brand": "Comanda",
+            "table": "Mesa 12",
+            "opened": "Aberta às 19:42 · 3 pessoas",
+            "closed": "Fechada às 23:10",
+            "example": "Exemplo ilustrativo",
+            "items": {
+                "chopp": "Chopp Pilsen 300ml",
+                "pastel": "Pastel de queijo (6 un.)",
+                "caipirinha": "Caipirinha de limão",
+                "mandioca": "Porção de mandioca"
+            },
+            "via_qr": "QR · {{name}}",
+            "status": {
+                "queued": "na fila",
+                "ready": "pronto",
+                "delivered": "entregue"
+            },
+            "queue": {
+                "bar": "Bar",
+                "kitchen": "Cozinha"
+            },
+            "promo": "Happy hour 17h–20h · era {{price}}",
+            "subtotal": "Total da mesa",
+            "paid_label": "Pagamentos",
+            "methods": {
+                "pix": "Pix",
+                "card": "Cartão",
+                "cash": "Dinheiro"
+            },
+            "remaining": "Falta",
+            "paid_stamp": "Pago"
+        },
+        "sides": {
+            "title": "Dos dois lados do balcão",
+            "owners": {
+                "title": "Para quem toca o bar",
+                "items": [
+                    "Mesas, garçons e cardápio num lugar só",
+                    "Filas de preparo separadas para cozinha, bar e o que mais precisar",
+                    "Promoções por dia da semana e horário, ou por data",
+                    "Painel com faturamento, mais vendidos e formas de pagamento",
+                    "Cardápio pronto para imprimir, com QR"
+                ]
+            },
+            "guests": {
+                "title": "Para quem senta à mesa",
+                "items": [
+                    "Escaneou o QR, já está na mesa",
+                    "Pede no seu ritmo, sem levantar a mão",
+                    "Acompanha o que está sendo preparado e o que já chegou",
+                    "Vê o total, quanto já foi pago e quanto cada um deve"
+                ]
+            }
+        },
+        "closing": {
+            "title": "Hoje tem mesa aberta.",
+            "body": "Crie sua conta para pedir pelo QR, ou entre para cuidar do seu bar."
+        },
+        "footer": {
+            "rights": "© {{year}} Table4All",
+            "made": "Feito para bares e restaurantes do Brasil."
+        }
     }
 }

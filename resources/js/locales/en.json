@@ -488,5 +488,111 @@
         "items": "items",
         "status_done": "Ready in kitchen",
         "status_pending": "Waiting for waiter"
+    },
+    "welcome": {
+        "head": "Table, order and bill management for bars",
+        "nav": {
+            "how": "How it works",
+            "owners": "For bars",
+            "guests": "For guests",
+            "main": "Main navigation"
+        },
+        "cta": {
+            "register": "Create account",
+            "login": "Log in",
+            "dashboard": "Go to dashboard",
+            "owners_link": "Run a bar? See how the bill adds up"
+        },
+        "hero": {
+            "title": "Every table closes with the right bill.",
+            "lead": "Table4All puts QR ordering, the kitchen queue and split payments on a single tab. Owners know exactly what came in. Guests order without waiting for a waiter."
+        },
+        "steps": {
+            "label": "One night at a table, from first order to closing",
+            "order": {
+                "title": "Guests order from their phone",
+                "body": "Every table has a QR code. Whoever sits down scans it, sees the menu with photos and prices, and sends the order. No flagging down the waiter, no orders taken down wrong."
+            },
+            "queue": {
+                "title": "Every order goes to the right queue",
+                "body": "Draft beer lands in the bar queue, appetizers in the kitchen queue. Whoever prepares marks it ready, whoever serves marks it delivered. Items with no prep go straight to delivery."
+            },
+            "price": {
+                "title": "The price is locked when the order is placed",
+                "body": "Happy hour or date-based promotions apply the moment an item is ordered. Happy hour ended at 8 pm, but the beer ordered at 7:42 keeps its promo price. Changed the menu later? The table's bill stays the same."
+            },
+            "payments": {
+                "title": "Split the bill, no calculator",
+                "body": "Everyone pays their share by Pix, card, cash or coupon. The tab shows what has been paid and what is left, and guests see the same number on their phone."
+            },
+            "close": {
+                "title": "A table only closes when the bill adds up",
+                "body": "A table can only be closed once payments cover the total. Every closed bill feeds the dashboard: revenue per day, best sellers, average ticket per table and payment methods."
+            }
+        },
+        "receipt": {
+            "label": "Sample tab",
+            "brand": "Tab",
+            "table": "Table 12",
+            "opened": "Opened at 7:42 pm · 3 guests",
+            "closed": "Closed at 11:10 pm",
+            "example": "Illustrative example",
+            "items": {
+                "chopp": "Pilsner draft 300ml",
+                "pastel": "Cheese pastel (6 pcs)",
+                "caipirinha": "Lime caipirinha",
+                "mandioca": "Fried cassava"
+            },
+            "via_qr": "QR · {{name}}",
+            "status": {
+                "queued": "queued",
+                "ready": "ready",
+                "delivered": "delivered"
+            },
+            "queue": {
+                "bar": "Bar",
+                "kitchen": "Kitchen"
+            },
+            "promo": "Happy hour 5–8 pm · was {{price}}",
+            "subtotal": "Table total",
+            "paid_label": "Payments",
+            "methods": {
+                "pix": "Pix",
+                "card": "Card",
+                "cash": "Cash"
+            },
+            "remaining": "Left to pay",
+            "paid_stamp": "Paid"
+        },
+        "sides": {
+            "title": "Both sides of the counter",
+            "owners": {
+                "title": "For whoever runs the bar",
+                "items": [
+                    "Tables, waiters and menus in one place",
+                    "Separate prep queues for the kitchen, the bar and anything else",
+                    "Promotions by weekday and time, or by date",
+                    "Dashboard with revenue, best sellers and payment methods",
+                    "Print-ready menus with a QR code"
+                ]
+            },
+            "guests": {
+                "title": "For whoever sits at the table",
+                "items": [
+                    "Scan the QR and you are at the table",
+                    "Order at your own pace, no hand-raising",
+                    "Follow what is being prepared and what has arrived",
+                    "See the total, what has been paid and what each person owes"
+                ]
+            }
+        },
+        "closing": {
+            "title": "There's a table open tonight.",
+            "body": "Create an account to order by QR, or log in to run your bar."
+        },
+        "footer": {
+            "rights": "© {{year}} Table4All",
+            "made": "Made for bars and restaurants in Brazil."
+        }
     }
 }

@@ -13,6 +13,12 @@
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
 
+    --font-display:
+        'Big Shoulders Display', 'Big Shoulders Display fallback',
+        ui-sans-serif, system-ui, sans-serif;
+    --font-receipt:
+        'IBM Plex Mono', 'IBM Plex Mono fallback', ui-monospace, monospace;
+
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
     --radius-sm: calc(var(--radius) - 4px);
@@ -139,5 +145,114 @@
 
     body {
         @apply bg-background text-foreground;
+    }
+}
+
+/*
+ * Welcome page world: "comanda de boteco".
+ * Warm paper ground, bottle-green ink, a red stamp reserved for "PAGO".
+ * The receipt is a paper object and stays paper in dark mode.
+ */
+.t4a-welcome {
+    --w-ground: oklch(0.955 0.018 85);
+    --w-ink: oklch(0.23 0.025 155);
+    --w-ink-soft: oklch(0.42 0.03 150);
+    --w-green: oklch(0.45 0.11 157);
+    --w-green-strong: oklch(0.38 0.1 157);
+    --w-green-ground: oklch(0.32 0.065 157);
+    --w-on-green: oklch(0.96 0.02 90);
+    --w-on-green-soft: oklch(0.85 0.045 140);
+    --w-rule: oklch(0.86 0.025 85);
+    --w-paper: oklch(0.992 0.008 90);
+    --w-paper-ink: oklch(0.24 0.02 155);
+    --w-paper-soft: oklch(0.46 0.025 150);
+    --w-paper-rule: oklch(0.8 0.02 85);
+    --w-paper-green: oklch(0.42 0.1 157);
+    --w-stamp: oklch(0.53 0.19 28);
+    --w-amber: oklch(0.8 0.14 78);
+    --w-btn-bg: oklch(0.38 0.1 157);
+    --w-btn-bg-hover: oklch(0.32 0.09 157);
+    --w-btn-fg: oklch(0.97 0.02 90);
+
+    background-color: var(--w-ground);
+    color: var(--w-ink);
+    accent-color: var(--w-green);
+    caret-color: var(--w-green);
+}
+
+.dark .t4a-welcome {
+    --w-ground: oklch(0.175 0.022 155);
+    --w-ink: oklch(0.95 0.018 88);
+    --w-ink-soft: oklch(0.8 0.03 120);
+    --w-green: oklch(0.8 0.13 157);
+    --w-green-strong: oklch(0.86 0.12 157);
+    --w-green-ground: oklch(0.24 0.045 157);
+    --w-on-green: oklch(0.96 0.02 90);
+    --w-on-green-soft: oklch(0.84 0.045 140);
+    --w-rule: oklch(0.3 0.025 155);
+    --w-paper: oklch(0.95 0.014 88);
+    --w-btn-bg: oklch(0.8 0.13 157);
+    --w-btn-bg-hover: oklch(0.86 0.12 157);
+    --w-btn-fg: oklch(0.18 0.03 155);
+}
+
+.t4a-welcome ::selection {
+    background-color: var(--w-amber);
+    color: oklch(0.2 0.02 155);
+}
+
+.t4a-welcome :focus-visible {
+    outline: 2px solid var(--w-green);
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+
+.t4a-welcome a {
+    text-underline-offset: 0.22em;
+    text-decoration-thickness: 1px;
+}
+
+/* Torn bottom edge of the receipt. */
+.t4a-receipt {
+    --tooth: 10px;
+    mask:
+        linear-gradient(#000 0 0) top / 100% calc(100% - var(--tooth)) no-repeat,
+        conic-gradient(
+                from -45deg at bottom,
+                #0000,
+                #000 1deg 89deg,
+                #0000 90deg
+            )
+            bottom / calc(var(--tooth) * 2) var(--tooth) repeat-x;
+}
+
+.t4a-line-enter {
+    animation: t4a-print 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.t4a-stamp-enter {
+    animation: t4a-stamp 640ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes t4a-print {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+        filter: blur(3px);
+    }
+}
+
+@keyframes t4a-stamp {
+    from {
+        opacity: 0;
+        transform: scale(1.6);
+        filter: blur(6px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .t4a-line-enter,
+    .t4a-stamp-enter {
+        animation: none;
     }
 }

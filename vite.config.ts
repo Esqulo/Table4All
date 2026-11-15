@@ -33,6 +33,18 @@ export default defineConfig({
                 bunny('Instrument Sans', {
                     weights: [400, 500, 600],
                 }),
+                // Display face of the welcome page (bar signage). Only the hero weight is preloaded.
+                bunny('Big Shoulders Display', {
+                    weights: [700, 800],
+                    subsets: ['latin', 'latin-ext'],
+                    preload: [{ weight: 800 }],
+                }),
+                // Receipt figures on the welcome page.
+                bunny('IBM Plex Mono', {
+                    weights: [400, 500],
+                    subsets: ['latin', 'latin-ext'],
+                    preload: false,
+                }),
             ],
         }),
         inertia(),
