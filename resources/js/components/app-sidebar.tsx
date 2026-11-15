@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BarChart3, BookOpen, ConciergeBell, FolderGit2, LayoutGrid, ListOrdered, Percent, QrCode, ScrollText, ShoppingBag, Tag, Users, UtensilsCrossed } from 'lucide-react';
+import { BarChart3, ConciergeBell, LayoutGrid, ListOrdered, Percent, QrCode, ScrollText, ShoppingBag, Tag, Users, UtensilsCrossed } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import CategoryController from '@/actions/App/Http/Controllers/Admin/CategoryController';
 import CustomerJoinController from '@/actions/App/Http/Controllers/Customer/JoinController';
@@ -12,7 +12,6 @@ import SaleController from '@/actions/App/Http/Controllers/Restaurant/SaleContro
 import TableController from '@/actions/App/Http/Controllers/Restaurant/TableController';
 import WaiterController from '@/actions/App/Http/Controllers/Restaurant/WaiterController';
 import AppLogo from '@/components/app-logo';
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
@@ -120,18 +119,6 @@ export function AppSidebar() {
                 },
             ];
 
-    const footerNavItems: NavItem[] = [
-        {
-            title: t('nav.repository'),
-            href: 'https://github.com/laravel/react-starter-kit',
-            icon: FolderGit2,
-        },
-        {
-            title: t('nav.documentation'),
-            href: 'https://laravel.com/docs/starter-kits#react',
-            icon: BookOpen,
-        },
-    ];
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -152,7 +139,6 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

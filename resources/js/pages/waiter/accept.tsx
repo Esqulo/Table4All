@@ -26,7 +26,7 @@ export default function WaiterAccept({ token, email, restaurant, email_taken }: 
 
             <div className="w-full max-w-sm space-y-6">
                 <div className="flex flex-col items-center gap-3 text-center">
-                    <AppLogoIcon className="h-12 w-12" />
+                    <AppLogoIcon className="h-14 w-12" />
                     <h1 className="text-xl font-semibold">
                         Convite de <span className="text-primary">{restaurant.name}</span>
                     </h1>
