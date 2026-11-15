@@ -2,13 +2,14 @@ import { Head, Link, usePage } from '@inertiajs/react';
 import { ArrowDown, ArrowRight } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import AppLogoIcon from '@/components/app-logo-icon';
-import AppLogoWordmark from '@/components/app-logo-wordmark';
-import { DarkModeToggle } from '@/components/dark-mode-toggle';
-import { LanguageToggle } from '@/components/language-toggle';
 import { Receipt, RECEIPT_LAST_STAGE } from '@/components/welcome/receipt';
+import {
+    btnPrimary,
+    btnSecondary,
+    SitePage,
+} from '@/components/welcome/site-chrome';
 import { cn } from '@/lib/utils';
-import { dashboard, home, login, register } from '@/routes';
+import { contact, dashboard, login, register } from '@/routes';
 
 const STEPS = [
     { key: 'order', time: [19, 48] },
@@ -17,11 +18,6 @@ const STEPS = [
     { key: 'payments', time: [22, 51] },
     { key: 'close', time: [23, 10] },
 ] as const;
-
-const btnPrimary =
-    'inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[var(--w-btn-bg)] px-7 text-[15px] font-semibold text-[var(--w-btn-fg)] shadow-[0_1px_2px_oklch(0.2_0.03_155/0.25),0_8px_18px_-8px_oklch(0.3_0.08_157/0.55)] transition-colors duration-200 hover:bg-[var(--w-btn-bg-hover)]';
-const btnSecondary =
-    'inline-flex h-12 items-center justify-center rounded-full border border-[color-mix(in_oklch,var(--w-ink)_28%,transparent)] px-7 text-[15px] font-semibold text-[var(--w-ink)] transition-colors duration-200 hover:border-[var(--w-ink)] hover:bg-[color-mix(in_oklch,var(--w-ink)_5%,transparent)]';
 
 /** Receipt follows the scroll on wide screens; on phones it shows the closed tab. */
 function useScrollStory(): boolean {
@@ -84,7 +80,6 @@ export default function Welcome() {
     );
     const formatTime = ([h, m]: readonly [number, number]) =>
         timeFormat.format(new Date(2026, 0, 1, h, m));
-    const year = new Date().getFullYear();
 
     const ownerItems = t('welcome.sides.owners.items', {
         returnObjects: true,
@@ -114,70 +109,7 @@ export default function Welcome() {
         <>
             <Head title={t('welcome.head')} />
 
-            <div className="t4a-welcome min-h-svh overflow-x-clip font-sans antialiased">
-                {/* Header */}
-                <header className="mx-auto flex max-w-[76rem] items-center justify-between gap-4 px-4 py-5 sm:px-6 lg:px-8">
-                    <Link
-                        href={home()}
-                        className="flex items-center gap-2.5 rounded-md"
-                    >
-                        <AppLogoIcon className="h-10 w-7" />
-                        <AppLogoWordmark className="h-[1.35rem] sm:h-6" />
-                    </Link>
-
-                    <nav
-                        aria-label={t('welcome.nav.main')}
-                        className="hidden items-center gap-7 text-[15px] font-medium md:flex"
-                    >
-                        <a
-                            href="#como-funciona"
-                            className="hover:text-[var(--w-green)]"
-                        >
-                            {t('welcome.nav.how')}
-                        </a>
-                        <a
-                            href="#bares"
-                            className="hover:text-[var(--w-green)]"
-                        >
-                            {t('welcome.nav.owners')}
-                        </a>
-                        <a
-                            href="#clientes"
-                            className="hover:text-[var(--w-green)]"
-                        >
-                            {t('welcome.nav.guests')}
-                        </a>
-                    </nav>
-
-                    <div className="flex items-center gap-1 sm:gap-2">
-                        <LanguageToggle />
-                        <DarkModeToggle />
-                        {auth.user ? (
-                            <Link
-                                href={dashboard()}
-                                className="ml-1 hidden rounded-full px-4 py-2 text-[15px] font-semibold hover:text-[var(--w-green)] sm:inline-flex"
-                            >
-                                {t('welcome.cta.dashboard')}
-                            </Link>
-                        ) : (
-                            <>
-                                <Link
-                                    href={login()}
-                                    className="ml-1 rounded-full px-3 py-2 text-[15px] font-semibold hover:text-[var(--w-green)] sm:px-4"
-                                >
-                                    {t('welcome.cta.login')}
-                                </Link>
-                                <Link
-                                    href={register()}
-                                    className="hidden rounded-full bg-[var(--w-btn-bg)] px-4 py-2 text-[15px] font-semibold text-[var(--w-btn-fg)] transition-colors hover:bg-[var(--w-btn-bg-hover)] sm:inline-flex"
-                                >
-                                    {t('welcome.cta.register')}
-                                </Link>
-                            </>
-                        )}
-                    </div>
-                </header>
-
+            <SitePage>
                 {/* Hero + the night at the table, with the receipt following along */}
                 <div
                     ref={storyRef}
@@ -321,6 +253,21 @@ export default function Welcome() {
                                             </li>
                                         ))}
                                     </ul>
+                                    {col.side === 'owners' && (
+                                        <p className="mt-5 text-[15px] text-[var(--w-on-green-soft)]">
+                                            {t(
+                                                'welcome.sides.owners.contact_prompt',
+                                            )}{' '}
+                                            <Link
+                                                href={contact()}
+                                                className="font-medium text-[var(--w-on-green)] underline decoration-[color-mix(in_oklch,var(--w-on-green)_40%,transparent)] underline-offset-4 hover:decoration-[var(--w-on-green)] focus-visible:outline-[var(--w-on-green)]"
+                                            >
+                                                {t(
+                                                    'welcome.sides.owners.contact_link',
+                                                )}
+                                            </Link>
+                                        </p>
+                                    )}
                                     {!auth.user && (
                                         <Link
                                             href={col.cta}
@@ -351,17 +298,7 @@ export default function Welcome() {
                         {authActions}
                     </div>
                 </section>
-
-                <footer className="border-t border-[var(--w-rule)]">
-                    <div className="mx-auto flex max-w-[76rem] flex-col gap-3 px-4 py-8 text-sm text-[var(--w-ink-soft)] sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-                        <span className="flex items-center gap-2 font-medium text-[var(--w-ink)]">
-                            <AppLogoIcon className="h-6 w-4" />
-                            {t('welcome.footer.rights', { year })}
-                        </span>
-                        <span>{t('welcome.footer.made')}</span>
-                    </div>
-                </footer>
-            </div>
+            </SitePage>
         </>
     );
 }

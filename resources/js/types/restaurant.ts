@@ -52,7 +52,10 @@ export type Product = {
     updated_at: string;
 };
 
-export type OrderItem = Pick<Product, 'id' | 'name' | 'picture' | 'picture_url' | 'price' | 'price_type'> & {
+export type OrderItem = Pick<
+    Product,
+    'id' | 'name' | 'picture' | 'picture_url' | 'price' | 'price_type'
+> & {
     pivot: { quantity: number };
 };
 
@@ -135,6 +138,21 @@ export type RestaurantTable = {
     products: OrderItem[];
     payments: TablePayment[];
     products_count: number;
+    created_at: string;
+    updated_at: string;
+};
+
+export type AdmissionRequestStatus = 'pending' | 'contacted' | 'archived';
+
+export type AdmissionRequest = {
+    id: number;
+    business_name: string;
+    contact_email: string;
+    phone: string | null;
+    city: string | null;
+    tables: number | null;
+    message: string | null;
+    status: AdmissionRequestStatus;
     created_at: string;
     updated_at: string;
 };

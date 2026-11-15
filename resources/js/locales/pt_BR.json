@@ -82,7 +82,8 @@
         "repository": "Repositório",
         "documentation": "Documentação",
         "settings": "Configurações",
-        "log_out": "Sair"
+        "log_out": "Sair",
+        "admission_requests": "Solicitações"
     },
     "settings": {
         "title": "Configurações",
@@ -490,10 +491,10 @@
         "status_pending": "Aguardando garçom"
     },
     "welcome": {
-        "head": "Gestão de mesas, pedidos e contas para bares",
+        "head": "Gestão de mesas, pedidos e contas para estabelecimentos",
         "nav": {
             "how": "Como funciona",
-            "owners": "Para bares",
+            "owners": "Para estabelecimentos",
             "guests": "Para clientes",
             "main": "Navegação principal"
         },
@@ -501,7 +502,7 @@
             "register": "Criar conta",
             "login": "Entrar",
             "dashboard": "Ir para o painel",
-            "owners_link": "Tem um bar? Veja como a conta fecha"
+            "owners_link": "Tem um estabelecimento? Veja como a conta fecha"
         },
         "hero": {
             "title": "Toda mesa fecha com a conta certa.",
@@ -567,14 +568,16 @@
         "sides": {
             "title": "Dos dois lados do balcão",
             "owners": {
-                "title": "Para quem toca o bar",
+                "title": "Para quem toca o estabelecimento",
                 "items": [
                     "Mesas, garçons e cardápio num lugar só",
                     "Filas de preparo separadas para cozinha, bar e o que mais precisar",
                     "Promoções por dia da semana e horário, ou por data",
                     "Painel com faturamento, mais vendidos e formas de pagamento",
                     "Cardápio pronto para imprimir, com QR"
-                ]
+                ],
+                "contact_prompt": "Quer o Table4All no seu estabelecimento?",
+                "contact_link": "Fale com a gente"
             },
             "guests": {
                 "title": "Para quem senta à mesa",
@@ -588,11 +591,100 @@
         },
         "closing": {
             "title": "Hoje tem mesa aberta.",
-            "body": "Crie sua conta para pedir pelo QR, ou entre para cuidar do seu bar."
+            "body": "Crie sua conta para pedir pelo QR, ou entre para cuidar do seu estabelecimento."
         },
         "footer": {
             "rights": "© {{year}} Table4All",
-            "made": "Feito para bares e restaurantes do Brasil."
+            "made": "Feito para bares e restaurantes do Brasil.",
+            "contact": "Contato"
         }
+    },
+    "contact": {
+        "head": "Contato para estabelecimentos",
+        "title": "Leve o Table4All para o seu estabelecimento.",
+        "lead": "Conte um pouco sobre o seu estabelecimento. A equipe do Table4All entra em contato para conversar sobre como usar a ferramenta no seu negócio.",
+        "form": {
+            "title": "Entre em contato",
+            "hint": "Envie seus dados por aqui e a gente responde pelo e-mail ou telefone que você informar.",
+            "required": "obrigatório",
+            "fields": {
+                "business_name": "Nome do estabelecimento",
+                "contact_email": "Seu e-mail",
+                "phone": "Telefone ou WhatsApp",
+                "city": "Cidade",
+                "tables": "Quantas mesas?",
+                "message": "Quer contar mais alguma coisa?"
+            },
+            "placeholders": {
+                "business_name": "Bar do Zé",
+                "contact_email": "voce@seubar.com.br",
+                "phone": "(31) 99999-9999",
+                "city": "Belo Horizonte – MG",
+                "tables": "12",
+                "message": "Horário de funcionamento, se já usa algum sistema, dúvidas…"
+            },
+            "submit": "Enviar solicitação",
+            "sending": "Enviando…",
+            "privacy": "Seus dados ficam só com a equipe do Table4All e servem apenas para responder esta solicitação.",
+            "fix_errors": "Confira os campos destacados acima.",
+            "sent_title": "Solicitação enviada.",
+            "sent_body": "Recebemos os dados de {{name}}. A equipe do Table4All vai responder em {{email}}.",
+            "send_another": "Enviar outra solicitação",
+            "sent_toast": "Solicitação enviada! Em breve a gente entra em contato."
+        },
+        "email_alt": {
+            "title": "Prefere escrever um e-mail?",
+            "subject": "Quero o Table4All no meu estabelecimento",
+            "default": "Abrir meu app de e-mail",
+            "gmail": "Gmail",
+            "outlook": "Outlook",
+            "copy": "Copiar e-mail",
+            "copied": "E-mail copiado",
+            "copy_failed": "Não deu para copiar. Selecione o endereço acima e copie manualmente."
+        },
+        "summary": {
+            "label": "Resumo da solicitação",
+            "stamp": "Recebido",
+            "note_sent": "Solicitação recebida pela equipe do Table4All."
+        }
+    },
+    "admission_requests": {
+        "title": "Solicitações de acesso",
+        "description": "Estabelecimentos que pediram para usar o Table4All pela página de contato.",
+        "filters": {
+            "pending": "Pendentes",
+            "contacted": "Contatados",
+            "archived": "Arquivados",
+            "all": "Todas"
+        },
+        "status": {
+            "pending": "Pendente",
+            "contacted": "Contatado",
+            "archived": "Arquivado"
+        },
+        "fields": {
+            "contact_email": "E-mail",
+            "phone": "Telefone",
+            "city": "Cidade",
+            "tables": "Mesas",
+            "message": "Mensagem",
+            "received_at": "Recebida em"
+        },
+        "actions": {
+            "reply": "Responder por e-mail",
+            "whatsapp": "WhatsApp",
+            "mark_contacted": "Marcar como contatado",
+            "archive": "Arquivar",
+            "reopen": "Voltar para pendentes"
+        },
+        "empty": {
+            "pending": "Nenhuma solicitação pendente.",
+            "contacted": "Nenhum estabelecimento contatado ainda.",
+            "archived": "Nada arquivado.",
+            "all": "Nenhuma solicitação recebida ainda."
+        },
+        "tables_count": "{{count}} mesas",
+        "reply_subject": "Table4All — sua solicitação",
+        "msg_updated": "Solicitação atualizada."
     }
 }

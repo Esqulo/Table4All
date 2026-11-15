@@ -1,8 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin\AdmissionRequestController as AdminAdmissionRequestController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\AdmissionRequestController;
 use App\Http\Controllers\Customer\JoinController as CustomerJoinController;
-use App\Http\Controllers\TableJoinController;
 use App\Http\Controllers\Restaurant\DashboardController;
 use App\Http\Controllers\Restaurant\DeliveryController;
 use App\Http\Controllers\Restaurant\MenuController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\Restaurant\QueueItemController;
 use App\Http\Controllers\Restaurant\SaleController;
 use App\Http\Controllers\Restaurant\TableController;
 use App\Http\Controllers\Restaurant\WaiterController;
+use App\Http\Controllers\TableJoinController;
 use App\Http\Controllers\WaiterInvitationController;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureRestaurant;
@@ -19,6 +21,12 @@ use App\Http\Middleware\EnsureRestaurantOrWaiter;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
+Route::inertia('/contato', 'contact', [
+    'email' => config('app.contact_email'),
+])->name('contact');
+Route::post('/contato', [AdmissionRequestController::class, 'store'])
+    ->middleware('throttle:5,10')
+    ->name('contact.store');
 
 Route::get('/menu/{menu}', [MenuController::class, 'show'])->name('menu.show');
 
@@ -105,6 +113,10 @@ Route::middleware(['auth', 'verified', EnsureAdmin::class])
             ->only(['index', 'store', 'destroy'])
             ->names('categories')
             ->parameters(['categorias' => 'category']);
+        Route::resource('solicitacoes', AdminAdmissionRequestController::class)
+            ->only(['index', 'update'])
+            ->names('admission-requests')
+            ->parameters(['solicitacoes' => 'admissionRequest']);
     });
 
 require __DIR__.'/settings.php';

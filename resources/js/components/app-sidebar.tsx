@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BarChart3, ConciergeBell, LayoutGrid, ListOrdered, Percent, QrCode, ScrollText, ShoppingBag, Tag, Users, UtensilsCrossed } from 'lucide-react';
+import { BarChart3, Inbox, ConciergeBell, LayoutGrid, ListOrdered, Percent, QrCode, ScrollText, ShoppingBag, Tag, Users, UtensilsCrossed } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import AdminAdmissionRequestController from '@/actions/App/Http/Controllers/Admin/AdmissionRequestController';
 import CategoryController from '@/actions/App/Http/Controllers/Admin/CategoryController';
 import CustomerJoinController from '@/actions/App/Http/Controllers/Customer/JoinController';
 import DashboardController from '@/actions/App/Http/Controllers/Restaurant/DashboardController';
@@ -40,6 +41,11 @@ export function AppSidebar() {
                   title: t('nav.categories'),
                   href: CategoryController.index.url(),
                   icon: Tag,
+              },
+              {
+                  title: t('nav.admission_requests'),
+                  href: AdminAdmissionRequestController.index.url(),
+                  icon: Inbox,
               },
           ]
         : isRestaurant

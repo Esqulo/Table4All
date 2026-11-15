@@ -162,5 +162,10 @@ return [
         'phone' => 'telefone',
         'avatar' => 'foto de perfil',
         'account_type' => 'tipo de conta',
+        'business_name' => 'nome do estabelecimento',
+        'contact_email' => 'e-mail',
+        'city' => 'cidade',
+        'tables' => 'quantidade de mesas',
+        'message' => 'mensagem',
     ],
 ];

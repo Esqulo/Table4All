@@ -82,7 +82,8 @@
         "repository": "Repository",
         "documentation": "Documentation",
         "settings": "Settings",
-        "log_out": "Log out"
+        "log_out": "Log out",
+        "admission_requests": "Requests"
     },
     "settings": {
         "title": "Settings",
@@ -490,10 +491,10 @@
         "status_pending": "Waiting for waiter"
     },
     "welcome": {
-        "head": "Table, order and bill management for bars",
+        "head": "Table, order and bill management for bars and restaurants",
         "nav": {
             "how": "How it works",
-            "owners": "For bars",
+            "owners": "For venues",
             "guests": "For guests",
             "main": "Main navigation"
         },
@@ -501,7 +502,7 @@
             "register": "Create account",
             "login": "Log in",
             "dashboard": "Go to dashboard",
-            "owners_link": "Run a bar? See how the bill adds up"
+            "owners_link": "Run a bar or restaurant? See how the bill adds up"
         },
         "hero": {
             "title": "Every table closes with the right bill.",
@@ -567,14 +568,16 @@
         "sides": {
             "title": "Both sides of the counter",
             "owners": {
-                "title": "For whoever runs the bar",
+                "title": "For whoever runs the venue",
                 "items": [
                     "Tables, waiters and menus in one place",
                     "Separate prep queues for the kitchen, the bar and anything else",
                     "Promotions by weekday and time, or by date",
                     "Dashboard with revenue, best sellers and payment methods",
                     "Print-ready menus with a QR code"
-                ]
+                ],
+                "contact_prompt": "Want Table4All at your venue?",
+                "contact_link": "Get in touch"
             },
             "guests": {
                 "title": "For whoever sits at the table",
@@ -588,11 +591,100 @@
         },
         "closing": {
             "title": "There's a table open tonight.",
-            "body": "Create an account to order by QR, or log in to run your bar."
+            "body": "Create an account to order by QR, or log in to run your venue."
         },
         "footer": {
             "rights": "© {{year}} Table4All",
-            "made": "Made for bars and restaurants in Brazil."
+            "made": "Made for bars and restaurants in Brazil.",
+            "contact": "Contact"
         }
+    },
+    "contact": {
+        "head": "Contact for bars and restaurants",
+        "title": "Bring Table4All to your venue.",
+        "lead": "Tell us a bit about your venue. The Table4All team will get in touch to talk about how the tool can work for your business.",
+        "form": {
+            "title": "Get in touch",
+            "hint": "Send your details here and we'll reply by the email or phone you provide.",
+            "required": "required",
+            "fields": {
+                "business_name": "Venue name",
+                "contact_email": "Your email",
+                "phone": "Phone or WhatsApp",
+                "city": "City",
+                "tables": "How many tables?",
+                "message": "Anything else you'd like to tell us?"
+            },
+            "placeholders": {
+                "business_name": "Joe's Bar",
+                "contact_email": "you@yourbar.com",
+                "phone": "(31) 99999-9999",
+                "city": "Belo Horizonte – MG",
+                "tables": "12",
+                "message": "Opening hours, whether you already use a system, questions…"
+            },
+            "submit": "Send request",
+            "sending": "Sending…",
+            "privacy": "Your details stay with the Table4All team and are only used to reply to this request.",
+            "fix_errors": "Please check the highlighted fields above.",
+            "sent_title": "Request sent.",
+            "sent_body": "We received the details for {{name}}. The Table4All team will reply at {{email}}.",
+            "send_another": "Send another request",
+            "sent_toast": "Request sent! We'll be in touch soon."
+        },
+        "email_alt": {
+            "title": "Prefer to write an email?",
+            "subject": "I want Table4All at my venue",
+            "default": "Open my email app",
+            "gmail": "Gmail",
+            "outlook": "Outlook",
+            "copy": "Copy email",
+            "copied": "Email copied",
+            "copy_failed": "Couldn't copy. Select the address above and copy it manually."
+        },
+        "summary": {
+            "label": "Request summary",
+            "stamp": "Received",
+            "note_sent": "Request received by the Table4All team."
+        }
+    },
+    "admission_requests": {
+        "title": "Access requests",
+        "description": "Venues that asked to use Table4All through the contact page.",
+        "filters": {
+            "pending": "Pending",
+            "contacted": "Contacted",
+            "archived": "Archived",
+            "all": "All"
+        },
+        "status": {
+            "pending": "Pending",
+            "contacted": "Contacted",
+            "archived": "Archived"
+        },
+        "fields": {
+            "contact_email": "Email",
+            "phone": "Phone",
+            "city": "City",
+            "tables": "Tables",
+            "message": "Message",
+            "received_at": "Received"
+        },
+        "actions": {
+            "reply": "Reply by email",
+            "whatsapp": "WhatsApp",
+            "mark_contacted": "Mark as contacted",
+            "archive": "Archive",
+            "reopen": "Move back to pending"
+        },
+        "empty": {
+            "pending": "No pending requests.",
+            "contacted": "No venues contacted yet.",
+            "archived": "Nothing archived.",
+            "all": "No requests received yet."
+        },
+        "tables_count": "{{count}} tables",
+        "reply_subject": "Table4All — your request",
+        "msg_updated": "Request updated."
     }
 }
