@@ -20,11 +20,19 @@ final class RestaurantTable extends Model
         'access_code',
     ];
 
-    public static function generateUniqueCode(int $restaurantId): string
+    /**
+     * Customers join by code alone (no restaurant in the URL), so a code must be
+     * unique across every restaurant's open tables, not just the caller's.
+     *
+     * @param  (callable(): int)|null  $random  number source (tests force collisions with it)
+     */
+    public static function generateUniqueCode(?callable $random = null): string
     {
+        $random ??= fn (): int => random_int(0, 999999);
+
         do {
-            $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-            $exists = self::where('user_id', $restaurantId)
+            $code = str_pad((string) $random(), 6, '0', STR_PAD_LEFT);
+            $exists = self::withTrashed()
                 ->whereNull('closed_at')
                 ->where('access_code', $code)
                 ->exists();

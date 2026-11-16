@@ -232,10 +232,14 @@ return true;
     });
 
     const currentLines = Object.values(orderState).filter((l) => l.quantity > 0);
-    const productTotal = currentLines.reduce((sum, l) => sum + l.price * l.quantity, 0);
-    const paymentTotal = table.payments.reduce((sum, p) => sum + p.amount, 0);
-    const remaining = productTotal - paymentTotal;
-    const canClose = productTotal > 0 && paymentTotal >= productTotal;
+    // Money is summed in integer cents: in floating point 1.10 + 2.20 > 3.30,
+    // which left a fully paid table unable to close.
+    const productCents = currentLines.reduce((sum, l) => sum + Math.round(l.price * 100) * l.quantity, 0);
+    const paymentCents = table.payments.reduce((sum, p) => sum + Math.round(Number(p.amount) * 100), 0);
+    const productTotal = productCents / 100;
+    const paymentTotal = paymentCents / 100;
+    const remaining = (productCents - paymentCents) / 100;
+    const canClose = productCents > 0 && paymentCents >= productCents;
 
     return (
         <>
@@ -463,7 +467,13 @@ return true;
                     )}
                     <Form
                         {...TableController.close.form({ table: table.id })}
-                        onBefore={() => confirm(t('tables.close_table_confirm'))}
+                        onBefore={() =>
+                            confirm(
+                                queueItems.length > 0
+                                    ? t('tables.close_table_confirm_undelivered', { count: queueItems.reduce((n, i) => n + i.quantity, 0) })
+                                    : t('tables.close_table_confirm'),
+                            )
+                        }
                     >
                         {({ processing }) => (
                             <Button

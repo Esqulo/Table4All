@@ -51,8 +51,10 @@ class WaiterInvitationController extends Controller
             'password'          => $validated['password'],
             'account_type'      => AccountType::WAITER,
             'restaurant_id'     => $invitation->restaurant_id,
-            'email_verified_at' => now(),
         ]);
+        // The invitation link proved the address. Not mass-assignable, hence forceFill:
+        // passing it to create() silently dropped it.
+        $user->forceFill(['email_verified_at' => now()])->save();
 
         $invitation->update(['accepted_at' => now()]);
 

@@ -21,7 +21,9 @@ class QueueItemController extends Controller
 {
     public function markDone(Request $request, QueueItem $queueItem): RedirectResponse
     {
-        $this->authorizeItem($request, $queueItem);
+        if (! $this->tableIsOpen($request, $queueItem)) {
+            return $this->tableClosed();
+        }
 
         $changed = QueueItem::whereKey($queueItem->id)
             ->where('status', QueueItemStatus::PENDING->value)
@@ -36,15 +38,25 @@ class QueueItemController extends Controller
 
     public function markDelivered(Request $request, QueueItem $queueItem): RedirectResponse
     {
-        $this->authorizeItem($request, $queueItem);
+        // Delivering onto a closed table would add charges after it was paid.
+        if (! $this->tableIsOpen($request, $queueItem)) {
+            return $this->tableClosed();
+        }
 
         $delivered = DB::transaction(function () use ($queueItem): bool {
             // Serializes with TableController::syncOrder on the same table, so a
             // delivery can't land between the waiter's delete and re-insert.
-            RestaurantTable::whereKey($queueItem->restaurant_table_id)->lockForUpdate()->first(['id']);
+            $table = RestaurantTable::whereKey($queueItem->restaurant_table_id)
+                ->lockForUpdate()
+                ->first(['id', 'closed_at']);
+
+            // Re-checked under the lock: the table may have been closed meanwhile.
+            if ($table === null || $table->closed_at !== null) {
+                return false;
+            }
 
             $claimed = QueueItem::whereKey($queueItem->id)
-                ->where('status', '!=', QueueItemStatus::DELIVERED->value)
+                ->whereIn('status', QueueItemStatus::open())
                 ->update(['status' => QueueItemStatus::DELIVERED->value, 'updated_at' => now()]);
 
             if ($claimed === 0) {
@@ -78,12 +90,22 @@ class QueueItemController extends Controller
         return redirect()->back();
     }
 
-    private function authorizeItem(Request $request, QueueItem $queueItem): void
+    /** Aborts with 403 for another restaurant's item; false when its table is closed or deleted. */
+    private function tableIsOpen(Request $request, QueueItem $queueItem): bool
     {
-        $ownerId = RestaurantTable::withTrashed()
+        $table = RestaurantTable::withTrashed()
             ->whereKey($queueItem->restaurant_table_id)
-            ->value('user_id');
+            ->first(['id', 'user_id', 'closed_at', 'deleted_at']);
 
-        abort_unless($ownerId !== null && (int) $ownerId === $request->user()->effectiveRestaurantId(), 403);
+        abort_unless($table !== null && $table->user_id === $request->user()->effectiveRestaurantId(), 403);
+
+        return $table->closed_at === null && $table->deleted_at === null;
+    }
+
+    private function tableClosed(): RedirectResponse
+    {
+        Inertia::flash('toast', ['type' => 'error', 'message' => 'queues.item_table_closed']);
+
+        return redirect()->back();
     }
 }

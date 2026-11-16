@@ -68,7 +68,7 @@ class TableController extends Controller
         RestaurantTable::create([
             'user_id'     => $restaurantId,
             'title'       => $request->validated('title'),
-            'access_code' => RestaurantTable::generateUniqueCode($restaurantId),
+            'access_code' => RestaurantTable::generateUniqueCode(),
         ]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'tables.msg_created']);
@@ -131,7 +131,7 @@ class TableController extends Controller
             ->get(['product_id', 'sale_price']);
 
         $queueItems = QueueItem::where('restaurant_table_id', $table->id)
-            ->whereIn('status', [QueueItemStatus::PENDING->value, QueueItemStatus::DONE->value])
+            ->whereIn('status', QueueItemStatus::open())
             ->with([
                 'product:id,name,picture,price,price_type',
                 'queue:id,name',
@@ -224,13 +224,20 @@ class TableController extends Controller
 
             $paymentTotal = (float) $locked->payments()->sum('amount');
 
-            if ($paymentTotal < $productTotal) {
+            // In cents: floating-point sums (e.g. 3 x 0.10) must not block a paid table.
+            if ((int) round($paymentTotal * 100) < (int) round($productTotal * 100)) {
                 return false;
             }
 
             $locked->closed_at   = now();
             $locked->access_code = null;
             $locked->save();
+
+            // Whatever was still being prepared or waiting for a waiter never reached
+            // the customer. It isn't billed, but the restaurant must see it (dashboard).
+            QueueItem::where('restaurant_table_id', $locked->id)
+                ->whereIn('status', QueueItemStatus::open())
+                ->update(['status' => QueueItemStatus::ABANDONED->value, 'updated_at' => now()]);
 
             return true;
         });

@@ -80,6 +80,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Business Timezone
+    |--------------------------------------------------------------------------
+    |
+    | Timestamps are stored in UTC, but restaurants think in local wall-clock
+    | time: a "17:00-20:00" happy hour, a promotion dated "Friday 18:00", or
+    | which day a table was closed on. Those comparisons use this timezone.
+    |
+    */
+
+    'business_timezone' => env('APP_BUSINESS_TIMEZONE', 'America/Sao_Paulo'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------
     |

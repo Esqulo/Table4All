@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { BarChart3, ShoppingBag, TrendingUp, UtensilsCrossed } from 'lucide-react';
+import { BarChart3, PackageX, ShoppingBag, TrendingUp, UtensilsCrossed } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import DashboardController from '@/actions/App/Http/Controllers/Restaurant/DashboardController';
 import Heading from '@/components/heading';
@@ -13,6 +13,8 @@ type Summary = {
     tables_closed: number;
     items_sold: number;
     avg_table_revenue: number;
+    abandoned_items: number;
+    abandoned_value: number;
 };
 
 type RevenueDay = { date: string; revenue: number; tables_count: number };
@@ -122,6 +124,22 @@ export default function Dashboards({
                         value={formatCurrency(summary.avg_table_revenue)}
                     />
                 </div>
+
+                {/* Orders the customer left without: prepared or owed, never billed */}
+                {summary.abandoned_items > 0 && (
+                    <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4">
+                        <PackageX className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+                        <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold">{t('dashboards.abandoned_title')}</p>
+                            <p className="text-sm text-muted-foreground">
+                                {t('dashboards.abandoned_summary', {
+                                    count: summary.abandoned_items,
+                                    value: formatCurrency(summary.abandoned_value),
+                                })}
+                            </p>
+                        </div>
+                    </div>
+                )}
 
                 {/* Revenue bar chart */}
                 {revenue_by_day.length > 0 && (

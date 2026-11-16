@@ -18,7 +18,8 @@ class DeliveryController extends Controller
 
         $items = QueueItem::whereHas(
             'restaurantTable',
-            fn ($q) => $q->where('user_id', $restaurantId)
+            // Open tables only: once a table is closed (or deleted) its leftovers are not delivered.
+            fn ($q) => $q->where('user_id', $restaurantId)->whereNull('closed_at')
         )
             ->where(function ($q) {
                 // Kitchen items flagged as done by the cook

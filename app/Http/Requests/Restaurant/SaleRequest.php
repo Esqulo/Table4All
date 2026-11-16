@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Restaurant;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class SaleRequest extends FormRequest
 {
@@ -17,7 +18,7 @@ class SaleRequest extends FormRequest
         $type = $this->input('type', 'periodic');
 
         return [
-            'product_id'  => ['required', 'integer', 'exists:products,id'],
+            'product_id'  => ['required', 'integer', Rule::exists('products', 'id')->where('user_id', $this->user()?->id)->whereNull('deleted_at')],
             'type'        => ['required', 'in:periodic,scheduled'],
             'sale_price'  => ['required', 'numeric', 'min:0.01', 'max:99999.99'],
             // periodic

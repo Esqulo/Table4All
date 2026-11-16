@@ -71,7 +71,7 @@ export type TableOrderLine = {
     quantity: number;
 };
 
-export type QueueItemStatus = 'pending' | 'done' | 'delivered';
+export type QueueItemStatus = 'pending' | 'done' | 'delivered' | 'abandoned';
 
 export type QueueItem = {
     id: number;

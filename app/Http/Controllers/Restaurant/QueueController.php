@@ -48,7 +48,9 @@ class QueueController extends Controller
         abort_unless($queue->user_id === $request->user()->id, 403);
 
         $items = QueueItem::where('queue_id', $queue->id)
-            ->whereIn('status', [QueueItemStatus::PENDING->value, QueueItemStatus::DONE->value])
+            // Items of closed or deleted tables are no longer owed to anyone.
+            ->whereHas('restaurantTable', fn ($q) => $q->whereNull('closed_at'))
+            ->whereIn('status', QueueItemStatus::open())
             ->with([
                 'product:id,name,picture,price,price_type',
                 'restaurantTable:id,title',
@@ -85,6 +87,19 @@ class QueueController extends Controller
     public function destroy(Request $request, RestaurantQueue $queue): RedirectResponse
     {
         abort_unless($queue->user_id === $request->user()->id, 403);
+
+        // Deleting it would orphan the work in progress: those orders would lose their
+        // kitchen and land on the delivery board as if they were ready.
+        $hasOpenItems = QueueItem::where('queue_id', $queue->id)
+            ->whereIn('status', QueueItemStatus::open())
+            ->whereHas('restaurantTable', fn ($q) => $q->whereNull('closed_at'))
+            ->exists();
+
+        if ($hasOpenItems) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => 'queues.msg_has_open_items']);
+
+            return to_route('restaurant.queues.index');
+        }
 
         $queue->delete();
 

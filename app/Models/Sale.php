@@ -31,7 +31,8 @@ final class Sale extends Model
      */
     public function scopeActiveFor(Builder $query, int $restaurantId, ?Carbon $at = null): Builder
     {
-        $at ??= now();
+        // Promotion windows are entered in local wall-clock time, not UTC.
+        $at = ($at ?? now())->copy()->setTimezone((string) config('app.business_timezone'));
         $currentDay = (int) $at->dayOfWeek;
         $currentTime = $at->format('H:i:s');
         $nowDatetime = $at->format('Y-m-d H:i:s');
@@ -66,7 +67,7 @@ final class Sale extends Model
     /** @return BelongsTo<Product, $this> */
     public function product(): BelongsTo
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Product::class)->withTrashed();
     }
 
     /** @return BelongsTo<User, $this> */

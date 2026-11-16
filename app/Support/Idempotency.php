@@ -28,7 +28,7 @@ final class Idempotency
      *
      * Call it after validation so a rejected request does not burn the key.
      *
-     * @param  callable(): void  $action
+     * @param  callable(): mixed  $action
      */
     public static function once(Request $request, string $scope, callable $action): bool
     {

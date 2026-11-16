@@ -254,6 +254,7 @@
         "msg_deleted": "Produto excluído com sucesso."
     },
     "queues": {
+        "msg_has_open_items": "Esta fila tem pedidos em preparo ou aguardando entrega. Conclua-os antes de excluí-la.",
         "title": "Filas",
         "new": "Nova fila",
         "empty": "Nenhuma fila cadastrada ainda.",
@@ -265,8 +266,8 @@
         "edit": "Editar",
         "delete": "Excluir",
         "delete_confirm": "Tem certeza que deseja excluir esta fila?",
-        "products_count": "{{count}} produto",
-        "products_count_plural": "{{count}} produtos",
+        "products_count_one": "{{count}} produto",
+        "products_count_other": "{{count}} produtos",
         "breadcrumb_index": "Filas",
         "breadcrumb_create": "Nova fila",
         "breadcrumb_edit": "Editar fila",
@@ -282,11 +283,14 @@
         "item_mark_done": "Marcar pronto",
         "item_mark_delivered": "Entregar",
         "item_done": "Item marcado como pronto.",
+        "item_table_closed": "Esta mesa já foi fechada ou excluída; o item não pode mais ser alterado.",
         "item_delivered": "Item entregue à mesa.",
         "back_to_queues": "Voltar para filas",
         "view_kitchen": "Cozinha"
     },
     "tables": {
+        "close_table_confirm_undelivered_other": "Há {{count}} itens ainda não entregues. Ao fechar a mesa eles serão registrados como \"cliente foi embora sem receber\" e não serão cobrados. Fechar mesmo assim?",
+        "close_table_confirm_undelivered_one": "Há {{count}} item ainda não entregue. Ao fechar a mesa ele será registrado como \"cliente foi embora sem receber\" e não será cobrado. Fechar mesmo assim?",
         "title": "Mesas",
         "new": "Nova mesa",
         "empty": "Nenhuma mesa cadastrada ainda.",
@@ -294,8 +298,8 @@
         "title_label": "Nome da mesa",
         "title_placeholder": "Ex: Mesa 1",
         "products_label": "Produtos disponíveis",
-        "products_count": "{{count}} produto",
-        "products_count_plural": "{{count}} produtos",
+        "products_count_one": "{{count}} produto",
+        "products_count_other": "{{count}} produtos",
         "submit_create": "Criar mesa",
         "submit_update": "Salvar alterações",
         "cancel": "Cancelar",
@@ -431,6 +435,7 @@
         "my_order": "Meu Pedido",
         "search_placeholder": "Buscar produtos...",
         "order_button": "Pedir",
+        "order_invalid": "Nenhum dos itens está disponível no cardápio. Atualize a página e tente de novo.",
         "order_success": "Item adicionado ao seu pedido"
     },
     "two_factor": {
@@ -460,6 +465,9 @@
         "recovery_warning": "Cada código de recuperação pode ser usado uma vez e será removido após o uso. Se precisar de mais, clique em Regenerar códigos acima."
     },
     "dashboards": {
+        "abandoned_summary_other": "{{count}} itens pedidos não chegaram à mesa antes do fechamento ({{value}}, não cobrados).",
+        "abandoned_summary_one": "{{count}} item pedido não chegou à mesa antes do fechamento ({{value}}, não cobrado).",
+        "abandoned_title": "Cliente foi embora sem receber",
         "title": "Painel",
         "breadcrumb_index": "Painel",
         "period_7": "7 dias",

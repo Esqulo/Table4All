@@ -26,6 +26,7 @@ final class QueueItem extends Model
     {
         return [
             'status' => QueueItemStatus::class,
+            'price'  => 'float',
         ];
     }
 
@@ -38,7 +39,9 @@ final class QueueItem extends Model
     /** @return BelongsTo<Product, $this> */
     public function product(): BelongsTo
     {
-        return $this->belongsTo(Product::class);
+        // A product deleted while an order for it is still in progress must keep
+        // showing on the kitchen and delivery boards instead of breaking them.
+        return $this->belongsTo(Product::class)->withTrashed();
     }
 
     /** @return BelongsTo<RestaurantQueue, $this> */

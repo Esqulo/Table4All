@@ -82,7 +82,7 @@ class JoinController extends Controller
             ]);
 
         $preparing = QueueItem::where('restaurant_table_id', $table->id)
-            ->whereIn('status', [QueueItemStatus::PENDING->value, QueueItemStatus::DONE->value])
+            ->whereIn('status', QueueItemStatus::open())
             ->with(['product:id,name', 'orderedBy:id,name,email'])
             ->orderBy('created_at')
             ->get()
@@ -157,16 +157,20 @@ class JoinController extends Controller
             ];
         }
 
+        // Every item was deleted from the menu or belongs to another restaurant:
+        // say so instead of confirming an order the kitchen will never see.
+        if ($rows === []) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => 'join_table.order_invalid']);
+
+            return redirect()->route('customer.table', $code);
+        }
+
         // One INSERT for the whole cart; the request key makes a retried submit
         // (slow network, double tap) a no-op instead of a duplicated order.
         Idempotency::once(
             $request,
             'customer-order:'.$table->id,
-            function () use ($rows): void {
-                if ($rows !== []) {
-                    QueueItem::insert($rows);
-                }
-            },
+            fn () => QueueItem::insert($rows),
         );
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'join_table.order_success']);
