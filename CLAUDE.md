@@ -50,7 +50,8 @@ composer ci:check       # everything above, including the frontend checks
 
 ### i18n
 - Frontend uses `react-i18next`, default `pt_BR`. Every new UI string needs a dot-separated key (e.g. `restaurant.tables.title`) in **both** `resources/js/locales/pt_BR.json` and `en.json`. Page `layout` titles and breadcrumb titles are translation keys, resolved with `t()` at render time.
-- On the backend, the default locale is `pt_BR` (`APP_LOCALE`). Flash/validation strings go in `lang/pt_BR.json` and `lang/pt_BR/*.php`.
+- The backend speaks the language chosen in the UI: `resources/js/i18n.ts` mirrors it into the `locale` cookie and the global `SetLocale` middleware applies it (default `pt_BR`, fallback `en`). Server strings (validation, flash, mail) need entries in **both** `lang/pt_BR.json` and `lang/en.json` (or `lang/pt_BR/*.php`); domain field names go in `attributes` of `lang/pt_BR/validation.php`. Never hardcode user-facing text in PHP, Blade, or TSX, in either language.
+- `tests/Feature/LocalizationTest.php` fails when keys diverge between languages, when a framework/Fortify/passkeys string has no pt_BR translation, or when a plural uses the obsolete `_plural` suffix (use `_one`/`_other`).
 
 ### Auth
 Email verification is mandatory (`User` implements `MustVerifyEmail`; every operational route uses `verified`). Invited waiters are verified by the invite link. Laravel Fortify (`FortifyServiceProvider`, `app/Actions/Fortify`) handles login/registration, email verification, 2FA and passkeys (WebAuthn). Settings routes are in `routes/settings.php`.
