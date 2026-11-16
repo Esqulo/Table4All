@@ -52,3 +52,10 @@ composer ci:check       # everything above, including the frontend checks
 
 ### Auth
 Laravel Fortify (`FortifyServiceProvider`, `app/Actions/Fortify`) handles login/registration, email verification, 2FA and passkeys (WebAuthn). Settings routes are in `routes/settings.php`.
+
+## Performance under rush (mandatory)
+The app runs during rush hour on slow mobile networks and old devices; it must never be the bottleneck. Read **`docs/performance.md`** before touching a hot path (kitchen queue, delivery board, tables, customer ordering). The rules in short:
+- Index every column you filter or join on (PostgreSQL doesn't index FKs). Select only needed columns, aggregate in SQL, no N+1.
+- Writes must survive retries and races: conditional status updates (`WHERE status = ?`), a transaction that locks the `restaurant_tables` row before changing a table's order, `request_key` + `App\Support\Idempotency::once()` for creating writes, `orderVersion` for full-replace saves, bulk inserts.
+- Live screens refresh with `useLiveReload` (partial, sequential, pauses when hidden or offline), never a raw `setInterval`. Upload pictures via `App\Support\ImageOptimizer`, lazy-load list images, format money with `formatBRL()`.
+- `tests/Feature/RushResilienceTest.php` covers these guarantees; extend it when you add a write path.
