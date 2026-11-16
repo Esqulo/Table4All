@@ -1,6 +1,7 @@
 import { Form, Head, setLayoutProps } from '@inertiajs/react';
 import { REGEXP_ONLY_DIGITS } from 'input-otp';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +14,7 @@ import { OTP_MAX_LENGTH } from '@/hooks/use-two-factor-auth';
 import { store } from '@/routes/two-factor/login';
 
 export default function TwoFactorChallenge() {
+    const { t } = useTranslation();
     const [showRecoveryInput, setShowRecoveryInput] = useState<boolean>(false);
     const [code, setCode] = useState<string>('');
 
@@ -21,20 +23,19 @@ export default function TwoFactorChallenge() {
         description: string;
         toggleText: string;
     }>(() => {
+        // Title and description are translation keys: the auth layout runs them through t().
         if (showRecoveryInput) {
             return {
-                title: 'Recovery code',
-                description:
-                    'Please confirm access to your account by entering one of your emergency recovery codes.',
-                toggleText: 'login using an authentication code',
+                title: 'two_factor.challenge_recovery_title',
+                description: 'two_factor.challenge_recovery_description',
+                toggleText: 'two_factor.challenge_use_code',
             };
         }
 
         return {
-            title: 'Authentication code',
-            description:
-                'Enter the authentication code provided by your authenticator application.',
-            toggleText: 'login using a recovery code',
+            title: 'two_factor.challenge_code_title',
+            description: 'two_factor.challenge_code_description',
+            toggleText: 'two_factor.challenge_use_recovery',
         };
     }, [showRecoveryInput]);
 
@@ -51,7 +52,7 @@ export default function TwoFactorChallenge() {
 
     return (
         <>
-            <Head title="Two-factor authentication" />
+            <Head title={t('two_factor.challenge_head')} />
 
             <div className="space-y-6">
                 <Form
@@ -67,7 +68,7 @@ export default function TwoFactorChallenge() {
                                     <Input
                                         name="recovery_code"
                                         type="text"
-                                        placeholder="Enter recovery code"
+                                        placeholder={t('two_factor.challenge_recovery_placeholder')}
                                         autoFocus={showRecoveryInput}
                                         required
                                     />
@@ -109,11 +110,11 @@ export default function TwoFactorChallenge() {
                                 className="w-full"
                                 disabled={processing}
                             >
-                                Continue
+                                {t('two_factor.challenge_continue')}
                             </Button>
 
                             <div className="text-center text-sm text-muted-foreground">
-                                <span>or you can </span>
+                                <span>{t('two_factor.challenge_or')} </span>
                                 <button
                                     type="button"
                                     className="cursor-pointer text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
@@ -121,7 +122,7 @@ export default function TwoFactorChallenge() {
                                         toggleRecoveryMode(clearErrors)
                                     }
                                 >
-                                    {authConfigContent.toggleText}
+                                    {t(authConfigContent.toggleText)}
                                 </button>
                             </div>
                         </>

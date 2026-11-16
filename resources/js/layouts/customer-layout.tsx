@@ -57,7 +57,7 @@ export default function CustomerLayout({ children }: PropsWithChildren) {
                     <button
                         className="rounded-md p-1 text-muted-foreground hover:bg-muted"
                         onClick={() => setOpen(true)}
-                        aria-label="Open menu"
+                        aria-label={t('nav.open_menu')}
                     >
                         <Menu className="h-5 w-5" />
                     </button>

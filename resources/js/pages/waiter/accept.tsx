@@ -1,9 +1,11 @@
 import { Head, useForm } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import WaiterInvitationController from '@/actions/App/Http/Controllers/WaiterInvitationController';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { login } from '@/routes';
 
 type Props = {
     token: string;
@@ -13,6 +15,7 @@ type Props = {
 };
 
 export default function WaiterAccept({ token, email, restaurant, email_taken }: Props) {
+    const { t } = useTranslation();
     const form = useForm({ name: '', password: '', password_confirmation: '' });
 
     function handleSubmit(e: React.FormEvent) {
@@ -22,16 +25,16 @@ export default function WaiterAccept({ token, email, restaurant, email_taken }: 
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-background px-4">
-            <Head title={`Convite — ${restaurant.name}`} />
+            <Head title={t('waiter_accept.head_title', { restaurant: restaurant.name })} />
 
             <div className="w-full max-w-sm space-y-6">
                 <div className="flex flex-col items-center gap-3 text-center">
                     <AppLogoIcon className="h-14 w-12" />
                     <h1 className="text-xl font-semibold">
-                        Convite de <span className="text-primary">{restaurant.name}</span>
+                        {t('waiter_accept.heading')} <span className="text-primary">{restaurant.name}</span>
                     </h1>
                     <p className="text-sm text-muted-foreground">
-                        Você foi convidado como garçom. O acesso será feito com:
+                        {t('waiter_accept.intro')}
                     </p>
                     <p className="rounded-md bg-muted px-3 py-1.5 text-sm font-medium">{email}</p>
                 </div>
@@ -39,11 +42,10 @@ export default function WaiterAccept({ token, email, restaurant, email_taken }: 
                 {email_taken ? (
                     <div className="rounded-lg border border-border bg-card p-5 text-center space-y-3">
                         <p className="text-sm text-muted-foreground">
-                            Já existe uma conta com este e-mail.
-                            Entre com sua conta existente e entre em contato com o restaurante.
+                            {t('waiter_accept.email_taken')}
                         </p>
                         <Button variant="outline" asChild className="w-full">
-                            <a href="/login">Ir para o login</a>
+                            <a href={login.url()}>{t('waiter_accept.go_to_login')}</a>
                         </Button>
                     </div>
                 ) : (
@@ -52,12 +54,12 @@ export default function WaiterAccept({ token, email, restaurant, email_taken }: 
                         className="rounded-lg border border-border bg-card p-5 shadow-xs space-y-4"
                     >
                         <div className="space-y-1">
-                            <Label htmlFor="name">Seu nome</Label>
+                            <Label htmlFor="name">{t('waiter_accept.name_label')}</Label>
                             <Input
                                 id="name"
                                 value={form.data.name}
                                 onChange={(e) => form.setData('name', e.target.value)}
-                                placeholder="Nome completo"
+                                placeholder={t('waiter_accept.name_placeholder')}
                                 autoComplete="name"
                                 autoFocus
                             />
@@ -67,13 +69,13 @@ export default function WaiterAccept({ token, email, restaurant, email_taken }: 
                         </div>
 
                         <div className="space-y-1">
-                            <Label htmlFor="password">Senha</Label>
+                            <Label htmlFor="password">{t('waiter_accept.password_label')}</Label>
                             <Input
                                 id="password"
                                 type="password"
                                 value={form.data.password}
                                 onChange={(e) => form.setData('password', e.target.value)}
-                                placeholder="Mínimo 8 caracteres"
+                                placeholder={t('waiter_accept.password_placeholder')}
                                 autoComplete="new-password"
                             />
                             {form.errors.password && (
@@ -82,13 +84,13 @@ export default function WaiterAccept({ token, email, restaurant, email_taken }: 
                         </div>
 
                         <div className="space-y-1">
-                            <Label htmlFor="password_confirmation">Confirmar senha</Label>
+                            <Label htmlFor="password_confirmation">{t('waiter_accept.confirm_label')}</Label>
                             <Input
                                 id="password_confirmation"
                                 type="password"
                                 value={form.data.password_confirmation}
                                 onChange={(e) => form.setData('password_confirmation', e.target.value)}
-                                placeholder="Repita a senha"
+                                placeholder={t('waiter_accept.confirm_placeholder')}
                                 autoComplete="new-password"
                             />
                             {form.errors.password_confirmation && (
@@ -97,7 +99,7 @@ export default function WaiterAccept({ token, email, restaurant, email_taken }: 
                         </div>
 
                         <Button type="submit" className="w-full" disabled={form.processing}>
-                            Criar conta e entrar
+                            {t('waiter_accept.submit')}
                         </Button>
                     </form>
                 )}

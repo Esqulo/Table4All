@@ -84,7 +84,10 @@
         "documentation": "Documentation",
         "settings": "Settings",
         "log_out": "Log out",
-        "admission_requests": "Requests"
+        "admission_requests": "Requests",
+        "platform": "Platform",
+        "navigation_menu": "Navigation menu",
+        "open_menu": "Open menu"
     },
     "settings": {
         "title": "Settings",
@@ -462,7 +465,22 @@
         "recovery_view": "View recovery codes",
         "recovery_hide": "Hide recovery codes",
         "recovery_regenerate": "Regenerate codes",
-        "recovery_warning": "Each recovery code can be used once to access your account and will be removed after use. If you need more, click Regenerate codes above."
+        "recovery_warning": "Each recovery code can be used once to access your account and will be removed after use. If you need more, click Regenerate codes above.",
+        "challenge_head": "Two-factor authentication",
+        "challenge_code_title": "Authentication code",
+        "challenge_code_description": "Enter the authentication code provided by your authenticator application.",
+        "challenge_recovery_title": "Recovery code",
+        "challenge_recovery_description": "Please confirm access to your account by entering one of your emergency recovery codes.",
+        "challenge_or": "or you can",
+        "challenge_use_recovery": "login using a recovery code",
+        "challenge_use_code": "login using an authentication code",
+        "challenge_recovery_placeholder": "Enter recovery code",
+        "challenge_continue": "Continue",
+        "recovery_list_label": "Recovery codes",
+        "recovery_loading_label": "Loading recovery codes",
+        "error_qr_code": "Failed to fetch the QR code.",
+        "error_setup_key": "Failed to fetch the setup key.",
+        "error_recovery_codes": "Failed to fetch the recovery codes."
     },
     "dashboards": {
         "abandoned_summary_other": "{{count}} ordered items never reached the table before it closed ({{value}}, not charged).",
@@ -694,5 +712,45 @@
         "tables_count": "{{count}} tables",
         "reply_subject": "Table4All — your request",
         "msg_updated": "Request updated."
+    },
+    "passkeys": {
+        "title": "Passkeys",
+        "description": "Manage your passkeys for passwordless sign-in",
+        "empty_title": "No passkeys yet",
+        "empty_description": "Add a passkey to sign in without a password",
+        "added": "Added {{when}}",
+        "last_used": "Last used {{when}}",
+        "remove": "Remove",
+        "remove_title": "Remove passkey",
+        "remove_confirm": "Are you sure you want to remove the \"{{name}}\" passkey? You will no longer be able to use it to sign in.",
+        "removing": "Removing...",
+        "cancel": "Cancel",
+        "unsupported": "Passkeys are not supported in this browser.",
+        "add": "Add passkey",
+        "name_label": "Passkey name",
+        "name_placeholder": "e.g., MacBook Pro, iPhone",
+        "name_hint": "A name helps you identify this passkey later.",
+        "register": "Register passkey",
+        "registering": "Registering..."
+    },
+    "image_cropper": {
+        "title": "Crop image",
+        "confirm": "Confirm",
+        "cancel": "Cancel",
+        "preview_alt": "Crop preview"
+    },
+    "waiter_accept": {
+        "head_title": "Invitation — {{restaurant}}",
+        "heading": "Invitation from",
+        "intro": "You were invited as a waiter. You will sign in with:",
+        "email_taken": "An account with this email already exists. Sign in with your existing account and contact the restaurant.",
+        "go_to_login": "Go to login",
+        "name_label": "Your name",
+        "name_placeholder": "Full name",
+        "password_label": "Password",
+        "password_placeholder": "At least 8 characters",
+        "confirm_label": "Confirm password",
+        "confirm_placeholder": "Repeat the password",
+        "submit": "Create account and sign in"
     }
 }

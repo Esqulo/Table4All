@@ -84,7 +84,10 @@
         "documentation": "Documentação",
         "settings": "Configurações",
         "log_out": "Sair",
-        "admission_requests": "Solicitações"
+        "admission_requests": "Solicitações",
+        "platform": "Plataforma",
+        "navigation_menu": "Menu de navegação",
+        "open_menu": "Abrir menu"
     },
     "settings": {
         "title": "Configurações",
@@ -462,7 +465,22 @@
         "recovery_view": "Ver códigos de recuperação",
         "recovery_hide": "Ocultar códigos de recuperação",
         "recovery_regenerate": "Regenerar códigos",
-        "recovery_warning": "Cada código de recuperação pode ser usado uma vez e será removido após o uso. Se precisar de mais, clique em Regenerar códigos acima."
+        "recovery_warning": "Cada código de recuperação pode ser usado uma vez e será removido após o uso. Se precisar de mais, clique em Regenerar códigos acima.",
+        "challenge_head": "Autenticação em dois fatores",
+        "challenge_code_title": "Código de autenticação",
+        "challenge_code_description": "Digite o código gerado pelo seu aplicativo autenticador.",
+        "challenge_recovery_title": "Código de recuperação",
+        "challenge_recovery_description": "Confirme o acesso à sua conta digitando um dos seus códigos de recuperação de emergência.",
+        "challenge_or": "ou você pode",
+        "challenge_use_recovery": "entrar usando um código de recuperação",
+        "challenge_use_code": "entrar usando um código de autenticação",
+        "challenge_recovery_placeholder": "Digite o código de recuperação",
+        "challenge_continue": "Continuar",
+        "recovery_list_label": "Códigos de recuperação",
+        "recovery_loading_label": "Carregando códigos de recuperação",
+        "error_qr_code": "Não foi possível carregar o QR code.",
+        "error_setup_key": "Não foi possível carregar a chave de configuração.",
+        "error_recovery_codes": "Não foi possível carregar os códigos de recuperação."
     },
     "dashboards": {
         "abandoned_summary_other": "{{count}} itens pedidos não chegaram à mesa antes do fechamento ({{value}}, não cobrados).",
@@ -694,5 +712,45 @@
         "tables_count": "{{count}} mesas",
         "reply_subject": "Table4All — sua solicitação",
         "msg_updated": "Solicitação atualizada."
+    },
+    "passkeys": {
+        "title": "Chaves de acesso",
+        "description": "Gerencie suas chaves de acesso para entrar sem senha",
+        "empty_title": "Nenhuma chave de acesso ainda",
+        "empty_description": "Adicione uma chave de acesso para entrar sem senha",
+        "added": "Adicionada {{when}}",
+        "last_used": "Último uso {{when}}",
+        "remove": "Remover",
+        "remove_title": "Remover chave de acesso",
+        "remove_confirm": "Tem certeza que deseja remover a chave de acesso \"{{name}}\"? Você não poderá mais usá-la para entrar.",
+        "removing": "Removendo...",
+        "cancel": "Cancelar",
+        "unsupported": "Este navegador não é compatível com chaves de acesso.",
+        "add": "Adicionar chave de acesso",
+        "name_label": "Nome da chave de acesso",
+        "name_placeholder": "ex.: Notebook, iPhone",
+        "name_hint": "Um nome ajuda você a identificar esta chave depois.",
+        "register": "Cadastrar chave de acesso",
+        "registering": "Cadastrando..."
+    },
+    "image_cropper": {
+        "title": "Recortar imagem",
+        "confirm": "Confirmar",
+        "cancel": "Cancelar",
+        "preview_alt": "Pré-visualização do recorte"
+    },
+    "waiter_accept": {
+        "head_title": "Convite — {{restaurant}}",
+        "heading": "Convite de",
+        "intro": "Você foi convidado como garçom. O acesso será feito com:",
+        "email_taken": "Já existe uma conta com este e-mail. Entre com sua conta existente e entre em contato com o restaurante.",
+        "go_to_login": "Ir para o login",
+        "name_label": "Seu nome",
+        "name_placeholder": "Nome completo",
+        "password_label": "Senha",
+        "password_placeholder": "Mínimo 8 caracteres",
+        "confirm_label": "Confirmar senha",
+        "confirm_placeholder": "Repita a senha",
+        "submit": "Criar conta e entrar"
     }
 }
