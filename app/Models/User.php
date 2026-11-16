@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\AccountType;
+use App\Support\RestaurantHandle;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -26,6 +27,9 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property string|null $phone
  * @property string|null $avatar
  * @property string|null $logo
+ * @property string|null $banner
+ * @property string|null $handle
+ * @property bool $profile_public
  * @property AccountType $account_type
  * @property int|null $restaurant_id
  * @property Carbon|null $email_verified_at
@@ -37,12 +41,22 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'email', 'phone', 'avatar', 'logo', 'account_type', 'password', 'restaurant_id'])]
+#[Fillable(['name', 'email', 'phone', 'avatar', 'logo', 'banner', 'handle', 'profile_public', 'account_type', 'password', 'restaurant_id'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+
+    /** Every restaurant has a public @handle; it starts from its name and the owner can change it. */
+    protected static function booted(): void
+    {
+        static::saving(function (User $user): void {
+            if ($user->account_type === AccountType::RESTAURANT && blank($user->handle)) {
+                $user->handle = RestaurantHandle::generate($user->name, $user->id);
+            }
+        });
+    }
 
     public function effectiveRestaurantId(): int
     {
@@ -75,7 +89,7 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
         return $this->hasMany(RestaurantPhoto::class);
     }
 
-    protected $appends = ['avatar_url', 'logo_url'];
+    protected $appends = ['avatar_url', 'logo_url', 'banner_url'];
 
     /** @return Attribute<string|null, never> */
     protected function avatarUrl(): Attribute
@@ -95,6 +109,15 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
         );
     }
 
+    /** @return Attribute<string|null, never> */
+    protected function bannerUrl(): Attribute
+    {
+        /** @phpstan-ignore return.type */
+        return Attribute::get(
+            fn (): ?string => $this->banner ? Storage::disk('public')->url($this->banner) : null
+        );
+    }
+
     /**
      * Get the attributes that should be cast.
      *
@@ -107,6 +130,7 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
             'account_type' => AccountType::class,
+            'profile_public' => 'boolean',
         ];
     }
 }

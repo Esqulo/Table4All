@@ -11,6 +11,9 @@
     "establishment.error_hours_overlap": "Este intervalo se sobrepõe a outro horário de funcionamento.",
     "establishment.error_hours_per_day": "Use no máximo :max intervalos por dia.",
     "establishment.error_photos_limit": "Você pode manter no máximo :max fotos do local.",
+    "establishment.error_handle_format": "Use só letras minúsculas, números, hífen (-) ou sublinhado (_), começando e terminando com letra ou número.",
+    "establishment.error_handle_taken": "Esse @ já está em uso por outro estabelecimento.",
+    "venue_profile.meta_description": "Cardápio, fotos e horários de :name.",
 
     "mail.waiter_invitation.subject": "Convite para ser garçom — :restaurant",
     "mail.waiter_invitation.heading": "Você foi convidado!",

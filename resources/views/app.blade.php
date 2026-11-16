@@ -38,8 +38,24 @@
 
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
+        @isset($meta)
+            {{-- Link preview (Open Graph): crawlers read the HTML as served, without JavaScript. --}}
+            <meta name="description" content="{{ $meta['description'] }}">
+            <link rel="canonical" href="{{ $meta['url'] }}">
+            <meta property="og:type" content="website">
+            <meta property="og:site_name" content="{{ config('app.name', 'Table4All') }}">
+            <meta property="og:locale" content="{{ app()->getLocale() }}">
+            <meta property="og:title" content="{{ $meta['title'] }}">
+            <meta property="og:description" content="{{ $meta['description'] }}">
+            <meta property="og:url" content="{{ $meta['url'] }}">
+            @if ($meta['image'])
+                <meta property="og:image" content="{{ $meta['image'] }}">
+                <meta property="og:image:alt" content="{{ $meta['title'] }}">
+            @endif
+            <meta name="twitter:card" content="{{ $meta['large_image'] ? 'summary_large_image' : 'summary' }}">
+        @endisset
         <x-inertia::head>
-            <title>{{ config('app.name', 'Table4All') }}</title>
+            <title>{{ isset($meta) ? $meta['title'].' - '.config('app.name', 'Table4All') : config('app.name', 'Table4All') }}</title>
         </x-inertia::head>
     </head>
     <body class="font-sans antialiased">

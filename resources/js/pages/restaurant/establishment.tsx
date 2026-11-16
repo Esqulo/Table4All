@@ -1,8 +1,9 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import {
     ArrowLeft,
     ArrowRight,
     Copy,
+    ExternalLink,
     ImagePlus,
     Moon,
     Plus,
@@ -12,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import EstablishmentController from '@/actions/App/Http/Controllers/Restaurant/EstablishmentController';
 import Heading from '@/components/heading';
 import { ImageCropper } from '@/components/image-cropper';
@@ -27,11 +29,18 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { croppedFile, imageSourceUrl } from '@/lib/image-upload';
 import type { OpeningHourInterval, VenuePhoto } from '@/types';
 
 type Props = {
     logoUrl: string | null;
+    bannerUrl: string | null;
+    /** Public @handle; null only for accounts saved before handles existed. */
+    handle: string | null;
+    profilePublic: boolean;
+    /** Absolute "/vempro" address; the profile lives at `${profileBaseUrl}/${handle}`. */
+    profileBaseUrl: string;
     hours: OpeningHourInterval[];
     photos: VenuePhoto[];
     maxPhotos: number;
@@ -45,28 +54,52 @@ const MAX_INTERVALS_PER_DAY = 3;
 const DEFAULT_INTERVAL: Interval = { opens_at: '18:00', closes_at: '23:00' };
 /** Logos are shown small; 512 px covers 3x screens. WebP keeps transparency. */
 const LOGO_SIZE = 512;
+/** The banner is a wide cover behind the profile header; 3:1 reads well on phones and desktops. */
+const BANNER_ASPECT = 3;
+const BANNER_WIDTH = 1920;
 /** Venue photos are shown in 4:3 tiles and can go full width on a phone. */
 const PHOTO_ASPECT = 4 / 3;
 const PHOTO_WIDTH = 1600;
 
 export default function Establishment({
     logoUrl,
+    bannerUrl,
+    handle,
+    profilePublic,
+    profileBaseUrl,
     hours,
     photos,
     maxPhotos,
 }: Props) {
     const { t } = useTranslation();
+    const profileUrl = handle ? `${profileBaseUrl}/${handle}` : null;
 
     return (
         <>
             <Head title={t('establishment.title')} />
 
             <div className="mx-auto w-full max-w-4xl space-y-6 p-4 sm:p-6">
-                <Heading
-                    title={t('establishment.title')}
-                    description={t('establishment.description')}
-                />
+                <div className="flex flex-wrap items-start justify-between gap-x-4">
+                    <Heading
+                        title={t('establishment.title')}
+                        description={t('establishment.description')}
+                    />
+                    {profileUrl && (
+                        <Button variant="outline" asChild>
+                            <Link href={profileUrl}>
+                                <ExternalLink className="h-4 w-4" />
+                                {t('establishment.view_profile')}
+                            </Link>
+                        </Button>
+                    )}
+                </div>
 
+                <ProfileSection
+                    handle={handle}
+                    profilePublic={profilePublic}
+                    profileBaseUrl={profileBaseUrl}
+                />
+                <BannerSection bannerUrl={bannerUrl} logoUrl={logoUrl} />
                 <LogoSection logoUrl={logoUrl} />
                 <HoursSection initial={hours} />
                 <PhotosSection photos={photos} maxPhotos={maxPhotos} />
@@ -104,10 +137,154 @@ function Section({
     );
 }
 
-// ─── Logo ─────────────────────────────────────────────────────────────────────
+// ─── Public profile ───────────────────────────────────────────────────────────
 
-function LogoSection({ logoUrl }: { logoUrl: string | null }) {
+/** Mirrors the server: no leading "@", lowercase, spaces become hyphens. */
+function normalizeHandle(value: string): string {
+    return value.trim().replace(/^@+/, '').toLowerCase().replace(/\s+/g, '-');
+}
+
+function ProfileSection({
+    handle,
+    profilePublic,
+    profileBaseUrl,
+}: {
+    handle: string | null;
+    profilePublic: boolean;
+    profileBaseUrl: string;
+}) {
     const { t } = useTranslation();
+    const [value, setValue] = useState(handle ?? '');
+    const [isPublic, setIsPublic] = useState(profilePublic);
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [processing, setProcessing] = useState(false);
+
+    const normalized = normalizeHandle(value);
+    const dirty = normalized !== (handle ?? '') || isPublic !== profilePublic;
+    const savedUrl = handle ? `${profileBaseUrl}/${handle}` : null;
+
+    const save = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        router.put(
+            EstablishmentController.updateProfile.url(),
+            { handle: normalized, profile_public: isPublic },
+            {
+                preserveScroll: true,
+                onStart: () => {
+                    setProcessing(true);
+                    setErrors({});
+                },
+                onSuccess: () => setValue(normalized),
+                onError: setErrors,
+                onFinish: () => setProcessing(false),
+            },
+        );
+    };
+
+    const copy = async () => {
+        if (!savedUrl) {
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(savedUrl);
+            toast.success(t('venue_profile.link_copied'));
+        } catch {
+            toast.error(t('venue_profile.link_copy_failed'));
+        }
+    };
+
+    return (
+        <Section
+            title={t('establishment.profile_title')}
+            description={t('establishment.profile_description')}
+        >
+            <form onSubmit={save} className="space-y-5">
+                <div className="space-y-2">
+                    <Label htmlFor="handle">
+                        {t('establishment.handle_label')}
+                    </Label>
+                    <div className="flex max-w-md items-center rounded-md border bg-transparent shadow-xs focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50">
+                        <span className="pl-3 text-muted-foreground select-none">
+                            @
+                        </span>
+                        <input
+                            id="handle"
+                            value={value}
+                            onChange={(e) =>
+                                setValue(
+                                    e.target.value
+                                        .toLowerCase()
+                                        .replace(/\s+/g, '-'),
+                                )
+                            }
+                            maxLength={31}
+                            autoComplete="off"
+                            autoCapitalize="none"
+                            spellCheck={false}
+                            aria-invalid={!!errors.handle}
+                            className="h-9 min-w-0 flex-1 bg-transparent py-1 pr-3 pl-0.5 text-base outline-none md:text-sm"
+                            required
+                        />
+                    </div>
+                    <p className="font-receipt text-xs break-all text-muted-foreground">
+                        {profileBaseUrl}/
+                        <span className="text-foreground">
+                            {normalized ||
+                                t('establishment.handle_placeholder')}
+                        </span>
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                        {t('establishment.handle_hint')}
+                    </p>
+                    <InputError message={errors.handle} />
+                </div>
+
+                <label className="flex max-w-xl items-start gap-3">
+                    <Checkbox
+                        checked={isPublic}
+                        onCheckedChange={(checked) =>
+                            setIsPublic(checked === true)
+                        }
+                        className="mt-0.5"
+                    />
+                    <span className="space-y-1">
+                        <span className="block text-sm font-medium">
+                            {t('establishment.profile_public_label')}
+                        </span>
+                        <span className="block text-sm text-muted-foreground">
+                            {isPublic
+                                ? t('establishment.profile_public_on')
+                                : t('establishment.profile_public_off')}
+                        </span>
+                    </span>
+                </label>
+
+                <div className="flex flex-wrap gap-2">
+                    <Button type="submit" disabled={!dirty || processing}>
+                        {t('establishment.profile_save')}
+                    </Button>
+                    {savedUrl && profilePublic && (
+                        <Button type="button" variant="outline" onClick={copy}>
+                            <Copy className="h-4 w-4" />
+                            {t('establishment.profile_copy_link')}
+                        </Button>
+                    )}
+                </div>
+            </form>
+        </Section>
+    );
+}
+
+// ─── Single images (banner, logo) ─────────────────────────────────────────────
+
+/** Pick → crop → upload flow shared by the banner and the logo. */
+function useSingleImage(
+    field: 'logo' | 'banner',
+    uploadUrl: string,
+    removeUrl: string,
+) {
     const inputRef = useRef<HTMLInputElement>(null);
     const [processing, setProcessing] = useState(false);
     const [error, setError] = useState<string>();
@@ -134,8 +311,8 @@ function LogoSection({ logoUrl }: { logoUrl: string | null }) {
         closeCropper();
 
         router.post(
-            EstablishmentController.updateLogo.url(),
-            { logo: croppedFile(blob, 'logo') },
+            uploadUrl,
+            { [field]: croppedFile(blob, field) },
             {
                 forceFormData: true,
                 preserveScroll: true,
@@ -143,41 +320,194 @@ function LogoSection({ logoUrl }: { logoUrl: string | null }) {
                     setProcessing(true);
                     setError(undefined);
                 },
-                onError: (errors) => setError(errors.logo),
+                onError: (errors) => setError(errors[field]),
                 onFinish: () => setProcessing(false),
             },
         );
     };
 
     const remove = () => {
-        router.delete(EstablishmentController.destroyLogo.url(), {
+        router.delete(removeUrl, {
             preserveScroll: true,
             onStart: () => setProcessing(true),
             onFinish: () => setProcessing(false),
         });
     };
 
+    const fileInput = (
+        <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={pick}
+        />
+    );
+
+    return {
+        fileInput,
+        browse: () => inputRef.current?.click(),
+        processing,
+        error,
+        cropSrc,
+        closeCropper,
+        upload,
+        remove,
+    };
+}
+
+function ImageActions({
+    hasImage,
+    processing,
+    uploadLabel,
+    changeLabel,
+    removeLabel,
+    onBrowse,
+    onRemove,
+}: {
+    hasImage: boolean;
+    processing: boolean;
+    uploadLabel: string;
+    changeLabel: string;
+    removeLabel: string;
+    onBrowse: () => void;
+    onRemove: () => void;
+}) {
+    return (
+        <div className="flex flex-wrap gap-2">
+            <Button type="button" onClick={onBrowse} disabled={processing}>
+                <ImagePlus className="h-4 w-4" />
+                {hasImage ? changeLabel : uploadLabel}
+            </Button>
+            {hasImage && (
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onRemove}
+                    disabled={processing}
+                >
+                    <Trash2 className="h-4 w-4" />
+                    {removeLabel}
+                </Button>
+            )}
+        </div>
+    );
+}
+
+// ─── Banner ───────────────────────────────────────────────────────────────────
+
+function BannerSection({
+    bannerUrl,
+    logoUrl,
+}: {
+    bannerUrl: string | null;
+    logoUrl: string | null;
+}) {
+    const { t } = useTranslation();
+    const image = useSingleImage(
+        'banner',
+        EstablishmentController.updateBanner.url(),
+        EstablishmentController.destroyBanner.url(),
+    );
+
+    return (
+        <Section
+            title={t('establishment.banner_title')}
+            description={t('establishment.banner_description')}
+        >
+            {image.fileInput}
+            {image.cropSrc && (
+                <ImageCropper
+                    open
+                    src={image.cropSrc}
+                    aspect={BANNER_ASPECT}
+                    outputWidth={BANNER_WIDTH}
+                    quality={0.82}
+                    onConfirm={image.upload}
+                    onCancel={image.closeCropper}
+                />
+            )}
+
+            {/* Preview of the profile header: banner behind, logo overlapping its bottom edge. */}
+            <div className="relative mb-12">
+                <button
+                    type="button"
+                    onClick={image.browse}
+                    disabled={image.processing}
+                    aria-label={
+                        bannerUrl
+                            ? t('establishment.banner_change')
+                            : t('establishment.banner_upload')
+                    }
+                    className="flex aspect-[3/1] w-full items-center justify-center overflow-hidden rounded-xl border border-dashed bg-muted text-muted-foreground transition-colors hover:border-primary hover:text-primary disabled:opacity-60"
+                >
+                    {bannerUrl ? (
+                        <img
+                            src={bannerUrl}
+                            alt={t('establishment.banner_alt')}
+                            className="h-full w-full object-cover"
+                        />
+                    ) : (
+                        <ImagePlus className="size-8 opacity-60" />
+                    )}
+                </button>
+                <div className="pointer-events-none absolute -bottom-9 left-5 flex size-20 items-center justify-center overflow-hidden rounded-2xl border-4 border-card bg-muted shadow-sm">
+                    {logoUrl ? (
+                        <img
+                            src={logoUrl}
+                            alt=""
+                            className="h-full w-full object-contain p-1.5"
+                        />
+                    ) : (
+                        <Store className="size-7 text-muted-foreground/60" />
+                    )}
+                </div>
+            </div>
+
+            <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                    {t('establishment.banner_hint')}
+                </p>
+                <ImageActions
+                    hasImage={bannerUrl !== null}
+                    processing={image.processing}
+                    uploadLabel={t('establishment.banner_upload')}
+                    changeLabel={t('establishment.banner_change')}
+                    removeLabel={t('establishment.banner_remove')}
+                    onBrowse={image.browse}
+                    onRemove={image.remove}
+                />
+                <InputError message={image.error} />
+            </div>
+        </Section>
+    );
+}
+
+// ─── Logo ─────────────────────────────────────────────────────────────────────
+
+function LogoSection({ logoUrl }: { logoUrl: string | null }) {
+    const { t } = useTranslation();
+    const image = useSingleImage(
+        'logo',
+        EstablishmentController.updateLogo.url(),
+        EstablishmentController.destroyLogo.url(),
+    );
+
     return (
         <Section
             title={t('establishment.logo_title')}
             description={t('establishment.logo_description')}
         >
-            <input
-                ref={inputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={pick}
-            />
-            {cropSrc && (
+            {image.fileInput}
+            {image.cropSrc && (
                 <ImageCropper
                     open
-                    src={cropSrc}
+                    src={image.cropSrc}
                     aspect={1}
                     outputWidth={LOGO_SIZE}
                     format="webp"
-                    onConfirm={upload}
-                    onCancel={closeCropper}
+                    onConfirm={image.upload}
+                    onCancel={image.closeCropper}
                 />
             )}
 
@@ -198,30 +528,16 @@ function LogoSection({ logoUrl }: { logoUrl: string | null }) {
                     <p className="max-w-sm text-sm text-muted-foreground">
                         {t('establishment.logo_hint')}
                     </p>
-                    <div className="flex flex-wrap gap-2">
-                        <Button
-                            type="button"
-                            onClick={() => inputRef.current?.click()}
-                            disabled={processing}
-                        >
-                            <ImagePlus className="h-4 w-4" />
-                            {logoUrl
-                                ? t('establishment.logo_change')
-                                : t('establishment.logo_upload')}
-                        </Button>
-                        {logoUrl && (
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={remove}
-                                disabled={processing}
-                            >
-                                <Trash2 className="h-4 w-4" />
-                                {t('establishment.logo_remove')}
-                            </Button>
-                        )}
-                    </div>
-                    <InputError message={error} />
+                    <ImageActions
+                        hasImage={logoUrl !== null}
+                        processing={image.processing}
+                        uploadLabel={t('establishment.logo_upload')}
+                        changeLabel={t('establishment.logo_change')}
+                        removeLabel={t('establishment.logo_remove')}
+                        onBrowse={image.browse}
+                        onRemove={image.remove}
+                    />
+                    <InputError message={image.error} />
                 </div>
             </div>
         </Section>

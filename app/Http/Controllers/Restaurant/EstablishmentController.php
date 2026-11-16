@@ -8,6 +8,8 @@ use App\Models\RestaurantOpeningHour;
 use App\Models\RestaurantPhoto;
 use App\Models\User;
 use App\Support\ImageOptimizer;
+use App\Support\RestaurantHandle;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -18,11 +20,14 @@ use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
-/** Venue settings of the restaurant: opening hours, photos and logo. */
+/** Venue settings of the restaurant: public profile, opening hours, photos, logo and banner. */
 class EstablishmentController extends Controller
 {
     /** Logos are shown small (menu header, sidebar); 512 px covers 3x screens. */
     private const LOGO_MAX_SIDE = 512;
+
+    /** The banner spans the whole profile header, even on a desktop screen. */
+    private const BANNER_MAX_SIDE = 1920;
 
     /** Venue photos can be shown full width on a phone. */
     private const PHOTO_MAX_SIDE = 1600;
@@ -33,6 +38,10 @@ class EstablishmentController extends Controller
 
         return Inertia::render('restaurant/establishment', [
             'logoUrl' => $request->user()->logo_url,
+            'bannerUrl' => $request->user()->banner_url,
+            'handle' => $request->user()->handle,
+            'profilePublic' => $request->user()->profile_public,
+            'profileBaseUrl' => url('vempro'),
             'hours' => RestaurantOpeningHour::where('user_id', $restaurantId)
                 ->orderBy('weekday')
                 ->orderBy('opens_at')
@@ -48,6 +57,42 @@ class EstablishmentController extends Controller
                 ->get(['id', 'path', 'position']),
             'maxPhotos' => RestaurantPhoto::MAX_PER_RESTAURANT,
         ]);
+    }
+
+    /** The @handle of the public profile (/vempro/{handle}) and whether the profile is visible. */
+    public function updateProfile(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        $request->merge(['handle' => RestaurantHandle::normalize((string) $request->input('handle'))]);
+
+        /** @var array{handle: string, profile_public: bool} $data */
+        $data = $request->validate([
+            'handle' => [
+                'required',
+                'string',
+                'min:'.RestaurantHandle::MIN,
+                'max:'.RestaurantHandle::MAX,
+                'regex:'.RestaurantHandle::PATTERN,
+                Rule::unique('users', 'handle')->ignore($user->id),
+            ],
+            'profile_public' => ['required', 'boolean'],
+        ], [
+            'handle.regex' => __('establishment.error_handle_format'),
+            'handle.unique' => __('establishment.error_handle_taken'),
+        ]);
+
+        try {
+            $user->update($data);
+        } catch (UniqueConstraintViolationException) {
+            // Another restaurant took the same handle between validation and the write.
+            throw ValidationException::withMessages([
+                'handle' => __('establishment.error_handle_taken'),
+            ]);
+        }
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'establishment.msg_profile_saved']);
+
+        return back();
     }
 
     public function updateHours(OpeningHoursRequest $request): RedirectResponse
@@ -83,13 +128,7 @@ class EstablishmentController extends Controller
 
         /** @var UploadedFile $file */
         $file = $request->file('logo');
-        $user = $request->user();
-        $old = $user->logo;
-        $user->update(['logo' => ImageOptimizer::storeUpload($file, 'logos', self::LOGO_MAX_SIDE)]);
-
-        if ($old) {
-            Storage::disk('public')->delete($old);
-        }
+        $this->replaceImage($request->user(), 'logo', ImageOptimizer::storeUpload($file, 'logos', self::LOGO_MAX_SIDE));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'establishment.msg_logo_saved']);
 
@@ -98,14 +137,33 @@ class EstablishmentController extends Controller
 
     public function destroyLogo(Request $request): RedirectResponse
     {
-        $user = $request->user();
-
-        if ($user->logo) {
-            Storage::disk('public')->delete($user->logo);
-            $user->update(['logo' => null]);
-        }
+        $this->replaceImage($request->user(), 'logo', null);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'establishment.msg_logo_removed']);
+
+        return back();
+    }
+
+    public function updateBanner(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'banner' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+        ]);
+
+        /** @var UploadedFile $file */
+        $file = $request->file('banner');
+        $this->replaceImage($request->user(), 'banner', ImageOptimizer::storeUpload($file, 'banners', self::BANNER_MAX_SIDE));
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'establishment.msg_banner_saved']);
+
+        return back();
+    }
+
+    public function destroyBanner(Request $request): RedirectResponse
+    {
+        $this->replaceImage($request->user(), 'banner', null);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'establishment.msg_banner_removed']);
 
         return back();
     }
@@ -203,5 +261,26 @@ class EstablishmentController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => 'establishment.msg_photo_removed']);
 
         return back();
+    }
+
+    /**
+     * Points a single-image column (logo, banner) at a new file, or clears it,
+     * and deletes the file it replaced.
+     *
+     * @param  'logo'|'banner'  $column
+     */
+    private function replaceImage(User $user, string $column, ?string $path): void
+    {
+        $old = $user->{$column};
+
+        if ($old === null && $path === null) {
+            return;
+        }
+
+        $user->update([$column => $path]);
+
+        if ($old) {
+            Storage::disk('public')->delete($old);
+        }
     }
 }

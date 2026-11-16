@@ -14,6 +14,7 @@ use App\Http\Controllers\Restaurant\QueueItemController;
 use App\Http\Controllers\Restaurant\SaleController;
 use App\Http\Controllers\Restaurant\TableController;
 use App\Http\Controllers\Restaurant\WaiterController;
+use App\Http\Controllers\RestaurantProfileController;
 use App\Http\Controllers\TableJoinController;
 use App\Http\Controllers\WaiterInvitationController;
 use App\Http\Middleware\EnsureAdmin;
@@ -30,6 +31,11 @@ Route::post('/contato', [AdmissionRequestController::class, 'store'])
     ->name('contact.store');
 
 Route::get('/menu/{menu}', [MenuController::class, 'show'])->name('menu.show');
+
+// Public profile of a restaurant (the social side: anyone can see it)
+Route::get('/vempro/{handle}', [RestaurantProfileController::class, 'show'])
+    ->where('handle', '@?[A-Za-z0-9_-]{1,40}')
+    ->name('restaurant-profile.show');
 
 Route::get('/mesa', [TableJoinController::class, 'index'])->name('table.join');
 Route::get('/mesa/{code}', [TableJoinController::class, 'show'])->name('table.show');
@@ -80,11 +86,14 @@ Route::middleware(['auth', 'verified', EnsureRestaurant::class])
     ->group(function () {
         Route::get('painel', [DashboardController::class, 'index'])->name('dashboards.index');
 
-        // Venue settings: opening hours, photos and logo
+        // Venue settings: opening hours, photos, logo and banner
         Route::get('estabelecimento', [EstablishmentController::class, 'edit'])->name('establishment.edit');
+        Route::put('estabelecimento/perfil', [EstablishmentController::class, 'updateProfile'])->name('establishment.profile.update');
         Route::put('estabelecimento/horarios', [EstablishmentController::class, 'updateHours'])->name('establishment.hours.update');
         Route::post('estabelecimento/logo', [EstablishmentController::class, 'updateLogo'])->name('establishment.logo.update');
         Route::delete('estabelecimento/logo', [EstablishmentController::class, 'destroyLogo'])->name('establishment.logo.destroy');
+        Route::post('estabelecimento/banner', [EstablishmentController::class, 'updateBanner'])->name('establishment.banner.update');
+        Route::delete('estabelecimento/banner', [EstablishmentController::class, 'destroyBanner'])->name('establishment.banner.destroy');
         Route::post('estabelecimento/fotos', [EstablishmentController::class, 'storePhotos'])->name('establishment.photos.store');
         Route::put('estabelecimento/fotos/ordem', [EstablishmentController::class, 'reorderPhotos'])->name('establishment.photos.reorder');
         Route::delete('estabelecimento/fotos/{photo}', [EstablishmentController::class, 'destroyPhoto'])->name('establishment.photos.destroy');

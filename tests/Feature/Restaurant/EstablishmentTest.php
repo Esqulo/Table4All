@@ -242,6 +242,95 @@ class EstablishmentTest extends TestCase
         Storage::disk('public')->assertMissing('logos/old.webp');
     }
 
+    // ── banner ───────────────────────────────────────────────────────────────
+
+    public function test_banner_upload_replaces_the_previous_file_and_keeps_the_logo(): void
+    {
+        $restaurant = $this->restaurant();
+        Storage::disk('public')->put('logos/keep.webp', 'x');
+        $restaurant->update(['logo' => 'logos/keep.webp']);
+
+        $this->actingAs($restaurant)
+            ->post(route('restaurant.establishment.banner.update'), ['banner' => $this->png('banner.png')])
+            ->assertSessionHasNoErrors();
+
+        $first = $restaurant->fresh()->banner;
+        $this->assertNotNull($first);
+        $this->assertStringStartsWith('banners/', $first);
+        Storage::disk('public')->assertExists($first);
+
+        $this->actingAs($restaurant)
+            ->post(route('restaurant.establishment.banner.update'), ['banner' => $this->png('banner2.png')])
+            ->assertSessionHasNoErrors();
+
+        $second = $restaurant->fresh()->banner;
+        $this->assertNotSame($first, $second);
+        Storage::disk('public')->assertMissing($first);
+        Storage::disk('public')->assertExists($second);
+
+        $this->assertSame('logos/keep.webp', $restaurant->fresh()->logo);
+        Storage::disk('public')->assertExists('logos/keep.webp');
+    }
+
+    public function test_banner_is_shared_with_the_settings_page(): void
+    {
+        $restaurant = $this->restaurant();
+        Storage::disk('public')->put('banners/b.jpg', 'x');
+        $restaurant->update(['banner' => 'banners/b.jpg']);
+
+        $this->actingAs($restaurant)
+            ->get(route('restaurant.establishment.edit'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('bannerUrl', Storage::disk('public')->url('banners/b.jpg')));
+    }
+
+    public function test_banner_rejects_svg_non_images_and_missing_files(): void
+    {
+        $restaurant = $this->restaurant();
+        $svg = UploadedFile::fake()->createWithContent('banner.svg', '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>');
+
+        foreach ([$svg, UploadedFile::fake()->create('banner.pdf', 10, 'application/pdf'), null] as $file) {
+            $this->actingAs($restaurant)
+                ->post(route('restaurant.establishment.banner.update'), ['banner' => $file])
+                ->assertSessionHasErrors('banner');
+        }
+
+        $this->assertNull($restaurant->fresh()->banner);
+        $this->assertSame([], Storage::disk('public')->allFiles());
+    }
+
+    public function test_banner_can_be_removed_and_removing_twice_is_harmless(): void
+    {
+        $restaurant = $this->restaurant();
+        Storage::disk('public')->put('banners/old.jpg', 'x');
+        $restaurant->update(['banner' => 'banners/old.jpg']);
+
+        $this->actingAs($restaurant)->delete(route('restaurant.establishment.banner.destroy'))->assertRedirect();
+        $this->actingAs($restaurant)->delete(route('restaurant.establishment.banner.destroy'))->assertRedirect();
+
+        $this->assertNull($restaurant->fresh()->banner);
+        Storage::disk('public')->assertMissing('banners/old.jpg');
+    }
+
+    public function test_waiter_cannot_change_the_banner(): void
+    {
+        $restaurant = $this->restaurant();
+        Storage::disk('public')->put('banners/b.jpg', 'x');
+        $restaurant->update(['banner' => 'banners/b.jpg']);
+        $waiter = $this->waiterOf($restaurant);
+
+        $this->actingAs($waiter)
+            ->post(route('restaurant.establishment.banner.update'), ['banner' => $this->png('banner.png')])
+            ->assertRedirect(route('dashboard'));
+        $this->actingAs($waiter)
+            ->delete(route('restaurant.establishment.banner.destroy'))
+            ->assertRedirect(route('dashboard'));
+
+        $this->assertSame('banners/b.jpg', $restaurant->fresh()->banner);
+        $this->assertNull($waiter->fresh()->banner);
+        Storage::disk('public')->assertExists('banners/b.jpg');
+    }
+
     // ── photos ───────────────────────────────────────────────────────────────
 
     public function test_photos_are_appended_after_the_existing_ones(): void

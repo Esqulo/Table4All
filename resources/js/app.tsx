@@ -18,6 +18,7 @@ createInertiaApp({
             case name === 'welcome':
             case name === 'contact':
             case name.startsWith('menu/'):
+            case name.startsWith('profile/'):
             case name === 'restaurant/menus/print':
             case name.startsWith('waiter/'):
                 return null;
