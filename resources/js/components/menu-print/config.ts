@@ -1,7 +1,7 @@
 // Print menu editor configuration. The ids here are validated on the server
 // by App\Http\Controllers\Restaurant\MenuController — keep both lists in sync.
 
-export type PaperSize = 'A4' | 'A5' | 'Letter' | 'Legal';
+export type PaperSize = 'A3' | 'A4' | 'A5' | 'Letter' | 'Legal';
 export type TemplateId =
     | 'classic'
     | 'grid'
@@ -242,6 +242,7 @@ export function googleFontsUrl(ids: FontId[]): string | null {
 
 export const PAPERS: Record<PaperSize, { w: number; h: number; css: string }> =
     {
+        A3: { w: 297, h: 420, css: 'A3' },
         A4: { w: 210, h: 297, css: 'A4' },
         A5: { w: 148, h: 210, css: 'A5' },
         Letter: { w: 215.9, h: 279.4, css: 'letter' },

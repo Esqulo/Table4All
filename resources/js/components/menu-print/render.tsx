@@ -482,8 +482,7 @@ export function ProductItems({
             return (
                 <div
                     style={{
-                        padding: `${px(4, t)}px 0`,
-                        paddingBottom: px(4, t) + bottom,
+                        padding: `${px(4, t)}px 0 ${px(4, t) + bottom}px`,
                     }}
                 >
                     <div

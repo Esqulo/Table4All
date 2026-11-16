@@ -255,7 +255,7 @@ class StaffAndMenusTest extends TestCase
         return [
             'template' => 'chalkboard',
             'item_style' => 'leaders',
-            'paper' => 'A4',
+            'paper' => 'A3',
             'landscape' => false,
             'columns' => 2,
             'heading_font' => 'caveat',
@@ -297,6 +297,7 @@ class StaffAndMenusTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('restaurant/menus/print')
                 ->where('layout.template', 'chalkboard')
+                ->where('layout.paper', 'A3')
                 ->where('layout.hidden_products', [1])
             );
     }

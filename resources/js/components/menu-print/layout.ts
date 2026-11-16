@@ -171,7 +171,8 @@ export function geometry(layout: MenuLayout): Geometry {
     const paper = PAPERS[layout.paper];
     const wMm = layout.landscape ? paper.h : paper.w;
     const hMm = layout.landscape ? paper.w : paper.h;
-    const marginMm = layout.paper === 'A5' ? 10 : 14;
+    const marginMm =
+        layout.paper === 'A3' ? 18 : layout.paper === 'A5' ? 10 : 14;
 
     const pageW = wMm * MM;
     const pageH = hMm * MM;

@@ -26,7 +26,7 @@ class MenuController extends Controller
         'pacifico', 'dancing', 'caveat', 'patrick', 'amatic',
     ];
 
-    public const PAPERS = ['A4', 'A5', 'Letter', 'Legal'];
+    public const PAPERS = ['A3', 'A4', 'A5', 'Letter', 'Legal'];
 
     public function index(Request $request): Response
     {
