@@ -774,6 +774,7 @@
         "hours_title": "Opening hours",
         "hours_description": "Tick the days you open. A shift closing after midnight ends on the next day.",
         "hours_save": "Save hours",
+        "hours_unsaved": "You have unsaved changes.",
         "closed": "Closed",
         "opens_at": "Opens at",
         "closes_at": "Closes at",

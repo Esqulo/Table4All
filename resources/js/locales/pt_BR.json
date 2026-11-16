@@ -774,6 +774,7 @@
         "hours_title": "Horário de funcionamento",
         "hours_description": "Marque os dias em que abre. Um turno que fecha depois da meia-noite termina no dia seguinte.",
         "hours_save": "Salvar horários",
+        "hours_unsaved": "Você tem alterações não salvas.",
         "closed": "Fechado",
         "opens_at": "Abre às",
         "closes_at": "Fecha às",

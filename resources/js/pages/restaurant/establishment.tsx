@@ -286,15 +286,6 @@ function HoursSection({ initial }: { initial: OpeningHourInterval[] }) {
         <Section
             title={t('establishment.hours_title')}
             description={t('establishment.hours_description')}
-            aside={
-                <Button
-                    type="button"
-                    onClick={save}
-                    disabled={!dirty || processing}
-                >
-                    {t('establishment.hours_save')}
-                </Button>
-            }
         >
             <ul className="divide-y divide-dashed">
                 {DISPLAY_ORDER.map((weekday) => {
@@ -455,6 +446,29 @@ function HoursSection({ initial }: { initial: OpeningHourInterval[] }) {
                 })}
             </ul>
             <InputError message={errors.hours} className="mt-3" />
+
+            {/* Save at the end of the week; it sticks to the bottom of the screen while there are unsaved edits. */}
+            <div
+                className={[
+                    '-mx-5 mt-5 -mb-5 flex flex-wrap items-center justify-end gap-3 rounded-b-xl border-t border-dashed bg-card px-5 py-4',
+                    dirty
+                        ? 'sticky bottom-0 z-10 shadow-[0_-8px_16px_-12px_oklch(0.2_0.02_155/0.35)]'
+                        : '',
+                ].join(' ')}
+            >
+                {dirty && (
+                    <span className="mr-auto text-sm text-muted-foreground">
+                        {t('establishment.hours_unsaved')}
+                    </span>
+                )}
+                <Button
+                    type="button"
+                    onClick={save}
+                    disabled={!dirty || processing}
+                >
+                    {t('establishment.hours_save')}
+                </Button>
+            </div>
         </Section>
     );
 }
