@@ -1,0 +1,17 @@
+{
+    "products.created": "Product created successfully.",
+    "products.updated": "Product updated successfully.",
+    "products.deleted": "Product deleted successfully.",
+    "waiters.error_already_waiter": "This email already belongs to an active waiter at this restaurant.",
+    "waiters.error_email_taken": "An account with this email already exists.",
+    "tables.error_already_closed": "This table is already closed.",
+
+    "mail.waiter_invitation.subject": "Invitation to join as a waiter — :restaurant",
+    "mail.waiter_invitation.heading": "You're invited!",
+    "mail.waiter_invitation.intro": "**:restaurant** invited you to work as a waiter on **:app**.",
+    "mail.waiter_invitation.cta_intro": "Click the button below to create your account and accept the invitation:",
+    "mail.waiter_invitation.cta": "Accept invitation",
+    "mail.waiter_invitation.expires": "This invitation expires in **:days days**.",
+    "mail.waiter_invitation.ignore": "If you don't recognize this invitation, you can safely ignore this email.",
+    "mail.waiter_invitation.signature": "Best regards,\nThe :app team"
+}

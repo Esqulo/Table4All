@@ -22,7 +22,8 @@ class WaiterInvitationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "Convite para ser garçom — {$this->restaurant->name}",
+            // Sent in the language the inviting restaurant uses (SetLocale).
+            subject: __('mail.waiter_invitation.subject', ['restaurant' => $this->restaurant->name]),
         );
     }
 

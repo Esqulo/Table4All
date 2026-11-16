@@ -1,18 +1,17 @@
 <x-mail::message>
-# Você foi convidado!
+# {{ __('mail.waiter_invitation.heading') }}
 
-**{{ $restaurantName }}** convidou você para trabalhar como garçom no **Table4All**.
+{{ __('mail.waiter_invitation.intro', ['restaurant' => $restaurantName, 'app' => config('app.name')]) }}
 
-Clique no botão abaixo para criar sua conta e aceitar o convite:
+{{ __('mail.waiter_invitation.cta_intro') }}
 
 <x-mail::button :url="$acceptUrl">
-Aceitar convite
+{{ __('mail.waiter_invitation.cta') }}
 </x-mail::button>
 
-Este convite expira em **7 dias**.
+{{ __('mail.waiter_invitation.expires', ['days' => 7]) }}
 
-Caso você não reconheça este convite, ignore este e-mail com segurança.
+{{ __('mail.waiter_invitation.ignore') }}
 
-Atenciosamente,
-Equipe Table4All
+{!! nl2br(e(__('mail.waiter_invitation.signature', ['app' => config('app.name')]))) !!}
 </x-mail::message>

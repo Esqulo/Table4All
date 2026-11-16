@@ -182,7 +182,7 @@ class TableController extends Controller
     public function addPayment(Request $request, RestaurantTable $table): RedirectResponse
     {
         abort_unless($table->user_id === $request->user()->effectiveRestaurantId(), 403);
-        abort_if($table->closed_at !== null, 422, 'Table is already closed.');
+        abort_if($table->closed_at !== null, 422, __('tables.error_already_closed'));
 
         $validated = $request->validate([
             'method'      => ['required', Rule::enum(PaymentMethod::class)],
@@ -207,7 +207,7 @@ class TableController extends Controller
     public function close(Request $request, RestaurantTable $table): RedirectResponse
     {
         abort_unless($table->user_id === $request->user()->effectiveRestaurantId(), 403);
-        abort_if($table->closed_at !== null, 422, 'Table is already closed.');
+        abort_if($table->closed_at !== null, 422, __('tables.error_already_closed'));
 
         // Locked so a delivery or payment landing at the same moment is counted
         // before the totals are compared.
