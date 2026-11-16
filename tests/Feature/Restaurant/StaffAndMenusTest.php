@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\WaiterInvitation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\RestaurantFixtures;
@@ -267,6 +268,9 @@ class StaffAndMenusTest extends TestCase
             'show_images' => false,
             'section_page_break' => false,
             'show_header' => true,
+            'show_logo' => true,
+            'logo_size' => 'lg',
+            'logo_position' => 'side',
             'show_page_numbers' => true,
             'title' => 'Cardápio de inverno',
             'subtitle' => null,
@@ -298,7 +302,19 @@ class StaffAndMenusTest extends TestCase
                 ->component('restaurant/menus/print')
                 ->where('layout.template', 'chalkboard')
                 ->where('layout.paper', 'A3')
+                ->where('layout.logo_position', 'side')
                 ->where('layout.hidden_products', [1])
+            );
+    }
+
+    public function test_print_editor_receives_the_restaurant_logo(): void
+    {
+        $restaurant = $this->restaurant(['logo' => 'logos/bar.webp']);
+        $menu = Menu::create(['user_id' => $restaurant->id, 'name' => 'Principal']);
+
+        $this->actingAs($restaurant)->get(route('restaurant.menus.print', $menu))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('menu.user.logo_url', Storage::disk('public')->url('logos/bar.webp'))
             );
     }
 
@@ -322,11 +338,14 @@ class StaffAndMenusTest extends TestCase
                 'heading_font' => 'comic-sans',
                 'accent' => 'red',
                 'columns' => 5,
+                'logo_size' => 'xl',
+                'logo_position' => 'footer',
                 'scale' => 3,
                 'sections' => [['key' => 1, 'style' => 'carousel', 'hidden' => false, 'products' => []]],
             ])])
             ->assertSessionHasErrors([
                 'layout.template', 'layout.heading_font', 'layout.accent', 'layout.columns', 'layout.scale',
+                'layout.logo_size', 'layout.logo_position',
                 'layout.sections.0.style',
             ]);
 

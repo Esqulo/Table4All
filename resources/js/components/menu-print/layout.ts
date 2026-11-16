@@ -2,6 +2,8 @@ import type { Category, Product } from '@/types';
 import {
     defaultLayout,
     ITEM_STYLES,
+    LOGO_POSITIONS,
+    LOGO_SIZES,
     MM,
     PAPERS,
     TEMPLATE_IDS,
@@ -33,6 +35,14 @@ export function reconcile(
 
     if (!ITEM_STYLES.includes(layout.item_style)) {
         layout.item_style = TEMPLATES[layout.template].item;
+    }
+
+    if (!(layout.logo_size in LOGO_SIZES)) {
+        layout.logo_size = base.logo_size;
+    }
+
+    if (!LOGO_POSITIONS.includes(layout.logo_position)) {
+        layout.logo_position = base.logo_position;
     }
 
     const byCategory = new Map<number, number[]>();

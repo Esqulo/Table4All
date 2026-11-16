@@ -2,7 +2,7 @@
 // can be measured, previewed and copied into the print frame (WYSIWYG).
 import type { CSSProperties, ReactNode } from 'react';
 import type { Product } from '@/types';
-import type { HeadingStyle, ItemStyle, Palette } from './config';
+import type { HeadingStyle, ItemStyle, LogoPosition, Palette } from './config';
 import { COLUMN_GAP } from './layout';
 import type { Block, Geometry, PageLayout } from './layout';
 
@@ -35,25 +35,110 @@ const reset: CSSProperties = { margin: 0, padding: 0 };
 
 // ─── header / footer ─────────────────────────────────────────────────────────
 
+export type HeaderLogo = {
+    url: string;
+    /** Rendered height in px; width follows the picture's proportions. */
+    height: number;
+    position: LogoPosition;
+};
+
 export function MenuHeader({
     title,
     subtitle,
+    logo,
     t,
 }: {
-    title: string;
+    /** null shows only the logo. */
+    title: string | null;
     subtitle: string;
+    logo: HeaderLogo | null;
     t: Theme;
 }) {
     const centered = t.heading !== 'bar' && t.heading !== 'underline';
+    const beside = logo?.position === 'side' && title !== null;
+
+    // A fixed height keeps the header measurable before the picture loads.
+    const logoImg = logo && (
+        <img
+            src={logo.url}
+            alt=""
+            style={{
+                display: 'block',
+                height: logo.height,
+                width: 'auto',
+                maxWidth: beside ? '40%' : '100%',
+                objectFit: 'contain',
+                flexShrink: 0,
+                margin: beside
+                    ? 0
+                    : `0 ${centered ? 'auto' : '0'} ${title !== null ? px(12, t) : 0}px`,
+            }}
+        />
+    );
+
+    if (title === null) {
+        return (
+            <div style={{ display: 'flow-root', paddingBottom: px(20, t) }}>
+                {logoImg}
+            </div>
+        );
+    }
+
+    const text = (
+        // Centered templates keep logo + title together in the middle.
+        <div style={{ minWidth: 0, flex: beside && !centered ? 1 : undefined }}>
+            <HeaderText
+                title={title}
+                subtitle={subtitle}
+                centered={centered && !beside}
+                t={t}
+            />
+        </div>
+    );
 
     return (
         <div
             style={{
                 display: 'flow-root',
                 paddingBottom: px(20, t),
-                textAlign: centered ? 'center' : 'left',
+                textAlign: centered && !beside ? 'center' : 'left',
             }}
         >
+            {beside ? (
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: px(18, t),
+                        justifyContent: centered ? 'center' : 'flex-start',
+                    }}
+                >
+                    {logoImg}
+                    {text}
+                </div>
+            ) : (
+                <>
+                    {logoImg}
+                    {text}
+                </>
+            )}
+        </div>
+    );
+}
+
+function HeaderText({
+    title,
+    subtitle,
+    centered,
+    t,
+}: {
+    title: string;
+    subtitle: string;
+    centered: boolean;
+    t: Theme;
+}) {
+    return (
+        <>
             {subtitle && (
                 <p
                     style={{
@@ -93,7 +178,7 @@ export function MenuHeader({
                             : t.accent,
                 }}
             />
-        </div>
+        </>
     );
 }
 

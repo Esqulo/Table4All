@@ -247,7 +247,7 @@
         "print_show": "Mostrar",
         "print_section_title": "Título na impressão",
         "print_section_style": "Estilo desta categoria",
-        "print_show_header": "Mostrar cabeçalho na primeira página",
+        "print_show_header": "Mostrar título na primeira página",
         "print_title": "Título",
         "print_subtitle": "Subtítulo",
         "print_footer": "Rodapé",
@@ -256,7 +256,16 @@
         "print_pages_count_one": "{{count}} página",
         "print_pages_count_other": "{{count}} páginas",
         "print_all_hidden": "Todos os itens estão ocultos.",
-        "msg_layout_saved": "Layout do cardápio salvo."
+        "msg_layout_saved": "Layout do cardápio salvo.",
+        "print_logo": "Logo",
+        "print_show_logo": "Mostrar a logo no cabeçalho",
+        "print_logo_size_sm": "Pequena",
+        "print_logo_size_md": "Média",
+        "print_logo_size_lg": "Grande",
+        "print_logo_position_above": "Acima do título",
+        "print_logo_position_side": "Ao lado do título",
+        "print_logo_missing": "Você ainda não cadastrou uma logo.",
+        "print_logo_upload": "Enviar logo"
     },
     "categories": {
         "title": "Categorias",

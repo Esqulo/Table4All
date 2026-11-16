@@ -42,6 +42,13 @@ export type FontId =
     | 'caveat'
     | 'patrick'
     | 'amatic';
+export type LogoSize = 'sm' | 'md' | 'lg';
+export type LogoPosition = 'above' | 'side';
+
+/** Logo height in px for each size (before the page is scaled to paper). */
+export const LOGO_SIZES: Record<LogoSize, number> = { sm: 56, md: 88, lg: 132 };
+export const LOGO_POSITIONS: LogoPosition[] = ['above', 'side'];
+
 export type FontCategory = 'serif' | 'sans' | 'display' | 'handwritten';
 
 /** One category block of the menu (key = category id, -1 = uncategorised). */
@@ -69,6 +76,9 @@ export type MenuLayout = {
     show_images: boolean;
     section_page_break: boolean;
     show_header: boolean;
+    show_logo: boolean;
+    logo_size: LogoSize;
+    logo_position: LogoPosition;
     show_page_numbers: boolean;
     title: string | null;
     subtitle: string | null;
@@ -405,6 +415,9 @@ export function defaultLayout(title: string): MenuLayout {
         show_images: true,
         section_page_break: false,
         show_header: true,
+        show_logo: true,
+        logo_size: 'md',
+        logo_position: 'above',
         show_page_numbers: true,
         title,
         subtitle: null,

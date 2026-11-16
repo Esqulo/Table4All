@@ -52,7 +52,8 @@ class MenuController extends Controller
     {
         abort_unless($menu->user_id === $request->user()->effectiveRestaurantId(), 403);
 
-        $menu->load(['user' => fn ($q) => $q->select('id', 'name')]);
+        // logo feeds the user's logo_url, which the editor can place in the header.
+        $menu->load(['user' => fn ($q) => $q->select('id', 'name', 'logo')]);
 
         [$categories, $products] = $this->catalog($menu);
 
@@ -84,6 +85,9 @@ class MenuController extends Controller
             'layout.show_images' => ['required', 'boolean'],
             'layout.section_page_break' => ['required', 'boolean'],
             'layout.show_header' => ['required', 'boolean'],
+            'layout.show_logo' => ['required', 'boolean'],
+            'layout.logo_size' => ['required', Rule::in(['sm', 'md', 'lg'])],
+            'layout.logo_position' => ['required', Rule::in(['above', 'side'])],
             'layout.show_page_numbers' => ['required', 'boolean'],
             'layout.title' => ['nullable', 'string', 'max:120'],
             'layout.subtitle' => ['nullable', 'string', 'max:160'],

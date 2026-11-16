@@ -247,7 +247,7 @@
         "print_show": "Show",
         "print_section_title": "Printed title",
         "print_section_style": "Style for this category",
-        "print_show_header": "Show header on the first page",
+        "print_show_header": "Show title on the first page",
         "print_title": "Title",
         "print_subtitle": "Subtitle",
         "print_footer": "Footer",
@@ -256,7 +256,16 @@
         "print_pages_count_one": "{{count}} page",
         "print_pages_count_other": "{{count}} pages",
         "print_all_hidden": "All items are hidden.",
-        "msg_layout_saved": "Menu layout saved."
+        "msg_layout_saved": "Menu layout saved.",
+        "print_logo": "Logo",
+        "print_show_logo": "Show the logo in the header",
+        "print_logo_size_sm": "Small",
+        "print_logo_size_md": "Medium",
+        "print_logo_size_lg": "Large",
+        "print_logo_position_above": "Above the title",
+        "print_logo_position_side": "Beside the title",
+        "print_logo_missing": "You haven't uploaded a logo yet.",
+        "print_logo_upload": "Upload logo"
     },
     "categories": {
         "title": "Categories",

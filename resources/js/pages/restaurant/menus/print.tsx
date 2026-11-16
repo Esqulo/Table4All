@@ -10,6 +10,7 @@ import {
     useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
+import EstablishmentController from '@/actions/App/Http/Controllers/Restaurant/EstablishmentController';
 import MenuController from '@/actions/App/Http/Controllers/Restaurant/MenuController';
 import {
     applyTemplate,
@@ -18,12 +19,15 @@ import {
     FONTS,
     googleFontsUrl,
     ITEM_STYLES,
+    LOGO_POSITIONS,
+    LOGO_SIZES,
     PAPERS,
     TEMPLATE_IDS,
     TEMPLATES,
 } from '@/components/menu-print/config';
 import type {
     FontId,
+    LogoSize,
     MenuLayout,
     PaperSize,
     TemplateId,
@@ -44,7 +48,7 @@ import {
     MenuPage,
     SECTION_GAP,
 } from '@/components/menu-print/render';
-import type { Theme } from '@/components/menu-print/render';
+import type { HeaderLogo, Theme } from '@/components/menu-print/render';
 import { StructureEditor } from '@/components/menu-print/structure-editor';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -54,7 +58,9 @@ import { formatBRL } from '@/lib/money';
 import type { Category, Menu, Product } from '@/types';
 
 type Props = {
-    menu: Menu & { user: { id: number; name: string } };
+    menu: Menu & {
+        user: { id: number; name: string; logo_url: string | null };
+    };
     layout: Partial<MenuLayout> | null;
     categories: Category[];
     products: Product[];
@@ -544,9 +550,24 @@ export default function PrintMenu({
     const headerTitle = layout.title?.trim() || menu.name;
     const headerSubtitle = layout.subtitle?.trim() ?? '';
     const footerNote = layout.footer?.trim() ?? '';
-    const header = layout.show_header ? (
-        <MenuHeader title={headerTitle} subtitle={headerSubtitle} t={theme} />
-    ) : null;
+    const logoUrl = menu.user.logo_url;
+    const headerLogo: HeaderLogo | null =
+        layout.show_logo && logoUrl
+            ? {
+                  url: logoUrl,
+                  height: LOGO_SIZES[layout.logo_size],
+                  position: layout.logo_position,
+              }
+            : null;
+    const header =
+        layout.show_header || headerLogo ? (
+            <MenuHeader
+                title={layout.show_header ? headerTitle : null}
+                subtitle={headerSubtitle}
+                logo={headerLogo}
+                t={theme}
+            />
+        ) : null;
     const footer =
         footerNote || layout.show_page_numbers
             ? { note: footerNote, showNumbers: layout.show_page_numbers }
@@ -599,6 +620,9 @@ export default function PrintMenu({
         geo.columns,
         layout.section_page_break,
         layout.show_header,
+        headerLogo?.url,
+        headerLogo?.height,
+        headerLogo?.position,
         headerTitle,
         headerSubtitle,
         footerNote,
@@ -1056,6 +1080,93 @@ export default function PrintMenu({
                             {tab === 'texts' && (
                                 <>
                                     <section className="space-y-3">
+                                        <SectionLabel>
+                                            {t('menus.print_logo')}
+                                        </SectionLabel>
+                                        {logoUrl ? (
+                                            <>
+                                                <div className="flex items-center gap-3">
+                                                    <img
+                                                        src={logoUrl}
+                                                        alt=""
+                                                        className="h-12 w-auto max-w-24 rounded border border-border bg-white object-contain p-1"
+                                                    />
+                                                    <Toggle
+                                                        id="show-logo"
+                                                        checked={
+                                                            layout.show_logo
+                                                        }
+                                                        label={t(
+                                                            'menus.print_show_logo',
+                                                        )}
+                                                        onChange={(show_logo) =>
+                                                            patch({ show_logo })
+                                                        }
+                                                    />
+                                                </div>
+                                                {layout.show_logo && (
+                                                    <>
+                                                        <Segmented
+                                                            value={
+                                                                layout.logo_size
+                                                            }
+                                                            options={(
+                                                                Object.keys(
+                                                                    LOGO_SIZES,
+                                                                ) as LogoSize[]
+                                                            ).map((s) => ({
+                                                                value: s,
+                                                                label: t(
+                                                                    `menus.print_logo_size_${s}`,
+                                                                ),
+                                                            }))}
+                                                            onChange={(
+                                                                logo_size,
+                                                            ) =>
+                                                                patch({
+                                                                    logo_size,
+                                                                })
+                                                            }
+                                                        />
+                                                        <Segmented
+                                                            value={
+                                                                layout.logo_position
+                                                            }
+                                                            options={LOGO_POSITIONS.map(
+                                                                (p) => ({
+                                                                    value: p,
+                                                                    label: t(
+                                                                        `menus.print_logo_position_${p}`,
+                                                                    ),
+                                                                }),
+                                                            )}
+                                                            onChange={(
+                                                                logo_position,
+                                                            ) =>
+                                                                patch({
+                                                                    logo_position,
+                                                                })
+                                                            }
+                                                        />
+                                                    </>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <p className="text-xs text-muted-foreground">
+                                                {t('menus.print_logo_missing')}{' '}
+                                                <Link
+                                                    href={EstablishmentController.edit.url()}
+                                                    className="font-medium text-primary underline-offset-4 hover:underline"
+                                                >
+                                                    {t(
+                                                        'menus.print_logo_upload',
+                                                    )}
+                                                </Link>
+                                            </p>
+                                        )}
+                                    </section>
+
+                                    <section className="space-y-3">
                                         <Toggle
                                             id="show-header"
                                             checked={layout.show_header}
@@ -1151,10 +1262,12 @@ export default function PrintMenu({
                             </p>
                         ) : (
                             <>
-                                <p className="text-xs text-muted-foreground">
-                                    {t('menus.print_pages_count', {
-                                        count: pages.length,
-                                    })}
+                                <p className="min-h-4 text-xs text-muted-foreground">
+                                    {/* Empty until the first measurement. */}
+                                    {pages.length > 0 &&
+                                        t('menus.print_pages_count', {
+                                            count: pages.length,
+                                        })}
                                 </p>
                                 <div
                                     ref={pagesRef}
