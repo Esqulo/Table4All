@@ -1,8 +1,35 @@
 <?php
 
+use App\Models\Product;
+use App\Support\ImageOptimizer;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Storage;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
+
+Artisan::command('products:optimize-images', function () {
+    $optimized = 0;
+
+    Product::withTrashed()
+        ->whereNotNull('picture')
+        ->select(['id', 'picture'])
+        ->chunkById(100, function ($products) use (&$optimized) {
+            foreach ($products as $product) {
+                $old = (string) $product->picture;
+                $new = ImageOptimizer::reprocessStored($old);
+
+                if ($new === null) {
+                    continue;
+                }
+
+                $product->forceFill(['picture' => $new])->saveQuietly();
+                Storage::disk('public')->delete($old);
+                $optimized++;
+            }
+        });
+
+    $this->info("Optimized {$optimized} product picture(s).");
+})->purpose('Resize and re-encode stored product pictures (see docs/performance.md)');

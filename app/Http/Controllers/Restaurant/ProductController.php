@@ -7,6 +7,7 @@ use App\Http\Requests\Restaurant\ProductRequest;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\RestaurantQueue;
+use App\Support\ImageOptimizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -43,7 +44,7 @@ class ProductController extends Controller
         $data['user_id'] = $request->user()->id;
 
         if ($request->hasFile('picture')) {
-            $data['picture'] = $request->file('picture')->store('products', 'public');
+            $data['picture'] = ImageOptimizer::storeUpload($request->file('picture'), 'products');
         }
 
         Product::create($data);
@@ -74,7 +75,7 @@ class ProductController extends Controller
             if ($product->picture) {
                 Storage::disk('public')->delete($product->picture);
             }
-            $data['picture'] = $request->file('picture')->store('products', 'public');
+            $data['picture'] = ImageOptimizer::storeUpload($request->file('picture'), 'products');
         }
 
         $product->update($data);

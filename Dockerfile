@@ -43,12 +43,19 @@ RUN apk add --no-cache \
         nginx \
         supervisor \
         postgresql-client \
+        libpng \
+        libjpeg-turbo \
+        libwebp \
     && apk add --no-cache --virtual .build-deps \
         $PHPIZE_DEPS \
         postgresql-dev \
         oniguruma-dev \
         linux-headers \
-    && docker-php-ext-install -j"$(nproc)" pdo_pgsql pgsql mbstring pcntl opcache \
+        libpng-dev \
+        libjpeg-turbo-dev \
+        libwebp-dev \
+    && docker-php-ext-configure gd --with-jpeg --with-webp \
+    && docker-php-ext-install -j"$(nproc)" pdo_pgsql pgsql mbstring pcntl gd exif opcache \
     && apk del .build-deps \
     && rm -rf /var/cache/apk/*
 
