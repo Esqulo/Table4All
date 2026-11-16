@@ -246,4 +246,104 @@ class StaffAndMenusTest extends TestCase
         $this->actingAs($restaurant)->get(route('restaurant.menus.index'))
             ->assertInertia(fn (Assert $page) => $page->has('menus', 1)->where('menus.0.name', 'Almoço'));
     }
+
+    // ── print layout ─────────────────────────────────────────────────────────
+
+    /** @return array<string, mixed> */
+    private function printLayout(array $overrides = []): array
+    {
+        return [
+            'template' => 'chalkboard',
+            'item_style' => 'leaders',
+            'paper' => 'A4',
+            'landscape' => false,
+            'columns' => 2,
+            'heading_font' => 'caveat',
+            'body_font' => 'patrick',
+            'accent' => '#f2c94c',
+            'scale' => 1.05,
+            'grouped' => true,
+            'show_descriptions' => true,
+            'show_images' => false,
+            'section_page_break' => false,
+            'show_header' => true,
+            'show_page_numbers' => true,
+            'title' => 'Cardápio de inverno',
+            'subtitle' => null,
+            'footer' => 'Taxa de serviço não inclusa',
+            'sections' => [
+                ['key' => -1, 'title' => 'Petiscos', 'style' => 'grid', 'hidden' => false, 'products' => [3, 1]],
+            ],
+            'flat_order' => [3, 1],
+            'hidden_products' => [1],
+            ...$overrides,
+        ];
+    }
+
+    public function test_print_layout_is_saved_and_returned_to_the_editor(): void
+    {
+        $restaurant = $this->restaurant();
+        $menu = Menu::create(['user_id' => $restaurant->id, 'name' => 'Principal']);
+
+        $this->actingAs($restaurant)
+            ->put(route('restaurant.menus.layout.update', $menu), ['layout' => $this->printLayout()])
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('chalkboard', $menu->fresh()->layout['template']);
+        $this->assertSame('grid', $menu->fresh()->layout['sections'][0]['style']);
+
+        $this->actingAs($restaurant)->get(route('restaurant.menus.print', $menu))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('restaurant/menus/print')
+                ->where('layout.template', 'chalkboard')
+                ->where('layout.hidden_products', [1])
+            );
+    }
+
+    public function test_print_layout_is_not_exposed_on_the_public_menu(): void
+    {
+        $restaurant = $this->restaurant();
+        $menu = Menu::create(['user_id' => $restaurant->id, 'name' => 'Principal', 'layout' => $this->printLayout()]);
+
+        $this->get(route('menu.show', $menu))
+            ->assertInertia(fn (Assert $page) => $page->missing('menu.layout'));
+    }
+
+    public function test_print_layout_rejects_unknown_values(): void
+    {
+        $restaurant = $this->restaurant();
+        $menu = Menu::create(['user_id' => $restaurant->id, 'name' => 'Principal']);
+
+        $this->actingAs($restaurant)
+            ->put(route('restaurant.menus.layout.update', $menu), ['layout' => $this->printLayout([
+                'template' => 'neon',
+                'heading_font' => 'comic-sans',
+                'accent' => 'red',
+                'columns' => 5,
+                'scale' => 3,
+                'sections' => [['key' => 1, 'style' => 'carousel', 'hidden' => false, 'products' => []]],
+            ])])
+            ->assertSessionHasErrors([
+                'layout.template', 'layout.heading_font', 'layout.accent', 'layout.columns', 'layout.scale',
+                'layout.sections.0.style',
+            ]);
+
+        $this->assertNull($menu->fresh()->layout);
+    }
+
+    public function test_print_layout_belongs_to_the_menus_restaurant(): void
+    {
+        $owner = $this->restaurant();
+        $menu = Menu::create(['user_id' => $owner->id, 'name' => 'Principal']);
+
+        $this->actingAs($this->restaurant())
+            ->put(route('restaurant.menus.layout.update', $menu), ['layout' => $this->printLayout()])
+            ->assertForbidden();
+        $this->actingAs($this->waiterOf($owner))
+            ->put(route('restaurant.menus.layout.update', $menu), ['layout' => $this->printLayout()])
+            ->assertRedirect(route('dashboard')); // waiters don't edit menus
+
+        $this->assertNull($menu->fresh()->layout);
+    }
 }

@@ -102,6 +102,8 @@ Route::middleware(['auth', 'verified', EnsureRestaurant::class])
             ->parameters(['cardapio' => 'menu']);
         Route::get('cardapio/{menu}/imprimir', [MenuController::class, 'printMenu'])
             ->name('menus.print');
+        Route::put('cardapio/{menu}/layout', [MenuController::class, 'updateLayout'])
+            ->name('menus.layout.update');
         Route::post('produtos/{product}/foto', [ProductController::class, 'updatePicture'])
             ->name('products.picture.update');
         Route::resource('produtos', ProductController::class)
