@@ -147,6 +147,64 @@ class CatalogTest extends TestCase
         $this->assertNotSame('products/old.jpg', $product->fresh()->picture);
     }
 
+    public function test_picture_alone_can_be_replaced_from_the_list(): void
+    {
+        Storage::fake('public');
+        $restaurant = $this->restaurant();
+        Storage::disk('public')->put('products/old.jpg', 'x');
+        $product = $this->product($restaurant, ['name' => 'Chopp', 'price' => 12, 'picture' => 'products/old.jpg']);
+
+        $this->actingAs($restaurant)
+            ->from(route('restaurant.products.index'))
+            ->post(route('restaurant.products.picture.update', $product), [
+                'picture' => UploadedFile::fake()->image('nova.jpg', 300, 300),
+            ])
+            ->assertRedirect(route('restaurant.products.index'));
+
+        $product->refresh();
+        Storage::disk('public')->assertMissing('products/old.jpg');
+        Storage::disk('public')->assertExists((string) $product->picture);
+        $this->assertSame('Chopp', $product->name);
+        $this->assertEquals(12, $product->price);
+    }
+
+    public function test_picture_only_update_requires_an_image(): void
+    {
+        Storage::fake('public');
+        $restaurant = $this->restaurant();
+        Storage::disk('public')->put('products/old.jpg', 'x');
+        $product = $this->product($restaurant, ['picture' => 'products/old.jpg']);
+
+        $this->actingAs($restaurant)
+            ->post(route('restaurant.products.picture.update', $product), [])
+            ->assertSessionHasErrors('picture');
+        $this->actingAs($restaurant)
+            ->post(route('restaurant.products.picture.update', $product), [
+                'picture' => UploadedFile::fake()->create('menu.pdf', 100, 'application/pdf'),
+            ])
+            ->assertSessionHasErrors('picture');
+
+        $this->assertSame('products/old.jpg', $product->fresh()->picture);
+        Storage::disk('public')->assertExists('products/old.jpg');
+    }
+
+    public function test_picture_cannot_be_changed_by_another_restaurant_or_a_waiter(): void
+    {
+        Storage::fake('public');
+        $restaurant = $this->restaurant();
+        $product = $this->product($restaurant);
+        $upload = fn () => ['picture' => UploadedFile::fake()->image('x.jpg', 100, 100)];
+
+        $this->actingAs($this->restaurant())
+            ->post(route('restaurant.products.picture.update', $product), $upload())
+            ->assertForbidden();
+        $this->actingAs($this->waiterOf($restaurant))
+            ->post(route('restaurant.products.picture.update', $product), $upload())
+            ->assertRedirect(route('dashboard'));
+
+        $this->assertNull($product->fresh()->picture);
+    }
+
     public function test_deleted_product_leaves_menus_but_stays_on_open_bills(): void
     {
         $restaurant = $this->restaurant();

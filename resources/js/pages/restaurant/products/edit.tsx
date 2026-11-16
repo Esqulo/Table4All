@@ -15,6 +15,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { croppedFile, imageSourceUrl, setInputFile } from '@/lib/image-upload';
 import type { Category, PriceType, Product, RestaurantQueue } from '@/types';
 
 const PRICE_TYPES: PriceType[] = ['unit', 'kg', '100g', 'liter', 'portion'];
@@ -35,17 +36,16 @@ export default function EditProduct({ product, categories, queues }: Props) {
     const openPicker = () => pickerRef.current?.click();
 
     const onFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        setCropSrc(URL.createObjectURL(file));
+        const src = imageSourceUrl(e.target.files?.[0]);
         e.target.value = '';
+
+        if (src) {
+            setCropSrc(src);
+        }
     };
 
     const onCropConfirm = useCallback((blob: Blob) => {
-        const file = new File([blob], 'picture.jpg', { type: 'image/jpeg' });
-        const dt = new DataTransfer();
-        dt.items.add(file);
-        if (formPictureRef.current) formPictureRef.current.files = dt.files;
+        setInputFile(formPictureRef.current, croppedFile(blob, 'picture'));
         setPreview(URL.createObjectURL(blob));
         setCropSrc(null);
     }, []);
@@ -72,10 +72,18 @@ export default function EditProduct({ product, categories, queues }: Props) {
             )}
 
             {/* hidden picker — not inside the form so it doesn't submit */}
-            <input ref={pickerRef} type="file" accept="image/*" className="hidden" onChange={onFileSelected} />
+            <input
+                ref={pickerRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={onFileSelected}
+            />
 
             <div className="mx-auto max-w-xl space-y-6 p-6">
-                <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">{t('products.breadcrumb_edit')}</h1>
+                <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">
+                    {t('products.breadcrumb_edit')}
+                </h1>
 
                 <Form
                     {...ProductController.update.form({ product: product.id })}
@@ -86,18 +94,33 @@ export default function EditProduct({ product, categories, queues }: Props) {
                         <>
                             {categories.length > 0 && (
                                 <div className="grid gap-2">
-                                    <Label htmlFor="category_id">{t('products.category_label')}</Label>
+                                    <Label htmlFor="category_id">
+                                        {t('products.category_label')}
+                                    </Label>
                                     <Select
                                         name="category_id"
-                                        defaultValue={product.category_id ? String(product.category_id) : ''}
+                                        defaultValue={
+                                            product.category_id
+                                                ? String(product.category_id)
+                                                : ''
+                                        }
                                     >
                                         <SelectTrigger id="category_id">
-                                            <SelectValue placeholder={t('products.category_none')} />
+                                            <SelectValue
+                                                placeholder={t(
+                                                    'products.category_none',
+                                                )}
+                                            />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="">{t('products.category_none')}</SelectItem>
+                                            <SelectItem value="">
+                                                {t('products.category_none')}
+                                            </SelectItem>
                                             {categories.map((cat) => (
-                                                <SelectItem key={cat.id} value={String(cat.id)}>
+                                                <SelectItem
+                                                    key={cat.id}
+                                                    value={String(cat.id)}
+                                                >
                                                     {cat.name}
                                                 </SelectItem>
                                             ))}
@@ -109,18 +132,33 @@ export default function EditProduct({ product, categories, queues }: Props) {
 
                             {queues.length > 0 && (
                                 <div className="grid gap-2">
-                                    <Label htmlFor="queue_id">{t('products.queue_label')}</Label>
+                                    <Label htmlFor="queue_id">
+                                        {t('products.queue_label')}
+                                    </Label>
                                     <Select
                                         name="queue_id"
-                                        defaultValue={product.queue_id ? String(product.queue_id) : ''}
+                                        defaultValue={
+                                            product.queue_id
+                                                ? String(product.queue_id)
+                                                : ''
+                                        }
                                     >
                                         <SelectTrigger id="queue_id">
-                                            <SelectValue placeholder={t('products.queue_none')} />
+                                            <SelectValue
+                                                placeholder={t(
+                                                    'products.queue_none',
+                                                )}
+                                            />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="">{t('products.queue_none')}</SelectItem>
+                                            <SelectItem value="">
+                                                {t('products.queue_none')}
+                                            </SelectItem>
                                             {queues.map((q) => (
-                                                <SelectItem key={q.id} value={String(q.id)}>
+                                                <SelectItem
+                                                    key={q.id}
+                                                    value={String(q.id)}
+                                                >
                                                     {q.name}
                                                 </SelectItem>
                                             ))}
@@ -131,7 +169,9 @@ export default function EditProduct({ product, categories, queues }: Props) {
                             )}
 
                             <div className="grid gap-2">
-                                <Label htmlFor="name">{t('products.name_label')}</Label>
+                                <Label htmlFor="name">
+                                    {t('products.name_label')}
+                                </Label>
                                 <Input
                                     id="name"
                                     name="name"
@@ -144,12 +184,16 @@ export default function EditProduct({ product, categories, queues }: Props) {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="description">{t('products.description_label')}</Label>
+                                <Label htmlFor="description">
+                                    {t('products.description_label')}
+                                </Label>
                                 <Textarea
                                     id="description"
                                     name="description"
                                     defaultValue={product.description ?? ''}
-                                    placeholder={t('products.description_placeholder')}
+                                    placeholder={t(
+                                        'products.description_placeholder',
+                                    )}
                                     rows={3}
                                 />
                                 <InputError message={errors.description} />
@@ -157,7 +201,9 @@ export default function EditProduct({ product, categories, queues }: Props) {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="price">{t('products.price_label')}</Label>
+                                    <Label htmlFor="price">
+                                        {t('products.price_label')}
+                                    </Label>
                                     <Input
                                         id="price"
                                         name="price"
@@ -171,15 +217,22 @@ export default function EditProduct({ product, categories, queues }: Props) {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="price_type">{t('products.price_type_label')}</Label>
-                                    <Select name="price_type" defaultValue={product.price_type}>
+                                    <Label htmlFor="price_type">
+                                        {t('products.price_type_label')}
+                                    </Label>
+                                    <Select
+                                        name="price_type"
+                                        defaultValue={product.price_type}
+                                    >
                                         <SelectTrigger id="price_type">
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {PRICE_TYPES.map((pt) => (
                                                 <SelectItem key={pt} value={pt}>
-                                                    {t(`products.price_types.${pt}`)}
+                                                    {t(
+                                                        `products.price_types.${pt}`,
+                                                    )}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
@@ -191,21 +244,43 @@ export default function EditProduct({ product, categories, queues }: Props) {
                             <div className="grid gap-2">
                                 <Label>{t('products.picture_label')}</Label>
                                 <div className="flex items-center gap-4">
-                                    {displayPicture ? (
-                                        <img
-                                            src={displayPicture}
-                                            alt={product.name}
-                                            className="h-24 w-24 rounded-lg object-cover border border-border"
-                                        />
-                                    ) : (
-                                        <div className="h-24 w-24 rounded-lg border border-dashed border-border bg-muted" />
-                                    )}
-                                    <Button type="button" variant="outline" onClick={openPicker}>
-                                        {displayPicture ? t('products.picture_change') : t('products.picture_select')}
+                                    <button
+                                        type="button"
+                                        onClick={openPicker}
+                                        title={t('products.picture_edit_hint')}
+                                        aria-label={t(
+                                            'products.picture_edit_hint',
+                                        )}
+                                        className="h-24 w-24 shrink-0 cursor-pointer overflow-hidden rounded-lg transition-opacity hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                                    >
+                                        {displayPicture ? (
+                                            <img
+                                                src={displayPicture}
+                                                alt={product.name}
+                                                className="h-full w-full rounded-lg border border-border object-cover"
+                                            />
+                                        ) : (
+                                            <div className="h-full w-full rounded-lg border border-dashed border-border bg-muted" />
+                                        )}
+                                    </button>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={openPicker}
+                                    >
+                                        {displayPicture
+                                            ? t('products.picture_change')
+                                            : t('products.picture_select')}
                                     </Button>
                                 </div>
                                 {/* actual file input submitted with the form */}
-                                <input ref={formPictureRef} type="file" name="picture" className="hidden" readOnly />
+                                <input
+                                    ref={formPictureRef}
+                                    type="file"
+                                    name="picture"
+                                    className="hidden"
+                                    readOnly
+                                />
                                 <InputError message={errors.picture} />
                             </div>
 

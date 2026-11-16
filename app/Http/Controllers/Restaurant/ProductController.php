@@ -85,6 +85,29 @@ class ProductController extends Controller
         return to_route('restaurant.products.index');
     }
 
+    /** Swap only the picture, straight from the product list, without resending the other fields. */
+    public function updatePicture(Request $request, Product $product): RedirectResponse
+    {
+        abort_unless($product->user_id === $request->user()->id, 403);
+
+        $request->validate([
+            'picture' => ['required', 'image', 'max:2048'],
+        ]);
+
+        $old = $product->picture;
+        $product->update([
+            'picture' => ImageOptimizer::storeUpload($request->file('picture'), 'products'),
+        ]);
+
+        if ($old) {
+            Storage::disk('public')->delete($old);
+        }
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'products.msg_picture_updated']);
+
+        return back();
+    }
+
     public function destroy(Request $request, Product $product): RedirectResponse
     {
         abort_unless($product->user_id === $request->user()->id, 403);

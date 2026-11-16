@@ -87,7 +87,8 @@
         "admission_requests": "Requests",
         "platform": "Platform",
         "navigation_menu": "Navigation menu",
-        "open_menu": "Open menu"
+        "open_menu": "Open menu",
+        "establishment": "Venue"
     },
     "settings": {
         "title": "Settings",
@@ -110,7 +111,8 @@
             "unverified_email": "Your email address is unverified.",
             "resend_verification": "Click here to re-send the verification email.",
             "verification_sent": "A new verification link has been sent to your email address.",
-            "save": "Save"
+            "save": "Save",
+            "avatar_choose": "Choose photo"
         },
         "security": {
             "title": "Security settings",
@@ -254,7 +256,9 @@
         "queue_none": "No queue",
         "msg_created": "Product created successfully.",
         "msg_updated": "Product updated successfully.",
-        "msg_deleted": "Product removed successfully."
+        "msg_deleted": "Product removed successfully.",
+        "picture_edit_hint": "Click to change the picture",
+        "msg_picture_updated": "Picture updated successfully."
     },
     "queues": {
         "msg_has_open_items": "This queue has orders being prepared or waiting for delivery. Finish them before deleting it.",
@@ -737,7 +741,10 @@
         "title": "Crop image",
         "confirm": "Confirm",
         "cancel": "Cancel",
-        "preview_alt": "Crop preview"
+        "preview_alt": "Crop preview",
+        "not_image": "This file isn't an image.",
+        "too_large": "The image is over {{size}} MB. Pick a smaller one.",
+        "unreadable": "This image couldn't be opened. Try a JPG, PNG or WebP photo."
     },
     "waiter_accept": {
         "head_title": "Invitation — {{restaurant}}",
@@ -752,5 +759,56 @@
         "confirm_label": "Confirm password",
         "confirm_placeholder": "Repeat the password",
         "submit": "Create account and sign in"
+    },
+    "establishment": {
+        "title": "Venue",
+        "breadcrumb": "Venue",
+        "description": "How your bar shows up to customers: logo, opening hours and photos of the place.",
+        "logo_title": "Logo",
+        "logo_description": "Shown on the menu and on the table screen.",
+        "logo_hint": "You crop the image before it is uploaded. A PNG with a transparent background works best.",
+        "logo_upload": "Upload logo",
+        "logo_change": "Change logo",
+        "logo_remove": "Remove",
+        "logo_alt": "Venue logo",
+        "hours_title": "Opening hours",
+        "hours_description": "Tick the days you open. A shift closing after midnight ends on the next day.",
+        "hours_save": "Save hours",
+        "closed": "Closed",
+        "opens_at": "Opens at",
+        "closes_at": "Closes at",
+        "until": "to",
+        "add_interval": "Add shift",
+        "remove_interval": "Remove shift",
+        "copy_to_all": "Copy to every day",
+        "overnight": "ends the next day",
+        "weekday_0": "Sunday",
+        "weekday_1": "Monday",
+        "weekday_2": "Tuesday",
+        "weekday_3": "Wednesday",
+        "weekday_4": "Thursday",
+        "weekday_5": "Friday",
+        "weekday_6": "Saturday",
+        "photos_title": "Venue photos",
+        "photos_description": "The first photo is the cover. Use the arrows to change the order.",
+        "photos_add": "Add photos",
+        "photos_uploading": "Uploading...",
+        "photos_empty": "No photos yet. Show the floor, the counter and the outdoor area.",
+        "photos_limit_one": "You can have at most {{count}} photo.",
+        "photos_limit_other": "You can have at most {{count}} photos.",
+        "photo_alt": "Venue photo {{n}}",
+        "photo_cover": "Cover",
+        "photo_move_left": "Move left",
+        "photo_move_right": "Move right",
+        "photo_delete": "Delete photo",
+        "photo_delete_title": "Delete this photo?",
+        "photo_delete_description": "The photo is removed from the venue profile and can't be recovered.",
+        "cancel": "Cancel",
+        "msg_hours_saved": "Opening hours saved.",
+        "msg_logo_saved": "Logo updated.",
+        "msg_logo_removed": "Logo removed.",
+        "msg_photos_added": "Photos added.",
+        "msg_photo_removed": "Photo deleted.",
+        "photos_crop_progress": "Photo {{current}} of {{total}}"
     }
 }

@@ -8,6 +8,9 @@
     "waiters.error_already_waiter": "Este e-mail já é um garçom ativo neste restaurante.",
     "waiters.error_email_taken": "Já existe uma conta com este e-mail.",
     "tables.error_already_closed": "Esta mesa já foi fechada.",
+    "establishment.error_hours_overlap": "Este intervalo se sobrepõe a outro horário de funcionamento.",
+    "establishment.error_hours_per_day": "Use no máximo :max intervalos por dia.",
+    "establishment.error_photos_limit": "Você pode manter no máximo :max fotos do local.",
 
     "mail.waiter_invitation.subject": "Convite para ser garçom — :restaurant",
     "mail.waiter_invitation.heading": "Você foi convidado!",

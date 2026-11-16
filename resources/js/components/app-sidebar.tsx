@@ -1,11 +1,12 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BarChart3, Inbox, ConciergeBell, LayoutGrid, ListOrdered, Percent, QrCode, ScrollText, ShoppingBag, Tag, Users, UtensilsCrossed } from 'lucide-react';
+import { BarChart3, Inbox, ConciergeBell, LayoutGrid, ListOrdered, Percent, QrCode, ScrollText, ShoppingBag, Store, Tag, Users, UtensilsCrossed } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AdminAdmissionRequestController from '@/actions/App/Http/Controllers/Admin/AdmissionRequestController';
 import CategoryController from '@/actions/App/Http/Controllers/Admin/CategoryController';
 import CustomerJoinController from '@/actions/App/Http/Controllers/Customer/JoinController';
 import DashboardController from '@/actions/App/Http/Controllers/Restaurant/DashboardController';
 import DeliveryController from '@/actions/App/Http/Controllers/Restaurant/DeliveryController';
+import EstablishmentController from '@/actions/App/Http/Controllers/Restaurant/EstablishmentController';
 import MenuController from '@/actions/App/Http/Controllers/Restaurant/MenuController';
 import ProductController from '@/actions/App/Http/Controllers/Restaurant/ProductController';
 import QueueController from '@/actions/App/Http/Controllers/Restaurant/QueueController';
@@ -89,6 +90,11 @@ export function AppSidebar() {
                     title: t('nav.delivery'),
                     href: DeliveryController.index.url(),
                     icon: ConciergeBell,
+                },
+                {
+                    title: t('nav.establishment'),
+                    href: EstablishmentController.edit.url(),
+                    icon: Store,
                 },
             ]
           : isWaiter

@@ -25,6 +25,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property string $email
  * @property string|null $phone
  * @property string|null $avatar
+ * @property string|null $logo
  * @property AccountType $account_type
  * @property int|null $restaurant_id
  * @property Carbon|null $email_verified_at
@@ -36,7 +37,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'email', 'phone', 'avatar', 'account_type', 'password', 'restaurant_id'])]
+#[Fillable(['name', 'email', 'phone', 'avatar', 'logo', 'account_type', 'password', 'restaurant_id'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
@@ -62,7 +63,19 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
         return $this->belongsTo(User::class, 'restaurant_id');
     }
 
-    protected $appends = ['avatar_url'];
+    /** @return HasMany<RestaurantOpeningHour, $this> */
+    public function openingHours(): HasMany
+    {
+        return $this->hasMany(RestaurantOpeningHour::class);
+    }
+
+    /** @return HasMany<RestaurantPhoto, $this> */
+    public function photos(): HasMany
+    {
+        return $this->hasMany(RestaurantPhoto::class);
+    }
+
+    protected $appends = ['avatar_url', 'logo_url'];
 
     /** @return Attribute<string|null, never> */
     protected function avatarUrl(): Attribute
@@ -70,6 +83,15 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
         /** @phpstan-ignore return.type */
         return Attribute::get(
             fn (): ?string => $this->avatar ? Storage::disk('public')->url($this->avatar) : null
+        );
+    }
+
+    /** @return Attribute<string|null, never> */
+    protected function logoUrl(): Attribute
+    {
+        /** @phpstan-ignore return.type */
+        return Attribute::get(
+            fn (): ?string => $this->logo ? Storage::disk('public')->url($this->logo) : null
         );
     }
 

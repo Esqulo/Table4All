@@ -158,3 +158,16 @@ export type AdmissionRequest = {
     created_at: string;
     updated_at: string;
 };
+
+/** One opening interval; `closes_at <= opens_at` means it ends after midnight. */
+export type OpeningHourInterval = {
+    weekday: number;
+    opens_at: string;
+    closes_at: string;
+};
+
+export type VenuePhoto = {
+    id: number;
+    position: number;
+    url: string;
+};

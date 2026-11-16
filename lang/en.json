@@ -5,6 +5,9 @@
     "waiters.error_already_waiter": "This email already belongs to an active waiter at this restaurant.",
     "waiters.error_email_taken": "An account with this email already exists.",
     "tables.error_already_closed": "This table is already closed.",
+    "establishment.error_hours_overlap": "This interval overlaps another opening interval.",
+    "establishment.error_hours_per_day": "Use at most :max intervals per day.",
+    "establishment.error_photos_limit": "You can keep at most :max photos of the venue.",
 
     "mail.waiter_invitation.subject": "Invitation to join as a waiter — :restaurant",
     "mail.waiter_invitation.heading": "You're invited!",

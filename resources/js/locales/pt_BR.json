@@ -87,7 +87,8 @@
         "admission_requests": "Solicitações",
         "platform": "Plataforma",
         "navigation_menu": "Menu de navegação",
-        "open_menu": "Abrir menu"
+        "open_menu": "Abrir menu",
+        "establishment": "Estabelecimento"
     },
     "settings": {
         "title": "Configurações",
@@ -110,7 +111,8 @@
             "unverified_email": "Seu endereço de e-mail não foi verificado.",
             "resend_verification": "Clique aqui para reenviar o e-mail de verificação.",
             "verification_sent": "Um novo link de verificação foi enviado para o seu endereço de e-mail.",
-            "save": "Salvar"
+            "save": "Salvar",
+            "avatar_choose": "Escolher foto"
         },
         "security": {
             "title": "Configurações de segurança",
@@ -254,7 +256,9 @@
         "queue_none": "Sem fila",
         "msg_created": "Produto criado com sucesso.",
         "msg_updated": "Produto atualizado com sucesso.",
-        "msg_deleted": "Produto excluído com sucesso."
+        "msg_deleted": "Produto excluído com sucesso.",
+        "picture_edit_hint": "Clique para alterar a foto",
+        "msg_picture_updated": "Foto atualizada com sucesso."
     },
     "queues": {
         "msg_has_open_items": "Esta fila tem pedidos em preparo ou aguardando entrega. Conclua-os antes de excluí-la.",
@@ -737,7 +741,10 @@
         "title": "Recortar imagem",
         "confirm": "Confirmar",
         "cancel": "Cancelar",
-        "preview_alt": "Pré-visualização do recorte"
+        "preview_alt": "Pré-visualização do recorte",
+        "not_image": "Esse arquivo não é uma imagem.",
+        "too_large": "A imagem passa de {{size}} MB. Escolha uma menor.",
+        "unreadable": "Não foi possível abrir essa imagem. Tente uma foto em JPG, PNG ou WebP."
     },
     "waiter_accept": {
         "head_title": "Convite — {{restaurant}}",
@@ -752,5 +759,56 @@
         "confirm_label": "Confirmar senha",
         "confirm_placeholder": "Repita a senha",
         "submit": "Criar conta e entrar"
+    },
+    "establishment": {
+        "title": "Estabelecimento",
+        "breadcrumb": "Estabelecimento",
+        "description": "Como seu bar aparece para os clientes: logo, horário de funcionamento e fotos do local.",
+        "logo_title": "Logo",
+        "logo_description": "Aparece no cardápio e na tela da mesa.",
+        "logo_hint": "Você recorta a imagem antes de enviar. PNG com fundo transparente fica melhor.",
+        "logo_upload": "Enviar logo",
+        "logo_change": "Trocar logo",
+        "logo_remove": "Remover",
+        "logo_alt": "Logo do estabelecimento",
+        "hours_title": "Horário de funcionamento",
+        "hours_description": "Marque os dias em que abre. Um turno que fecha depois da meia-noite termina no dia seguinte.",
+        "hours_save": "Salvar horários",
+        "closed": "Fechado",
+        "opens_at": "Abre às",
+        "closes_at": "Fecha às",
+        "until": "até",
+        "add_interval": "Adicionar turno",
+        "remove_interval": "Remover turno",
+        "copy_to_all": "Copiar para todos os dias",
+        "overnight": "termina no dia seguinte",
+        "weekday_0": "Domingo",
+        "weekday_1": "Segunda",
+        "weekday_2": "Terça",
+        "weekday_3": "Quarta",
+        "weekday_4": "Quinta",
+        "weekday_5": "Sexta",
+        "weekday_6": "Sábado",
+        "photos_title": "Fotos do local",
+        "photos_description": "A primeira foto é a capa. Use as setas para mudar a ordem.",
+        "photos_add": "Adicionar fotos",
+        "photos_uploading": "Enviando...",
+        "photos_empty": "Nenhuma foto ainda. Mostre o salão, o balcão e a área externa.",
+        "photos_limit_one": "Você pode ter no máximo {{count}} foto.",
+        "photos_limit_other": "Você pode ter no máximo {{count}} fotos.",
+        "photo_alt": "Foto do local {{n}}",
+        "photo_cover": "Capa",
+        "photo_move_left": "Mover para a esquerda",
+        "photo_move_right": "Mover para a direita",
+        "photo_delete": "Excluir foto",
+        "photo_delete_title": "Excluir esta foto?",
+        "photo_delete_description": "A foto sai do perfil do estabelecimento e não pode ser recuperada.",
+        "cancel": "Cancelar",
+        "msg_hours_saved": "Horários salvos.",
+        "msg_logo_saved": "Logo atualizada.",
+        "msg_logo_removed": "Logo removida.",
+        "msg_photos_added": "Fotos adicionadas.",
+        "msg_photo_removed": "Foto excluída.",
+        "photos_crop_progress": "Foto {{current}} de {{total}}"
     }
 }

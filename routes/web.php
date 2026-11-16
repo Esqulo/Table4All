@@ -6,6 +6,7 @@ use App\Http\Controllers\AdmissionRequestController;
 use App\Http\Controllers\Customer\JoinController as CustomerJoinController;
 use App\Http\Controllers\Restaurant\DashboardController;
 use App\Http\Controllers\Restaurant\DeliveryController;
+use App\Http\Controllers\Restaurant\EstablishmentController;
 use App\Http\Controllers\Restaurant\MenuController;
 use App\Http\Controllers\Restaurant\ProductController;
 use App\Http\Controllers\Restaurant\QueueController;
@@ -79,6 +80,15 @@ Route::middleware(['auth', 'verified', EnsureRestaurant::class])
     ->group(function () {
         Route::get('painel', [DashboardController::class, 'index'])->name('dashboards.index');
 
+        // Venue settings: opening hours, photos and logo
+        Route::get('estabelecimento', [EstablishmentController::class, 'edit'])->name('establishment.edit');
+        Route::put('estabelecimento/horarios', [EstablishmentController::class, 'updateHours'])->name('establishment.hours.update');
+        Route::post('estabelecimento/logo', [EstablishmentController::class, 'updateLogo'])->name('establishment.logo.update');
+        Route::delete('estabelecimento/logo', [EstablishmentController::class, 'destroyLogo'])->name('establishment.logo.destroy');
+        Route::post('estabelecimento/fotos', [EstablishmentController::class, 'storePhotos'])->name('establishment.photos.store');
+        Route::put('estabelecimento/fotos/ordem', [EstablishmentController::class, 'reorderPhotos'])->name('establishment.photos.reorder');
+        Route::delete('estabelecimento/fotos/{photo}', [EstablishmentController::class, 'destroyPhoto'])->name('establishment.photos.destroy');
+
         // cancelInvitation must be declared before the resource so it's matched first
         Route::delete('garcons/convites/{invitation}', [WaiterController::class, 'cancelInvitation'])
             ->name('waiters.cancel-invitation');
@@ -92,6 +102,8 @@ Route::middleware(['auth', 'verified', EnsureRestaurant::class])
             ->parameters(['cardapio' => 'menu']);
         Route::get('cardapio/{menu}/imprimir', [MenuController::class, 'printMenu'])
             ->name('menus.print');
+        Route::post('produtos/{product}/foto', [ProductController::class, 'updatePicture'])
+            ->name('products.picture.update');
         Route::resource('produtos', ProductController::class)
             ->except(['show', 'index'])
             ->names('products')

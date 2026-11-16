@@ -15,6 +15,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { croppedFile, imageSourceUrl, setInputFile } from '@/lib/image-upload';
 import type { Category, PriceType, RestaurantQueue } from '@/types';
 
 const PRICE_TYPES: PriceType[] = ['unit', 'kg', '100g', 'liter', 'portion'];
@@ -34,17 +35,13 @@ export default function CreateProduct({ categories, queues }: Props) {
     const openPicker = () => pickerRef.current?.click();
 
     const onFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        setCropSrc(URL.createObjectURL(file));
+        const src = imageSourceUrl(e.target.files?.[0]);
         e.target.value = '';
+        if (src) setCropSrc(src);
     };
 
     const onCropConfirm = useCallback((blob: Blob) => {
-        const file = new File([blob], 'picture.jpg', { type: 'image/jpeg' });
-        const dt = new DataTransfer();
-        dt.items.add(file);
-        if (formPictureRef.current) formPictureRef.current.files = dt.files;
+        setInputFile(formPictureRef.current, croppedFile(blob, 'picture'));
         setPreview(URL.createObjectURL(blob));
         setCropSrc(null);
     }, []);

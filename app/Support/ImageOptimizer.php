@@ -26,13 +26,16 @@ final class ImageOptimizer
 
     private const JPEG_QUALITY = 80;
 
-    /** Stores an uploaded picture on the public disk and returns its path. */
-    public static function storeUpload(UploadedFile $file, string $directory): string
+    /**
+     * Stores an uploaded picture on the public disk and returns its path.
+     * `$maxSide` caps the longest side (venue photos are shown wider than products).
+     */
+    public static function storeUpload(UploadedFile $file, string $directory, int $maxSide = self::MAX_SIDE): string
     {
         $contents = @file_get_contents($file->getRealPath());
 
         if ($contents !== false) {
-            $optimized = self::optimize($contents, self::exifOrientation($file->getRealPath()));
+            $optimized = self::optimize($contents, self::exifOrientation($file->getRealPath()), $maxSide);
 
             if ($optimized !== null) {
                 $path = $directory.'/'.Str::random(40).'.'.$optimized['extension'];
@@ -82,7 +85,7 @@ final class ImageOptimizer
     }
 
     /** @return array{data: string, extension: string}|null */
-    private static function optimize(string $contents, int $orientation): ?array
+    private static function optimize(string $contents, int $orientation, int $maxSide = self::MAX_SIDE): ?array
     {
         if (! function_exists('imagecreatefromstring')) {
             return null;
@@ -98,7 +101,7 @@ final class ImageOptimizer
 
         $width = imagesx($source);
         $height = imagesy($source);
-        $scale = min(1, self::MAX_SIDE / max($width, $height));
+        $scale = min(1, $maxSide / max($width, $height));
         $newW = max(1, (int) round($width * $scale));
         $newH = max(1, (int) round($height * $scale));
 

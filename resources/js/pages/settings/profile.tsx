@@ -1,16 +1,17 @@
 import { Form, Head, usePage } from '@inertiajs/react';
 import { Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { compressImage } from '@/lib/compress-image';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@/components/delete-user';
 import Heading from '@/components/heading';
+import { ImageCropper } from '@/components/image-cropper';
 import InputError from '@/components/input-error';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { croppedFile, imageSourceUrl, setInputFile } from '@/lib/image-upload';
 import { edit } from '@/routes/profile';
 import { send } from '@/routes/verification';
 import type { Auth } from '@/types';
@@ -29,6 +30,23 @@ export default function Profile({
     const { t } = useTranslation();
     const { auth } = usePage<PageProps>().props;
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+    const [cropSrc, setCropSrc] = useState<string | null>(null);
+    const pickerRef = useRef<HTMLInputElement>(null);
+    const avatarInputRef = useRef<HTMLInputElement>(null);
+
+    const closeCropper = () => {
+        if (cropSrc) {
+            URL.revokeObjectURL(cropSrc);
+        }
+
+        setCropSrc(null);
+    };
+
+    const onCropConfirm = (blob: Blob) => {
+        closeCropper();
+        setInputFile(avatarInputRef.current, croppedFile(blob, 'avatar'));
+        setAvatarPreview(URL.createObjectURL(blob));
+    };
 
     const avatarSrc = avatarPreview ?? auth.user.avatar_url ?? undefined;
     const avatarFallback = auth.user.name.charAt(0).toUpperCase();
@@ -38,6 +56,33 @@ export default function Profile({
             <Head title={t('settings.profile.head')} />
 
             <h1 className="sr-only">{t('settings.profile.head')}</h1>
+
+            {cropSrc && (
+                <ImageCropper
+                    open
+                    src={cropSrc}
+                    aspect={1}
+                    outputWidth={400}
+                    onConfirm={onCropConfirm}
+                    onCancel={closeCropper}
+                />
+            )}
+
+            {/* Picker outside the form: only the cropped file is submitted. */}
+            <input
+                ref={pickerRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                    const src = imageSourceUrl(e.target.files?.[0]);
+                    e.target.value = '';
+
+                    if (src) {
+                        setCropSrc(src);
+                    }
+                }}
+            />
 
             <div className="space-y-6">
                 <Heading
@@ -113,22 +158,22 @@ export default function Profile({
                                             {avatarFallback}
                                         </AvatarFallback>
                                     </Avatar>
-                                    <Input
-                                        id="avatar"
+                                    <input
+                                        ref={avatarInputRef}
                                         type="file"
                                         name="avatar"
-                                        accept="image/*"
-                                        className="max-w-xs"
-                                        onChange={async (e) => {
-                                            const file = e.target.files?.[0];
-                                            if (!file) return;
-                                            const compressed = await compressImage(file, { maxWidth: 400, maxHeight: 400 });
-                                            const dt = new DataTransfer();
-                                            dt.items.add(compressed);
-                                            e.target.files = dt.files;
-                                            setAvatarPreview(URL.createObjectURL(compressed));
-                                        }}
+                                        className="hidden"
+                                        tabIndex={-1}
+                                        aria-hidden
                                     />
+                                    <Button
+                                        id="avatar"
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => pickerRef.current?.click()}
+                                    >
+                                        {t('settings.profile.avatar_choose')}
+                                    </Button>
                                 </div>
                                 <InputError className="mt-2" message={errors.avatar} />
                             </div>
