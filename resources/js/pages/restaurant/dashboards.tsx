@@ -57,12 +57,12 @@ function formatDateTime(iso: string) {
 
 function MetricCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
     return (
-        <div className="rounded-xl border p-4">
-            <div className="mb-2 flex items-center gap-2 text-muted-foreground">
+        <div className="rounded-xl border bg-card p-4 shadow-xs">
+            <div className="mb-3 flex items-center gap-2 text-muted-foreground">
                 {icon}
-                <span className="text-sm">{label}</span>
+                <span className="font-receipt text-[11px] tracking-[0.14em] uppercase">{label}</span>
             </div>
-            <div className="text-2xl font-bold">{value}</div>
+            <div className="font-display text-[2.4rem] leading-none font-extrabold tabular-nums">{value}</div>
         </div>
     );
 }
@@ -91,6 +91,7 @@ export default function Dashboards({
                                 key={p}
                                 size="sm"
                                 variant={period === p ? 'default' : 'outline'}
+                                className="rounded-full px-4"
                                 asChild
                             >
                                 <Link href={DashboardController.index.url({ query: { period: p } })}>
@@ -143,8 +144,8 @@ export default function Dashboards({
 
                 {/* Revenue bar chart */}
                 {revenue_by_day.length > 0 && (
-                    <div className="rounded-xl border p-4">
-                        <h3 className="mb-4 text-sm font-semibold">{t('dashboards.revenue_by_day')}</h3>
+                    <div className="rounded-xl border bg-card p-4 shadow-xs">
+                        <h3 className="mb-4 border-b border-dashed pb-3 font-receipt text-[11px] font-medium tracking-[0.14em] text-muted-foreground uppercase">{t('dashboards.revenue_by_day')}</h3>
                         <div className="flex h-32 items-end gap-1">
                             {revenue_by_day.map((day) => (
                                 <div
@@ -175,8 +176,8 @@ export default function Dashboards({
 
                 <div className="grid gap-4 lg:grid-cols-2">
                     {/* Top products */}
-                    <div className="rounded-xl border p-4">
-                        <h3 className="mb-4 text-sm font-semibold">{t('dashboards.top_products')}</h3>
+                    <div className="rounded-xl border bg-card p-4 shadow-xs">
+                        <h3 className="mb-4 border-b border-dashed pb-3 font-receipt text-[11px] font-medium tracking-[0.14em] text-muted-foreground uppercase">{t('dashboards.top_products')}</h3>
                         {top_products.length === 0 ? (
                             <p className="text-sm text-muted-foreground">{t('dashboards.no_data')}</p>
                         ) : (
@@ -198,8 +199,8 @@ export default function Dashboards({
                     </div>
 
                     {/* Payment methods */}
-                    <div className="rounded-xl border p-4">
-                        <h3 className="mb-4 text-sm font-semibold">{t('dashboards.payment_methods')}</h3>
+                    <div className="rounded-xl border bg-card p-4 shadow-xs">
+                        <h3 className="mb-4 border-b border-dashed pb-3 font-receipt text-[11px] font-medium tracking-[0.14em] text-muted-foreground uppercase">{t('dashboards.payment_methods')}</h3>
                         {payment_methods.length === 0 ? (
                             <p className="text-sm text-muted-foreground">{t('dashboards.no_data')}</p>
                         ) : (
@@ -223,8 +224,8 @@ export default function Dashboards({
                 </div>
 
                 {/* Recent closed tables */}
-                <div className="rounded-xl border p-4">
-                    <h3 className="mb-4 text-sm font-semibold">{t('dashboards.recent_tables')}</h3>
+                <div className="rounded-xl border bg-card p-4 shadow-xs">
+                    <h3 className="mb-4 border-b border-dashed pb-3 font-receipt text-[11px] font-medium tracking-[0.14em] text-muted-foreground uppercase">{t('dashboards.recent_tables')}</h3>
                     {recent_tables.length === 0 ? (
                         <p className="text-sm text-muted-foreground">{t('dashboards.no_data')}</p>
                     ) : (

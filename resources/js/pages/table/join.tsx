@@ -19,7 +19,7 @@ export default function JoinTable() {
             <div className="flex flex-1 flex-col items-center justify-center px-4 py-12">
                 <div className="w-full max-w-sm space-y-8 text-center">
                     <div className="space-y-2">
-                        <h1 className="text-2xl font-bold tracking-tight">
+                        <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">
                             {t('join_table.heading')}
                         </h1>
                         <p className="text-sm text-muted-foreground">

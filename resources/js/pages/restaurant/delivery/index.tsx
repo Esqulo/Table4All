@@ -67,7 +67,7 @@ export default function DeliveryIndex({ items }: Props) {
                         <ConciergeBell className="h-5 w-5" />
                     </div>
                     <div>
-                        <h1 className="text-xl font-semibold">{t('delivery.title')}</h1>
+                        <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">{t('delivery.title')}</h1>
                         <p className="text-sm text-muted-foreground">{t('delivery.subtitle')}</p>
                     </div>
                     {items.length > 0 && (

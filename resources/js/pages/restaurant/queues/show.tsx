@@ -34,7 +34,7 @@ export default function QueueShow({ queue, items }: Props) {
 
             <div className="mx-auto max-w-5xl space-y-10 p-6">
                 <div>
-                    <h1 className="text-2xl font-bold">{queue.name}</h1>
+                    <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">{queue.name}</h1>
                     <p className="mt-1 text-sm text-muted-foreground">{t('queues.kitchen_subtitle')}</p>
                 </div>
 

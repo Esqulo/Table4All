@@ -3,8 +3,8 @@ import { Menu, QrCode, X } from 'lucide-react';
 import type { PropsWithChildren } from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-
-const appName = import.meta.env.VITE_APP_NAME || 'Table4All';
+import AppLogoIcon from '@/components/app-logo-icon';
+import AppLogoWordmark from '@/components/app-logo-wordmark';
 
 export default function CustomerLayout({ children }: PropsWithChildren) {
     const { t } = useTranslation();
@@ -23,13 +23,16 @@ export default function CustomerLayout({ children }: PropsWithChildren) {
             {/* Left sidebar */}
             <aside
                 className={[
-                    'fixed inset-y-0 left-0 z-30 flex w-56 flex-col border-r border-border bg-card transition-transform duration-200',
+                    'fixed inset-y-0 left-0 z-30 flex w-56 flex-col border-r border-border bg-sidebar transition-transform duration-200',
                     'lg:relative lg:translate-x-0',
                     open ? 'translate-x-0' : '-translate-x-full',
                 ].join(' ')}
             >
-                <div className="flex h-14 shrink-0 items-center justify-between border-b border-border px-4">
-                    <span className="font-semibold tracking-tight">{appName}</span>
+                <div className="flex h-14 shrink-0 items-center justify-between border-b border-dashed border-border px-4">
+                    <span className="flex items-center gap-2" aria-label="Table4All">
+                        <AppLogoIcon className="size-7" />
+                        <AppLogoWordmark className="h-4" />
+                    </span>
                     <button
                         className="rounded-md p-1 text-muted-foreground hover:bg-muted lg:hidden"
                         onClick={() => setOpen(false)}

@@ -19,7 +19,7 @@ export default function EditQueue({ queue }: Props) {
             <Head title={t('queues.breadcrumb_edit')} />
 
             <div className="mx-auto max-w-xl space-y-6 p-6">
-                <h1 className="text-xl font-semibold">{t('queues.breadcrumb_edit')}</h1>
+                <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">{t('queues.breadcrumb_edit')}</h1>
 
                 <Form
                     {...QueueController.update.form({ queue: queue.id })}

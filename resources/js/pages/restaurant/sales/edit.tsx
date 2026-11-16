@@ -226,7 +226,7 @@ export default function EditSale({ sale, products }: Props) {
             <Head title={t('sales.breadcrumb_edit')} />
 
             <div className="mx-auto max-w-xl space-y-6 p-6">
-                <h1 className="text-xl font-semibold">{t('sales.breadcrumb_edit')}</h1>
+                <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">{t('sales.breadcrumb_edit')}</h1>
 
                 <Form
                     {...SaleController.update.form({ sale: sale.id })}

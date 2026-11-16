@@ -268,7 +268,7 @@ return true;
                         </Link>
                     </Button>
                     <div>
-                        <h1 className="text-xl font-semibold">{table.title}</h1>
+                        <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">{table.title}</h1>
                         <p className="mt-0.5 text-sm text-muted-foreground">{t('tables.manage_products')}</p>
                     </div>
                 </div>

@@ -14,7 +14,7 @@ export default function CreateMenu() {
             <Head title={t('menus.breadcrumb_create')} />
 
             <div className="mx-auto max-w-xl space-y-6 p-6">
-                <h1 className="text-xl font-semibold">{t('menus.breadcrumb_create')}</h1>
+                <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">{t('menus.breadcrumb_create')}</h1>
 
                 <Form {...MenuController.store.form()} className="space-y-5">
                     {({ processing, errors }) => (

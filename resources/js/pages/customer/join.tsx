@@ -19,7 +19,7 @@ export default function CustomerJoin() {
 
             <div className="flex flex-col items-center justify-center gap-8 px-4 py-24">
                 <div className="w-full max-w-sm space-y-2 text-center">
-                    <h1 className="text-2xl font-bold tracking-tight">
+                    <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">
                         {t('join_table.heading')}
                     </h1>
                     <p className="text-sm text-muted-foreground">

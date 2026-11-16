@@ -14,7 +14,7 @@ export default function CreateQueue() {
             <Head title={t('queues.breadcrumb_create')} />
 
             <div className="mx-auto max-w-xl space-y-6 p-6">
-                <h1 className="text-xl font-semibold">{t('queues.breadcrumb_create')}</h1>
+                <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">{t('queues.breadcrumb_create')}</h1>
 
                 <Form
                     {...QueueController.store.form()}

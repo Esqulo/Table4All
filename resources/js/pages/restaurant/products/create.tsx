@@ -72,7 +72,7 @@ export default function CreateProduct({ categories, queues }: Props) {
             <input ref={pickerRef} type="file" accept="image/*" className="hidden" onChange={onFileSelected} />
 
             <div className="mx-auto max-w-xl space-y-6 p-6">
-                <h1 className="text-xl font-semibold">{t('products.breadcrumb_create')}</h1>
+                <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">{t('products.breadcrumb_create')}</h1>
 
                 <Form
                     {...ProductController.store.form()}

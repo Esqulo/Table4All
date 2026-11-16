@@ -102,8 +102,8 @@ function TableCard({ table }: { table: RestaurantTable }) {
         <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-xs">
             <div className="flex items-start justify-between gap-2 p-4">
                 <div>
-                    <p className="text-lg font-semibold leading-tight">{table.title}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="font-display text-[1.75rem] leading-none font-extrabold">{table.title}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
                         {t('tables.products_count', { count: table.products_count })}
                     </p>
                 </div>
@@ -151,21 +151,21 @@ function TableCard({ table }: { table: RestaurantTable }) {
             )}
 
             {total > 0 && (
-                <div className="space-y-1 border-t border-border px-4 py-3 text-sm">
+                <div className="space-y-1 border-t border-dashed border-border px-4 py-3 text-sm">
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">{t('tables.order_total')}</span>
-                        <span className="font-semibold tabular-nums">{fmt(total)}</span>
+                        <span className="font-receipt font-semibold tabular-nums">{fmt(total)}</span>
                     </div>
                     {paid > 0 && (
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">{t('tables.payment_total_paid')}</span>
-                            <span className="font-semibold tabular-nums text-green-600">{fmt(paid)}</span>
+                            <span className="font-receipt font-semibold tabular-nums text-primary">{fmt(paid)}</span>
                         </div>
                     )}
                     {remaining > 0 && (
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">{t('tables.payment_remaining')}</span>
-                            <span className="font-semibold tabular-nums text-destructive">{fmt(remaining)}</span>
+                            <span className="font-receipt font-semibold tabular-nums text-destructive">{fmt(remaining)}</span>
                         </div>
                     )}
                 </div>

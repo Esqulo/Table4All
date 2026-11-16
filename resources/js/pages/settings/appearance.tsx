@@ -26,16 +26,16 @@ export default function Appearance() {
 
                 <div className="pt-2">
                     <Heading variant="small" title={t('language.toggle_label')} />
-                    <div className="mt-3 inline-flex gap-1 rounded-lg bg-neutral-100 p-1 dark:bg-neutral-800">
+                    <div className="mt-3 inline-flex gap-1 rounded-full bg-muted p-1">
                         {(['pt_BR', 'en'] as const).map((locale) => (
                             <button
                                 key={locale}
                                 onClick={() => setLocale(locale)}
                                 className={cn(
-                                    'rounded-md px-4 py-1.5 text-sm transition-colors',
+                                    'rounded-full px-4 py-1.5 text-sm transition-colors',
                                     currentLocale === locale
-                                        ? 'bg-white shadow-xs dark:bg-neutral-700 dark:text-neutral-100'
-                                        : 'text-neutral-500 hover:bg-neutral-200/60 hover:text-black dark:text-neutral-400 dark:hover:bg-neutral-700/60',
+                                        ? 'bg-card text-foreground shadow-xs'
+                                        : 'text-muted-foreground hover:bg-accent hover:text-foreground',
                                 )}
                             >
                                 {t(`language.${locale}`)}

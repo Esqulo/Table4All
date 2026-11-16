@@ -30,7 +30,7 @@ export default function WaiterAccept({ token, email, restaurant, email_taken }: 
             <div className="w-full max-w-sm space-y-6">
                 <div className="flex flex-col items-center gap-3 text-center">
                     <AppLogoIcon className="h-14 w-12" />
-                    <h1 className="text-xl font-semibold">
+                    <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">
                         {t('waiter_accept.heading')} <span className="text-primary">{restaurant.name}</span>
                     </h1>
                     <p className="text-sm text-muted-foreground">
