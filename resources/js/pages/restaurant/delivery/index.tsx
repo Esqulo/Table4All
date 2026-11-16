@@ -1,10 +1,11 @@
-import { Form, Head, router } from '@inertiajs/react';
+import { Form, Head } from '@inertiajs/react';
 import { Check, CheckCheck, ConciergeBell, ImageOff, PackageCheck } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import DeliveryController from '@/actions/App/Http/Controllers/Restaurant/DeliveryController';
 import QueueItemController from '@/actions/App/Http/Controllers/Restaurant/QueueItemController';
 import { Button } from '@/components/ui/button';
+import { useLiveReload } from '@/hooks/use-live-reload';
 
 type DeliveryItem = {
     id: number;
@@ -39,14 +40,8 @@ function waitingLabel(iso: string): string {
 export default function DeliveryIndex({ items }: Props) {
     const { t } = useTranslation();
 
-    // Auto-refresh the items every 30 seconds
-    useEffect(() => {
-        const id = setInterval(() => {
-            router.reload({ only: ['items'] });
-        }, 30_000);
-
-        return () => clearInterval(id);
-    }, []);
+    // Waiters act on this board, so keep it close to real time (see docs/performance.md).
+    useLiveReload({ only: ['items'], intervalMs: 10_000 });
 
     const byTable = useMemo(() => {
         const map = new Map<number, { title: string; items: DeliveryItem[] }>();
@@ -107,7 +102,7 @@ export default function DeliveryIndex({ items }: Props) {
                                         <div key={item.id} className="flex items-center gap-3 px-4 py-3">
                                             <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted">
                                                 {item.picture_url ? (
-                                                    <img
+                                                    <img loading="lazy" decoding="async"
                                                         src={item.picture_url}
                                                         alt={item.product}
                                                         className="h-full w-full object-cover"

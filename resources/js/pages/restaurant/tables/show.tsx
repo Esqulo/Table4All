@@ -15,6 +15,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { useLiveReload } from '@/hooks/use-live-reload';
+import { formatBRL } from '@/lib/money';
+import { newRequestKey } from '@/lib/request-key';
 import type { PaymentMethod, Product, QueueItem, TableOrderLine, TablePayment } from '@/types';
 
 type AvailableProduct = Pick<Product, 'id' | 'name' | 'picture_url' | 'price' | 'price_type' | 'queue_id'> & {
@@ -35,10 +38,10 @@ type Props = {
     orderLines: TableOrderLine[];
     activeSales: ActiveSale[];
     queueItems: QueueItem[];
+    orderVersion: string;
 };
 
-const fmt = (n: number) =>
-    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n);
+const fmt = (n: number) => formatBRL(n);
 
 const PAYMENT_ICONS: Record<PaymentMethod, React.ReactNode> = {
     cash:   <Banknote className="h-4 w-4" />,
@@ -58,7 +61,7 @@ type OrderState = Record<string, OrderLine>;
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-export default function ManageOrder({ table, products, orderLines, activeSales, queueItems }: Props) {
+export default function ManageOrder({ table, products, orderLines, activeSales, queueItems, orderVersion }: Props) {
     const { t } = useTranslation();
 
     const buildState = (lines: TableOrderLine[]): OrderState => {
@@ -150,6 +153,7 @@ continue;
                     quantity: l.quantity,
                 })),
                 queue_additions: queueAdditions,
+                order_version: orderVersion,
             },
             { onFinish: () => setAutoSubmitting(false) },
         );
@@ -193,7 +197,7 @@ directProducts.push({ product_id: line.productId, price: line.price, quantity: l
         setAutoSubmitting(true);
         router.patch(
             TableController.update.url({ table: table.id }),
-            { products: directProducts, queue_additions: queueAdditions },
+            { products: directProducts, queue_additions: queueAdditions, order_version: orderVersion },
             { onFinish: () => setAutoSubmitting(false) },
         );
     };
@@ -215,6 +219,16 @@ return true;
 
         return false;
     }, [orderState, orderLines]);
+
+    // Pick up deliveries, kitchen progress and payments made elsewhere, but never
+    // while the waiter has unsaved edits or a dialog open (it would reset them).
+    // Saving is still safe if the order changed meanwhile: the server rejects a
+    // stale orderVersion instead of overwriting.
+    useLiveReload({
+        only: ['table', 'orderLines', 'queueItems', 'activeSales', 'orderVersion'],
+        intervalMs: 15_000,
+        enabled: !isDirty && !autoSubmitting && !addProductsOpen && !addPaymentOpen,
+    });
 
     const currentLines = Object.values(orderState).filter((l) => l.quantity > 0);
     const productTotal = currentLines.reduce((sum, l) => sum + l.price * l.quantity, 0);
@@ -269,7 +283,7 @@ return true;
                                 >
                                     <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
                                         {item.product.picture_url ? (
-                                            <img src={item.product.picture_url} alt={item.product.name} className="h-full w-full object-cover" />
+                                            <img loading="lazy" decoding="async" src={item.product.picture_url} alt={item.product.name} className="h-full w-full object-cover" />
                                         ) : (
                                             <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                                                 <ImageOff className="h-3.5 w-3.5 opacity-40" />
@@ -329,7 +343,7 @@ return true;
                                     >
                                         <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
                                             {product?.picture_url ? (
-                                                <img src={product.picture_url} alt={product.name} className="h-full w-full object-cover" />
+                                                <img loading="lazy" decoding="async" src={product.picture_url} alt={product.name} className="h-full w-full object-cover" />
                                             ) : (
                                                 <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                                                     <ImageOff className="h-3.5 w-3.5 opacity-40" />
@@ -508,6 +522,8 @@ function AddPaymentDialog({ open, table, remaining, onClose }: {
 }) {
     const { t } = useTranslation();
     const [cents, setCents] = useState(0);
+    // One key per opening of the dialog: resubmitting after a timeout can't record the payment twice.
+    const [requestKey, setRequestKey] = useState(newRequestKey);
 
     const [prevOpen, setPrevOpen] = useState(open);
 
@@ -515,8 +531,9 @@ function AddPaymentDialog({ open, table, remaining, onClose }: {
         setPrevOpen(open);
 
         if (open) {
-setCents(remaining > 0 ? Math.round(remaining * 100) : 0);
-}
+            setCents(remaining > 0 ? Math.round(remaining * 100) : 0);
+            setRequestKey(newRequestKey());
+        }
     }
 
     const displayValue = cents > 0
@@ -567,6 +584,7 @@ onClose();
                             <div className="grid gap-2">
                                 <Label htmlFor="amount">{t('tables.payment_amount_label')}</Label>
                                 <input type="hidden" name="amount" value={(cents / 100).toFixed(2)} />
+                                <input type="hidden" name="request_key" value={requestKey} />
                                 <Input
                                     id="amount"
                                     type="text"
@@ -702,7 +720,7 @@ handleClose();
                             >
                                 <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
                                     {product.picture_url ? (
-                                        <img src={product.picture_url} alt={product.name} className="h-full w-full object-cover" />
+                                        <img loading="lazy" decoding="async" src={product.picture_url} alt={product.name} className="h-full w-full object-cover" />
                                     ) : (
                                         <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                                             <ImageOff className="h-3.5 w-3.5 opacity-40" />

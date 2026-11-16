@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import ProductController from '@/actions/App/Http/Controllers/Restaurant/ProductController';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
+import { formatBRL } from '@/lib/money';
 import type { Product } from '@/types';
 
 type Props = {
@@ -50,10 +51,7 @@ export default function Products({ products, canManage = true }: Props) {
 function ProductCard({ product, canManage }: { product: Product; canManage: boolean }) {
     const { t } = useTranslation();
 
-    const priceFormatted = new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL',
-    }).format(product.price);
+    const priceFormatted = formatBRL(product.price);
 
     const suffix = t(`products.price_suffix.${product.price_type}`);
 
@@ -61,7 +59,7 @@ function ProductCard({ product, canManage }: { product: Product; canManage: bool
         <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-xs">
             <div className="relative aspect-video overflow-hidden bg-muted">
                 {product.picture_url ? (
-                    <img
+                    <img loading="lazy" decoding="async"
                         src={product.picture_url}
                         alt={product.name}
                         className="h-full w-full object-cover"

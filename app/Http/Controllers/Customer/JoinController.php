@@ -8,8 +8,8 @@ use App\Models\Product;
 use App\Models\QueueItem;
 use App\Models\RestaurantTable;
 use App\Models\Sale;
+use App\Support\Idempotency;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -28,8 +28,7 @@ class JoinController extends Controller
         $table = RestaurantTable::where('access_code', $code)
             ->whereNull('closed_at')
             ->whereNull('deleted_at')
-            ->with(['payments'])
-            ->first();
+            ->first(['id', 'user_id']);
 
         if (! $table) {
             Inertia::flash('toast', ['type' => 'error', 'message' => 'join_table.invalid_code']);
@@ -37,7 +36,7 @@ class JoinController extends Controller
             return redirect()->route('customer.join');
         }
 
-        $activeSales = $this->activeSalesFor($table->user_id);
+        $activeSales = Sale::activePriceMap($table->user_id);
 
         $menu = Product::where('user_id', $table->user_id)
             ->with('category:id,name')
@@ -99,7 +98,7 @@ class JoinController extends Controller
             ->where('restaurant_table_id', $table->id)
             ->sum(DB::raw('price * quantity'));
 
-        $paid = (float) $table->payments->sum('amount');
+        $paid = (float) $table->payments()->sum('amount');
 
         return Inertia::render('customer/show', [
             'code'      => $code,
@@ -117,73 +116,61 @@ class JoinController extends Controller
         $table = RestaurantTable::where('access_code', $code)
             ->whereNull('closed_at')
             ->whereNull('deleted_at')
-            ->firstOrFail();
+            ->firstOrFail(['id', 'user_id']);
 
         $validated = $request->validate([
-            'items'                => ['required', 'array', 'min:1'],
+            'items'                => ['required', 'array', 'min:1', 'max:100'],
             'items.*.product_id'   => ['required', 'integer'],
             'items.*.quantity'     => ['required', 'integer', 'min:1', 'max:99'],
+            'request_key'          => ['nullable', 'string', 'max:64'],
         ]);
 
-        $productIds  = array_column($validated['items'], 'product_id');
-        $products    = Product::where('user_id', $table->user_id)
+        $productIds = array_column($validated['items'], 'product_id');
+        $products   = Product::where('user_id', $table->user_id)
             ->whereIn('id', $productIds)
-            ->get()
+            ->get(['id', 'queue_id', 'price'])
             ->keyBy('id');
-        $activeSales = $this->activeSalesFor($table->user_id);
+        $activeSales = Sale::activePriceMap($table->user_id);
         $userId      = auth()->id();
+        $now         = now();
 
+        // All customer orders go through queue_items (queue_id is null for non-kitchen products).
+        // Items reach restaurant_table_product only after a waiter marks them as delivered.
+        $rows = [];
         foreach ($validated['items'] as $item) {
-            $product  = $products->get($item['product_id']);
-            $quantity = $item['quantity'];
+            $product = $products->get($item['product_id']);
 
             if (! $product) {
                 continue;
             }
 
-            // All customer orders go through queue_items (queue_id is null for non-kitchen products).
-            // Items reach restaurant_table_product only after a waiter marks them as delivered.
-            QueueItem::create([
+            $rows[] = [
                 'restaurant_table_id' => $table->id,
                 'product_id'          => $product->id,
                 'queue_id'            => $product->queue_id ?: null,
                 'ordered_by_user_id'  => $userId,
-                'quantity'            => $quantity,
+                'quantity'            => $item['quantity'],
                 'price'               => (float) ($activeSales[$product->id] ?? $product->price),
                 'status'              => QueueItemStatus::PENDING->value,
-            ]);
+                'created_at'          => $now,
+                'updated_at'          => $now,
+            ];
         }
+
+        // One INSERT for the whole cart; the request key makes a retried submit
+        // (slow network, double tap) a no-op instead of a duplicated order.
+        Idempotency::once(
+            $request,
+            'customer-order:'.$table->id,
+            function () use ($rows): void {
+                if ($rows !== []) {
+                    QueueItem::insert($rows);
+                }
+            },
+        );
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'join_table.order_success']);
 
         return redirect()->route('customer.table', $code);
-    }
-
-    /**
-     * Returns a map of product_id → sale_price for currently active sales.
-     *
-     * @return Collection<int, float>
-     */
-    private function activeSalesFor(int $restaurantUserId): Collection
-    {
-        $now         = now();
-        $currentDay  = (int) $now->dayOfWeek;
-        $currentTime = $now->format('H:i:s');
-        $nowDatetime = $now->format('Y-m-d H:i:s');
-
-        return Sale::where('user_id', $restaurantUserId)
-            ->where(function ($q) use ($currentDay, $currentTime, $nowDatetime) {
-                $q->where(function ($q) use ($currentDay, $currentTime) {
-                    $q->where('type', 'periodic')
-                      ->whereJsonContains('days', [$currentDay])
-                      ->where('start_time', '<=', $currentTime)
-                      ->where('end_time', '>=', $currentTime);
-                })->orWhere(function ($q) use ($nowDatetime) {
-                    $q->where('type', 'scheduled')
-                      ->where('starts_at', '<=', $nowDatetime)
-                      ->where('ends_at', '>=', $nowDatetime);
-                });
-            })
-            ->pluck('sale_price', 'product_id');
     }
 }

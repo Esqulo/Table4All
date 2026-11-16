@@ -24,6 +24,7 @@ class TableRequest extends FormRequest
             'queue_additions.*.product_id' => ['required', 'integer'],
             'queue_additions.*.price'      => ['required', 'numeric', 'min:0'],
             'queue_additions.*.quantity'   => ['required', 'integer', 'min:1'],
+            'order_version'                => ['nullable', 'string', 'max:64'],
         ];
     }
 }

@@ -2,6 +2,7 @@ import { Head } from '@inertiajs/react';
 import { ImageOff } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { formatBRL } from '@/lib/money';
 import type { Category, Product } from '@/types';
 
 type Restaurant = { name: string; avatar_url: string | null };
@@ -45,7 +46,7 @@ export default function TableShow({ table, restaurant, categories, products }: P
                 <div className="border-b border-border bg-card px-4 pb-4 pt-8">
                     <div className="mx-auto flex max-w-2xl items-center gap-3">
                         {restaurant.avatar_url ? (
-                            <img
+                            <img loading="lazy" decoding="async"
                                 src={restaurant.avatar_url}
                                 alt={restaurant.name}
                                 className="h-12 w-12 shrink-0 rounded-full object-cover"
@@ -114,10 +115,7 @@ function ProductCard({ product }: { product: Product }) {
     const { i18n } = useTranslation();
     const locale = i18n.language === 'pt_BR' ? 'pt-BR' : 'en-US';
 
-    const priceFormatted = new Intl.NumberFormat(locale, {
-        style: 'currency',
-        currency: 'BRL',
-    }).format(product.price);
+    const priceFormatted = formatBRL(product.price, locale);
 
     const suffix: Record<string, string> = {
         unit: 'un.',
@@ -131,7 +129,7 @@ function ProductCard({ product }: { product: Product }) {
         <div className="flex gap-3 rounded-xl border border-border bg-card p-3">
             <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-muted">
                 {product.picture_url ? (
-                    <img
+                    <img loading="lazy" decoding="async"
                         src={product.picture_url}
                         alt={product.name}
                         className="h-full w-full object-cover"

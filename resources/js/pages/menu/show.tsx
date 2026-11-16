@@ -1,6 +1,7 @@
 import { Head } from '@inertiajs/react';
 import { ImageOff } from 'lucide-react';
 import { useState } from 'react';
+import { formatBRL } from '@/lib/money';
 import type { Category, Menu, Product } from '@/types';
 
 type Restaurant = {
@@ -41,7 +42,7 @@ export default function MenuShow({ menu, categories, products }: Props) {
                 <div className="bg-card border-b border-border px-4 pt-8 pb-4">
                     <div className="mx-auto max-w-2xl flex items-center gap-3">
                         {menu.user.avatar_url ? (
-                            <img
+                            <img loading="lazy" decoding="async"
                                 src={menu.user.avatar_url}
                                 alt={menu.user.name}
                                 className="h-12 w-12 rounded-full object-cover shrink-0"
@@ -102,10 +103,7 @@ export default function MenuShow({ menu, categories, products }: Props) {
 }
 
 function ProductCard({ product }: { product: Product }) {
-    const priceFormatted = new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL',
-    }).format(product.price);
+    const priceFormatted = formatBRL(product.price);
 
     const suffix: Record<string, string> = {
         unit: 'un.',
@@ -119,7 +117,7 @@ function ProductCard({ product }: { product: Product }) {
         <div className="flex gap-3 rounded-xl border border-border bg-card p-3">
             <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-muted">
                 {product.picture_url ? (
-                    <img
+                    <img loading="lazy" decoding="async"
                         src={product.picture_url}
                         alt={product.name}
                         className="h-full w-full object-cover"

@@ -13,6 +13,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { useLiveReload } from '@/hooks/use-live-reload';
+import { formatBRL } from '@/lib/money';
 import type { RestaurantTable } from '@/types';
 
 type Props = {
@@ -21,6 +23,9 @@ type Props = {
 
 export default function Tables({ tables }: Props) {
     const { t } = useTranslation();
+
+    // Totals and item counts change as orders are delivered and paid.
+    useLiveReload({ only: ['tables'], intervalMs: 20_000 });
 
     return (
         <>
@@ -53,8 +58,7 @@ export default function Tables({ tables }: Props) {
     );
 }
 
-const fmt = (n: number) =>
-    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n);
+const fmt = (n: number) => formatBRL(n);
 
 function TableQrDialog({ table, open, onClose }: { table: RestaurantTable; open: boolean; onClose: () => void }) {
     const { t } = useTranslation();
@@ -85,8 +89,9 @@ function TableCard({ table }: { table: RestaurantTable }) {
     const { t } = useTranslation();
     const [qrOpen, setQrOpen] = useState(false);
 
-    const total = table.products.reduce((sum, p) => sum + p.price * p.pivot.quantity, 0);
-    const paid = table.payments.reduce((sum, p) => sum + p.amount, 0);
+    // Computed server-side from the prices snapshotted at order time.
+    const total = table.order_total;
+    const paid = table.paid_total;
     const remaining = total - paid;
 
     return (
@@ -118,14 +123,14 @@ function TableCard({ table }: { table: RestaurantTable }) {
 
             {table.products.length > 0 && (
                 <div className="flex flex-wrap gap-2 border-t border-border px-4 py-3">
-                    {table.products.slice(0, 5).map((product) => (
+                    {table.products.map((product) => (
                         <div
                             key={product.id}
                             title={product.name}
                             className="relative h-9 w-9 overflow-hidden rounded-md bg-muted"
                         >
                             {product.picture_url ? (
-                                <img
+                                <img loading="lazy" decoding="async"
                                     src={product.picture_url}
                                     alt={product.name}
                                     className="h-full w-full object-cover"

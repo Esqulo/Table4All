@@ -336,6 +336,7 @@
         "msg_updated": "Mesa atualizada com sucesso.",
         "msg_deleted": "Mesa excluída com sucesso.",
         "msg_products_updated": "Produtos da mesa atualizados com sucesso.",
+        "msg_order_conflict": "A mesa foi alterada por outra pessoa enquanto você editava. Os itens atuais foram recarregados; confira e salve de novo.",
         "payment_by": "por {{name}}"
     },
     "waiters": {

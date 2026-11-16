@@ -135,9 +135,11 @@ export type RestaurantTable = {
     title: string;
     access_code: string | null;
     closed_at: string | null;
-    products: OrderItem[];
-    payments: TablePayment[];
+    /** Up to five products, for the board thumbnails. */
+    products: Pick<OrderItem, 'id' | 'name' | 'picture' | 'picture_url'>[];
     products_count: number;
+    order_total: number;
+    paid_total: number;
     created_at: string;
     updated_at: string;
 };

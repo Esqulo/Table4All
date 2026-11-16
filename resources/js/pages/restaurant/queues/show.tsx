@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import QueueController from '@/actions/App/Http/Controllers/Restaurant/QueueController';
 import QueueItemController from '@/actions/App/Http/Controllers/Restaurant/QueueItemController';
 import { Button } from '@/components/ui/button';
+import { useLiveReload } from '@/hooks/use-live-reload';
 import type { QueueItem, RestaurantQueue } from '@/types';
 
 type Props = {
@@ -17,6 +18,9 @@ function fmtTime(iso: string) {
 
 export default function QueueShow({ queue, items }: Props) {
     const { t } = useTranslation();
+
+    // Kitchen/bar screen: new orders must show up without anyone touching it.
+    useLiveReload({ only: ['items'], intervalMs: 8_000 });
 
     const pending = items.filter((i) => i.status === 'pending');
     const done = items.filter((i) => i.status === 'done');
@@ -99,7 +103,7 @@ function PendingCard({ item, pos }: { item: QueueItem; pos: number }) {
             {/* Image banner with overlaid badges */}
             <div className="relative h-40 w-full bg-muted">
                 {item.product.picture_url ? (
-                    <img
+                    <img loading="lazy" decoding="async"
                         src={item.product.picture_url}
                         alt={item.product.name}
                         className="h-full w-full object-cover"
@@ -160,7 +164,7 @@ function DoneCard({ item, pos }: { item: QueueItem; pos: number }) {
             {/* Thumbnail */}
             <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-muted">
                 {item.product.picture_url ? (
-                    <img src={item.product.picture_url} alt={item.product.name} className="h-full w-full object-cover" />
+                    <img loading="lazy" decoding="async" src={item.product.picture_url} alt={item.product.name} className="h-full w-full object-cover" />
                 ) : (
                     <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                         <ImageOff className="h-5 w-5 opacity-40" />

@@ -11,6 +11,9 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { useLiveReload } from '@/hooks/use-live-reload';
+import { formatBRL } from '@/lib/money';
+import { newRequestKey } from '@/lib/request-key';
 import { cn } from '@/lib/utils';
 
 type MenuItem = {
@@ -58,6 +61,17 @@ export default function CustomerShow({ code, menu, products, preparing, total, p
     const [cart, setCart] = useState<Record<number, number>>({});
     const [step, setStep] = useState<'menu' | 'review'>('menu');
     const [submitting, setSubmitting] = useState(false);
+    // Identifies this cart to the server: re-sending it after a timeout or a double
+    // tap is ignored instead of ordering twice. A changed cart is a new order.
+    const [requestKey, setRequestKey] = useState(newRequestKey);
+
+    // Show kitchen progress, deliveries and payments without the customer reloading.
+    // Paused while the menu is open so the list doesn't shift under their finger.
+    useLiveReload({
+        only: ['products', 'preparing', 'total', 'paid', 'remaining'],
+        intervalMs: 20_000,
+        enabled: !menuOpen,
+    });
 
     const categories = useMemo(() => {
         const seen = new Set<number>();
@@ -96,16 +110,17 @@ return false;
         [cart],
     );
 
-    const fmt = (n: number) =>
-        new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL' }).format(n);
+    const fmt = (n: number) => formatBRL(n, locale);
 
     const perPerson = people > 0 ? remaining / people : 0;
 
     function increment(id: number) {
+        setRequestKey(newRequestKey());
         setCart((prev) => ({ ...prev, [id]: (prev[id] ?? 0) + 1 }));
     }
 
     function decrement(id: number) {
+        setRequestKey(newRequestKey());
         setCart((prev) => {
             if ((prev[id] ?? 0) <= 1) {
                 const next = { ...prev };
@@ -156,6 +171,7 @@ return;
                     product_id: Number(productId),
                     quantity,
                 })),
+                request_key: requestKey,
             },
             {
                 preserveScroll: true,
@@ -442,7 +458,7 @@ function OrderCard({ line, fmt }: { line: OrderLine; fmt: (n: number) => string 
         <div className="flex gap-3 rounded-xl border border-border bg-card p-3">
             <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-muted">
                 {line.picture_url ? (
-                    <img src={line.picture_url} alt={line.name} className="h-full w-full object-cover" />
+                    <img loading="lazy" decoding="async" src={line.picture_url} alt={line.name} className="h-full w-full object-cover" />
                 ) : (
                     <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                         <ImageOff className="h-5 w-5 opacity-30" />
@@ -566,7 +582,7 @@ function ReviewRow({
         <div className="flex items-center gap-3 px-4 py-3">
             <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted">
                 {item.picture_url ? (
-                    <img src={item.picture_url} alt={item.name} className="h-full w-full object-cover" />
+                    <img loading="lazy" decoding="async" src={item.picture_url} alt={item.name} className="h-full w-full object-cover" />
                 ) : (
                     <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                         <ImageOff className="h-4 w-4 opacity-30" />
@@ -625,7 +641,7 @@ function MenuRow({
         <div className="flex items-center gap-3 px-4 py-3">
             <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted">
                 {item.picture_url ? (
-                    <img src={item.picture_url} alt={item.name} className="h-full w-full object-cover" />
+                    <img loading="lazy" decoding="async" src={item.picture_url} alt={item.name} className="h-full w-full object-cover" />
                 ) : (
                     <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                         <ImageOff className="h-4 w-4 opacity-30" />

@@ -336,6 +336,7 @@
         "msg_updated": "Table updated successfully.",
         "msg_deleted": "Table deleted successfully.",
         "msg_products_updated": "Table products updated successfully.",
+        "msg_order_conflict": "This table was changed by someone else while you were editing. The current items were reloaded; review them and save again.",
         "payment_by": "by {{name}}"
     },
     "waiters": {

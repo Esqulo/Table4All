@@ -5,6 +5,7 @@ import DashboardController from '@/actions/App/Http/Controllers/Restaurant/Dashb
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { formatBRL } from '@/lib/money';
 import type { PaymentMethod } from '@/types';
 
 type Summary = {
@@ -36,7 +37,7 @@ type Props = {
 };
 
 function formatCurrency(value: number) {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+    return formatBRL(value);
 }
 
 function formatDate(iso: string) {
