@@ -36,8 +36,10 @@ composer ci:check       # everything above, including the frontend checks
 - Customer ordering lives under `/customer/mesa/{code}` (auth required). The public `/mesa/{code}` routes are the join/landing flow.
 
 ### Order flow (spans several controllers)
-- Customer orders (`Customer\JoinController::order`) and staff-added items (`Restaurant\TableController`) create `QueueItem`s. `queue_id` is null for products with no prep queue, so they go straight to the delivery board. Status flows `QueueItemStatus` pending → done → delivered via `QueueItemController`.
+- Customer orders (`Customer\JoinController::order`) and staff-added items (`Restaurant\TableController`) create `QueueItem`s. `queue_id` is null for products with no prep queue, so they go straight to the delivery board. Status flows `QueueItemStatus` pending → done → delivered via `QueueItemController`. Closing a table turns its still-open items (pending/done) into `abandoned` ("customer left without receiving it"): not billed, but reported on the dashboard. A queue with open items on open tables can't be deleted.
 - The **price is snapshotted** at order time onto `queue_items.price` and the `restaurant_table_product.price` pivot. Active promotions (`Sale`, either a weekly window or a dated range) override `Product.price` when the order is placed. Table totals use the stored `price * quantity` and never read the current product price.
+- Timestamps are stored in UTC, but anything compared with wall-clock time (promotion windows, dashboard days) uses `config('app.business_timezone')` (`APP_BUSINESS_TIMEZONE`, default `America/Sao_Paulo`).
+- Money totals are compared in integer cents, on the server and in the browser.
 - `TablePayment`s accumulate against a table. A table can only be closed (`closed_at`) once payments cover the total. Closed tables feed `DashboardController`.
 
 ### Frontend
@@ -51,7 +53,7 @@ composer ci:check       # everything above, including the frontend checks
 - On the backend, the default locale is `pt_BR` (`APP_LOCALE`). Flash/validation strings go in `lang/pt_BR.json` and `lang/pt_BR/*.php`.
 
 ### Auth
-Laravel Fortify (`FortifyServiceProvider`, `app/Actions/Fortify`) handles login/registration, email verification, 2FA and passkeys (WebAuthn). Settings routes are in `routes/settings.php`.
+Email verification is mandatory (`User` implements `MustVerifyEmail`; every operational route uses `verified`). Invited waiters are verified by the invite link. Laravel Fortify (`FortifyServiceProvider`, `app/Actions/Fortify`) handles login/registration, email verification, 2FA and passkeys (WebAuthn). Settings routes are in `routes/settings.php`.
 
 ## Performance under rush (mandatory)
 The app runs during rush hour on slow mobile networks and old devices; it must never be the bottleneck. Read **`docs/performance.md`** before touching a hot path (kitchen queue, delivery board, tables, customer ordering). The rules in short:
@@ -59,3 +61,6 @@ The app runs during rush hour on slow mobile networks and old devices; it must n
 - Writes must survive retries and races: conditional status updates (`WHERE status = ?`), a transaction that locks the `restaurant_tables` row before changing a table's order, `request_key` + `App\Support\Idempotency::once()` for creating writes, `orderVersion` for full-replace saves, bulk inserts.
 - Live screens refresh with `useLiveReload` (partial, sequential, pauses when hidden or offline), never a raw `setInterval`. Upload pictures via `App\Support\ImageOptimizer`, lazy-load list images, format money with `formatBRL()`.
 - `tests/Feature/RushResilienceTest.php` covers these guarantees; extend it when you add a write path.
+
+## Tests
+Domain tests live in `tests/Feature/Restaurant/` and build data with `Tests\Support\RestaurantFixtures` (`restaurant()`, `waiterOf()`, `openTable()`, `closedTable()`, `queueItem()`, `billLine()`, …); there are no factories for restaurant models. Cover the edge cases, not just the happy path: another restaurant's records, closed and soft-deleted tables or products, retries, and limits.
