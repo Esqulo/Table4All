@@ -53,7 +53,7 @@ venue (around 40 open tables and 150 products):
 6. **Status transitions are conditional updates:** `UPDATE … WHERE id = ? AND status = 'pending'`, then act only if a row changed. Never "read the status, check it in PHP, then update". See `QueueItemController`.
 7. **Anything that changes a table's order runs in a transaction that locks the table row first** (`RestaurantTable::whereKey($id)->lockForUpdate()`). That serializes deliveries, order saves and table closing on the same table.
 8. **Creating writes (orders, payments) carry a `request_key`.** The client generates one per logical action (`newRequestKey()` in `resources/js/lib/request-key.ts`) and the server runs the action through `App\Support\Idempotency::once()`, so a re-sent request is a no-op. Claim the key *after* validation.
-9. **Full-replace saves need optimistic locking.** `TableController::update` takes the `orderVersion` the screen was rendered with. If the order changed meanwhile, the server rejects the save instead of overwriting deliveries it never saw.
+9. **Saves of a whole screen need optimistic locking and must apply only the difference.** `TableController::update` takes the `orderVersion` the screen was rendered with. If the order changed meanwhile, the server rejects the save instead of overwriting deliveries it never saw, and only touches lines whose quantity changed.
 10. **Insert in bulk** (`Model::insert($rows)` with explicit timestamps) instead of `create()` in a loop.
 
 ### Frontend
@@ -96,14 +96,20 @@ venue (around 40 open tables and 150 products):
 | 12 | `new Intl.NumberFormat` on every price render | Noticeable jank on old devices with long lists | Cached `formatBRL()` |
 | 13 | Active-promotion query duplicated in two controllers | Drift risk in the pricing logic | `Sale::scopeActiveFor` / `Sale::activePriceMap` |
 
+### 2026-11-15: billing fixes found during the audit
+
+| # | Problem | Impact | Fix |
+|---|---|---|---|
+| 14 | Unique key `(table, product, ordered_by_user_id)` made a later delivery of the same product add to the existing line at **that line's price** | Promotion items billed at full price, or the reverse | Price added to the key (`2026_11_15_110000_…`); `markDelivered` matches on price |
+| 15 | The table screen overwrote rows sharing a product and price (one per customer) instead of summing them | The waiter saw fewer units, and saving **deleted the rest from the bill** | `orderLines` grouped by (product, price) in SQL; client sums defensively |
+| 16 | Waiter save was a full delete + re-insert | Dropped who ordered each line | `syncOrder` applies only the difference: unchanged lines keep their customer, added units go unattributed, removals take unattributed units first |
+
 ### Deploy notes for this audit
 - Rebuild the images (`docker compose build`): the GD and EXIF extensions were added. Without GD, uploads still work but are stored unoptimized.
 - Migrations run on boot. The index migration is additive and quick on current data volumes.
 - After deploying, run `php artisan products:optimize-images` once to shrink existing pictures.
 
 ### Known gaps / next steps
-- **Delivered lines merge regardless of price.** The unique index `rtp_unique_per_user (table, product, ordered_by_user_id)` makes a later delivery of the same product add to the existing line at that line's price. An item ordered during a promotion and delivered after a full-price one (or the reverse) is billed at the wrong price. The fix needs the price in the unique key plus matching in `markDelivered`. This is a billing bug, not a performance one, so it was left out of this change.
-- **The waiter's order save is still a full replace** and drops `ordered_by_user_id` from the lines it rewrites. It is now safe (version check), but a delta-based save (`+n` / `-n` per line) would avoid conflicts altogether and keep attribution.
 - **Polling vs push.** Polling is simple and robust on bad networks, but with many screens open it costs one request per screen every few seconds. If load grows, move the kitchen and delivery boards to WebSockets (Laravel Reverb) and keep polling as the fallback.
 - **Sessions and cache on the database.** Every request writes the session row. Fine for one venue; for multi-venue hosting, move sessions and cache to Redis.
 - **Offline ordering.** A service worker with a retry queue would let waiters keep working through short Wi-Fi drops (it needs HTTPS).

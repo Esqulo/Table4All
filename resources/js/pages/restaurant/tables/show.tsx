@@ -69,7 +69,8 @@ export default function ManageOrder({ table, products, orderLines, activeSales, 
 
         for (const line of lines) {
             const key = lineKey(line.id, line.price);
-            state[key] = { productId: line.id, price: line.price, quantity: line.quantity };
+            // Sum, never overwrite: overwriting dropped units when several rows shared a product and price.
+            state[key] = { productId: line.id, price: line.price, quantity: (state[key]?.quantity ?? 0) + line.quantity };
         }
 
         return state;
@@ -163,7 +164,7 @@ continue;
         const savedByKey: Record<string, number> = {};
 
         for (const line of orderLines) {
-savedByKey[lineKey(line.id, line.price)] = line.quantity;
+savedByKey[lineKey(line.id, line.price)] = (savedByKey[lineKey(line.id, line.price)] ?? 0) + line.quantity;
 }
 
         const directProducts: { product_id: number; price: number; quantity: number }[] = [];
@@ -206,7 +207,7 @@ directProducts.push({ product_id: line.productId, price: line.price, quantity: l
         const savedByKey: Record<string, number> = {};
 
         for (const line of orderLines) {
-savedByKey[lineKey(line.id, line.price)] = line.quantity;
+savedByKey[lineKey(line.id, line.price)] = (savedByKey[lineKey(line.id, line.price)] ?? 0) + line.quantity;
 }
 
         const allKeys = new Set([...Object.keys(orderState), ...Object.keys(savedByKey)]);

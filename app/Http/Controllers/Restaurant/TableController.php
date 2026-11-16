@@ -13,6 +13,7 @@ use App\Models\Sale;
 use App\Support\Idempotency;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -92,19 +93,28 @@ class TableController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'picture', 'price', 'price_type', 'queue_id']);
 
-        // Raw query so the same product can appear on multiple rows at different prices.
-        // Eloquent BelongsToMany de-duplicates on product_id and would collapse them.
+        // One line per (product, price): the same product can appear at different
+        // prices (promotion), and several customers' rows at the same price are
+        // summed. The waiter edits these totals; syncOrder maps them back to rows.
         $orderLines = DB::table('restaurant_table_product')
             ->where('restaurant_table_id', $table->id)
             ->join('products', 'products.id', '=', 'restaurant_table_product.product_id')
+            ->groupBy(
+                'products.id',
+                'products.name',
+                'products.picture',
+                'products.price_type',
+                'restaurant_table_product.price',
+            )
+            ->orderBy('products.name')
             ->select(
                 'products.id',
                 'products.name',
                 'products.picture',
                 'products.price_type',
                 'restaurant_table_product.price',
-                'restaurant_table_product.quantity',
             )
+            ->selectRaw('SUM(restaurant_table_product.quantity) as quantity')
             ->get()
             ->map(fn ($row) => [
                 'id'          => $row->id,
@@ -245,10 +255,17 @@ class TableController extends Controller
     }
 
     /**
-     * Replaces the table's delivered lines with what the waiter submitted and
-     * queues new kitchen items. Returns false (and changes nothing) when the
-     * order changed since the client loaded it, e.g. a delivery was marked or
-     * another waiter saved, so a stale screen can't wipe those lines.
+     * Brings the table's delivered lines to the quantities the waiter submitted
+     * (one total per product and price) and queues new kitchen items.
+     *
+     * Only the difference is applied: unchanged lines are left alone, so they
+     * keep the customer who ordered them. Added units go on an unattributed
+     * line; removed units come off the unattributed line first, then off the
+     * customers' lines.
+     *
+     * Returns false (and changes nothing) when the order changed since the
+     * client loaded it, e.g. a delivery was marked or another waiter saved, so
+     * a stale screen can't overwrite lines it never saw.
      */
     private function syncOrder(TableRequest $request, RestaurantTable $table): bool
     {
@@ -267,7 +284,8 @@ class TableController extends Controller
             ->get(['id', 'queue_id'])
             ->keyBy('id');
 
-        $rows = [];
+        /** @var array<string, array{product_id: int, price: float, quantity: int}> $desired */
+        $desired = [];
         foreach ($submitted as $item) {
             $productId = (int) ($item['product_id'] ?? 0);
             $qty       = (int) ($item['quantity'] ?? 0);
@@ -277,12 +295,9 @@ class TableController extends Controller
                 continue;
             }
 
-            $rows[] = [
-                'restaurant_table_id' => $table->id,
-                'product_id'          => $productId,
-                'quantity'            => $qty,
-                'price'               => $price,
-            ];
+            $key = self::lineKey($productId, $price);
+            $desired[$key] ??= ['product_id' => $productId, 'price' => $price, 'quantity' => 0];
+            $desired[$key]['quantity'] += $qty;
         }
 
         $now       = now();
@@ -309,7 +324,7 @@ class TableController extends Controller
 
         $clientVersion = $request->validated('order_version');
 
-        return DB::transaction(function () use ($table, $rows, $queueRows, $clientVersion): bool {
+        return DB::transaction(function () use ($table, $desired, $queueRows, $clientVersion): bool {
             // Serializes with QueueItemController::markDelivered and other saves on this table.
             RestaurantTable::whereKey($table->id)->lockForUpdate()->first(['id']);
 
@@ -317,13 +332,26 @@ class TableController extends Controller
                 return false;
             }
 
-            // Full replace: delete all existing pivot rows then re-insert with explicit prices.
-            DB::table('restaurant_table_product')
+            $current = DB::table('restaurant_table_product')
                 ->where('restaurant_table_id', $table->id)
-                ->delete();
+                ->orderByDesc('ordered_by_user_id')
+                ->get(['product_id', 'ordered_by_user_id', 'price', 'quantity'])
+                ->groupBy(fn ($row) => self::lineKey((int) $row->product_id, (float) $row->price));
 
-            if ($rows !== []) {
-                DB::table('restaurant_table_product')->insert($rows);
+            foreach ($current as $key => $rows) {
+                $this->applyLineQuantity($table->id, $rows, $desired[$key]['quantity'] ?? 0);
+                unset($desired[$key]);
+            }
+
+            // Product/price pairs the table didn't have yet.
+            foreach ($desired as $line) {
+                DB::table('restaurant_table_product')->insert([
+                    'restaurant_table_id' => $table->id,
+                    'product_id'          => $line['product_id'],
+                    'ordered_by_user_id'  => null,
+                    'price'               => $line['price'],
+                    'quantity'            => $line['quantity'],
+                ]);
             }
 
             if ($queueRows !== []) {
@@ -332,6 +360,80 @@ class TableController extends Controller
 
             return true;
         });
+    }
+
+    /**
+     * Sets the total quantity of one (product, price) line, spread over its rows.
+     * Unattributed units are the first to grow or shrink; customers' rows only
+     * shrink once the unattributed ones are gone.
+     *
+     * @param  Collection<int, \stdClass>  $rows  all rows of the line
+     */
+    private function applyLineQuantity(int $tableId, Collection $rows, int $target): void
+    {
+        $productId = $rows->first()->product_id;
+        $price     = $rows->first()->price;
+        $line      = fn () => DB::table('restaurant_table_product')
+            ->where('restaurant_table_id', $tableId)
+            ->where('product_id', $productId)
+            ->where('price', $price);
+
+        $total = (int) $rows->sum('quantity');
+
+        if ($target === $total) {
+            return;
+        }
+
+        if ($target === 0) {
+            $line()->delete();
+
+            return;
+        }
+
+        $unattributed = (int) $rows->whereNull('ordered_by_user_id')->sum('quantity');
+
+        if ($target > $total) {
+            $newUnattributed = $unattributed + ($target - $total);
+            $toRemove        = 0;
+        } else {
+            $newUnattributed = max(0, $unattributed - ($total - $target));
+            $toRemove        = ($total - $target) - ($unattributed - $newUnattributed);
+        }
+
+        // Collapse the unattributed units into a single row.
+        $line()->whereNull('ordered_by_user_id')->delete();
+
+        if ($newUnattributed > 0) {
+            DB::table('restaurant_table_product')->insert([
+                'restaurant_table_id' => $tableId,
+                'product_id'          => $productId,
+                'ordered_by_user_id'  => null,
+                'price'               => $price,
+                'quantity'            => $newUnattributed,
+            ]);
+        }
+
+        foreach ($rows->whereNotNull('ordered_by_user_id') as $row) {
+            if ($toRemove <= 0) {
+                break;
+            }
+
+            $quantity = (int) $row->quantity;
+            $take     = min($quantity, $toRemove);
+            $toRemove -= $take;
+            $query    = $line()->where('ordered_by_user_id', $row->ordered_by_user_id);
+
+            if ($take === $quantity) {
+                $query->delete();
+            } else {
+                $query->update(['quantity' => $quantity - $take]);
+            }
+        }
+    }
+
+    private static function lineKey(int $productId, float $price): string
+    {
+        return $productId.'|'.number_format($price, 2, '.', '');
     }
 
     /**

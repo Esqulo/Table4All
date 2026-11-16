@@ -134,6 +134,92 @@ class RushResilienceTest extends TestCase
         $this->assertSame(3, (int) DB::table('restaurant_table_product')->sole()->quantity);
     }
 
+    public function test_delivery_at_a_different_price_is_billed_on_its_own_line(): void
+    {
+        $customer = User::factory()->create();
+
+        foreach ([10, 7.5] as $price) {
+            $item = QueueItem::create([
+                'restaurant_table_id' => $this->table->id,
+                'product_id' => $this->beer->id,
+                'ordered_by_user_id' => $customer->id,
+                'quantity' => 1,
+                'price' => $price,
+                'status' => QueueItemStatus::PENDING->value,
+            ]);
+            $this->actingAs($this->restaurant)->patch(route('restaurant.queue-items.mark-delivered', $item));
+        }
+
+        $lines = DB::table('restaurant_table_product')->orderBy('price')->get();
+        $this->assertCount(2, $lines);
+        $this->assertEquals([7.5, 10.0], $lines->map(fn ($l) => (float) $l->price)->all());
+        $this->assertEquals(17.5, $lines->sum(fn ($l) => $l->price * $l->quantity));
+    }
+
+    public function test_table_screen_sums_customers_rows_of_the_same_product_and_price(): void
+    {
+        foreach (User::factory()->count(2)->create() as $customer) {
+            $this->insertLine($customer->id, 10, 1);
+        }
+
+        $this->actingAs($this->restaurant)
+            ->get(route('restaurant.tables.show', $this->table))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('orderLines', 1)
+                ->where('orderLines.0.quantity', 2)
+            );
+    }
+
+    public function test_waiter_save_keeps_who_ordered_unchanged_lines(): void
+    {
+        $customer = User::factory()->create();
+        $this->insertLine($customer->id, 10, 2);
+        $water = Product::create(['user_id' => $this->restaurant->id, 'name' => 'Água', 'price' => 4, 'price_type' => 'unit']);
+
+        $this->actingAs($this->restaurant)->patch(route('restaurant.tables.update', $this->table), [
+            'products' => [
+                ['product_id' => $this->beer->id, 'price' => 10, 'quantity' => 2],
+                ['product_id' => $water->id, 'price' => 4, 'quantity' => 1],
+            ],
+            'order_version' => $this->orderVersionShownToWaiter(),
+        ]);
+
+        $beer = DB::table('restaurant_table_product')->where('product_id', $this->beer->id)->sole();
+        $this->assertSame($customer->id, (int) $beer->ordered_by_user_id);
+        $this->assertSame(2, (int) $beer->quantity);
+        $this->assertSame(1, (int) DB::table('restaurant_table_product')->where('product_id', $water->id)->sole()->quantity);
+    }
+
+    public function test_waiter_reducing_a_line_removes_unattributed_units_first(): void
+    {
+        $customer = User::factory()->create();
+        $this->insertLine($customer->id, 10, 2);
+        $this->insertLine(null, 10, 1);
+
+        $this->actingAs($this->restaurant)->patch(route('restaurant.tables.update', $this->table), [
+            'products' => [['product_id' => $this->beer->id, 'price' => 10, 'quantity' => 1]],
+            'order_version' => $this->orderVersionShownToWaiter(),
+        ]);
+
+        $rows = DB::table('restaurant_table_product')->get();
+        $this->assertCount(1, $rows);
+        $this->assertSame($customer->id, (int) $rows[0]->ordered_by_user_id);
+        $this->assertSame(1, (int) $rows[0]->quantity);
+    }
+
+    public function test_waiter_removing_a_product_deletes_all_its_rows(): void
+    {
+        $this->insertLine(User::factory()->create()->id, 10, 1);
+        $this->insertLine(null, 10, 3);
+
+        $this->actingAs($this->restaurant)->patch(route('restaurant.tables.update', $this->table), [
+            'products' => [],
+            'order_version' => $this->orderVersionShownToWaiter(),
+        ]);
+
+        $this->assertSame(0, DB::table('restaurant_table_product')->count());
+    }
+
     public function test_marking_done_only_moves_pending_items(): void
     {
         $item = QueueItem::create([
@@ -239,6 +325,17 @@ class RushResilienceTest extends TestCase
                 ->where('tables.0.paid_total', 5)
                 ->where('tables.0.products_count', 1)
             );
+    }
+
+    private function insertLine(?int $orderedBy, float $price, int $quantity): void
+    {
+        DB::table('restaurant_table_product')->insert([
+            'restaurant_table_id' => $this->table->id,
+            'product_id' => $this->beer->id,
+            'ordered_by_user_id' => $orderedBy,
+            'price' => $price,
+            'quantity' => $quantity,
+        ]);
     }
 
     private function orderVersionShownToWaiter(): string

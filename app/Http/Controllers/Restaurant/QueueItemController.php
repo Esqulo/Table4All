@@ -54,7 +54,9 @@ class QueueItemController extends Controller
             $line = DB::table('restaurant_table_product')
                 ->where('restaurant_table_id', $queueItem->restaurant_table_id)
                 ->where('product_id', $queueItem->product_id)
-                ->where('ordered_by_user_id', $queueItem->ordered_by_user_id);
+                ->where('ordered_by_user_id', $queueItem->ordered_by_user_id)
+                // Same product at a different price (promotion) is a separate line.
+                ->where('price', (float) $queueItem->price);
 
             if ($line->increment('quantity', (int) $queueItem->quantity) === 0) {
                 DB::table('restaurant_table_product')->insert([
