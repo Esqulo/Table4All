@@ -8,6 +8,23 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
+/**
+ * A promotion: a weekly window (periodic: days + start/end time) or a dated
+ * range (scheduled: starts_at/ends_at). user_id is the restaurant owner.
+ *
+ * @property int $id
+ * @property int $user_id
+ * @property int $product_id
+ * @property string $type
+ * @property float $sale_price
+ * @property array<int, int|string>|null $days
+ * @property string|null $start_time
+ * @property string|null $end_time
+ * @property Carbon|null $starts_at
+ * @property Carbon|null $ends_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 final class Sale extends Model
 {
     protected $fillable = [
@@ -80,9 +97,9 @@ final class Sale extends Model
     {
         return [
             'sale_price' => 'float',
-            'days'       => 'array',
-            'starts_at'  => 'datetime',
-            'ends_at'    => 'datetime',
+            'days' => 'array',
+            'starts_at' => 'datetime',
+            'ends_at' => 'datetime',
         ];
     }
 }

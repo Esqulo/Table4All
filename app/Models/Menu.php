@@ -5,7 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
+/**
+ * A public menu of a restaurant (user_id is the owner).
+ *
+ * @property int $id
+ * @property int $user_id
+ * @property string $name
+ * @property array<string, mixed>|null $layout
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ */
 final class Menu extends Model
 {
     use SoftDeletes;

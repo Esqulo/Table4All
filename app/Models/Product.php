@@ -7,8 +7,26 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * A restaurant's product. user_id is the restaurant owner.
+ *
+ * @property int $id
+ * @property int $user_id
+ * @property int|null $category_id
+ * @property int|null $queue_id
+ * @property string $name
+ * @property string|null $description
+ * @property string|null $picture
+ * @property float $price
+ * @property PriceType $price_type
+ * @property-read string|null $picture_url
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ */
 final class Product extends Model
 {
     use SoftDeletes;

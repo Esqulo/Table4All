@@ -7,7 +7,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
+/**
+ * A table of a restaurant (user_id is the owner). closed_at has no cast: it is
+ * read back as the database string and set with now() when the table closes.
+ *
+ * @property int $id
+ * @property int $user_id
+ * @property string $title
+ * @property string|null $access_code
+ * @property Carbon|string|null $closed_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ */
 final class RestaurantTable extends Model
 {
     use SoftDeletes;

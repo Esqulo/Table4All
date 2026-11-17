@@ -5,10 +5,22 @@ namespace App\Models;
 use App\Enums\QueueItemStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
+ * One ordered product waiting in a prep queue or on the delivery board.
+ * The price is snapshotted when the order is placed.
+ *
+ * @property int $id
+ * @property int $restaurant_table_id
+ * @property int $product_id
+ * @property int|null $queue_id
+ * @property int|null $ordered_by_user_id
+ * @property int $quantity
  * @property QueueItemStatus $status
  * @property float $price
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 final class QueueItem extends Model
 {
@@ -26,7 +38,7 @@ final class QueueItem extends Model
     {
         return [
             'status' => QueueItemStatus::class,
-            'price'  => 'float',
+            'price' => 'float',
         ];
     }
 
