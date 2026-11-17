@@ -35,13 +35,13 @@ class TableJoinController extends Controller
             ->orderBy('name')
             ->get(['id', 'category_id', 'name', 'description', 'picture', 'price', 'price_type'])
             ->map(fn ($p) => [
-                'id'          => $p->id,
+                'id' => $p->id,
                 'category_id' => $p->category_id,
-                'category'    => $p->category,
-                'name'        => $p->name,
+                'category' => $p->category,
+                'name' => $p->name,
                 'description' => $p->description,
-                'price'       => (float) $p->price,
-                'price_type'  => $p->price_type,
+                'price' => (float) $p->price,
+                'price_type' => $p->price_type,
                 'picture_url' => $p->picture ? Storage::disk('public')->url($p->picture) : null,
             ]);
 
@@ -52,13 +52,13 @@ class TableJoinController extends Controller
             ->values();
 
         return Inertia::render('table/show', [
-            'table'      => ['id' => $table->id, 'title' => $table->title],
+            'table' => ['id' => $table->id, 'title' => $table->title],
             'restaurant' => [
-                'name'       => $table->user->name,
+                'name' => $table->user->name,
                 'avatar_url' => $table->user->avatar_url,
             ],
             'categories' => $categories,
-            'products'   => $products,
+            'products' => $products,
         ]);
     }
 }

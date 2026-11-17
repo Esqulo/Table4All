@@ -77,7 +77,9 @@ export default function TwoFactorRecoveryCodes({
                             className="size-4"
                             aria-hidden="true"
                         />
-                        {codesAreVisible ? t('two_factor.recovery_hide') : t('two_factor.recovery_view')}
+                        {codesAreVisible
+                            ? t('two_factor.recovery_hide')
+                            : t('two_factor.recovery_view')}
                     </Button>
 
                     {canRegenerateCodes && (
@@ -93,7 +95,8 @@ export default function TwoFactorRecoveryCodes({
                                     disabled={processing}
                                     aria-describedby="regenerate-warning"
                                 >
-                                    <RefreshCw /> {t('two_factor.recovery_regenerate')}
+                                    <RefreshCw />{' '}
+                                    {t('two_factor.recovery_regenerate')}
                                 </Button>
                             )}
                         </Form>
@@ -113,7 +116,9 @@ export default function TwoFactorRecoveryCodes({
                                     ref={codesSectionRef}
                                     className="grid gap-1 rounded-lg bg-muted p-4 font-mono text-sm"
                                     role="list"
-                                    aria-label={t('two_factor.recovery_list_label')}
+                                    aria-label={t(
+                                        'two_factor.recovery_list_label',
+                                    )}
                                 >
                                     {recoveryCodesList.length ? (
                                         recoveryCodesList.map((code, index) => (
@@ -128,7 +133,9 @@ export default function TwoFactorRecoveryCodes({
                                     ) : (
                                         <div
                                             className="space-y-2"
-                                            aria-label={t('two_factor.recovery_loading_label')}
+                                            aria-label={t(
+                                                'two_factor.recovery_loading_label',
+                                            )}
                                         >
                                             {Array.from(
                                                 { length: 8 },

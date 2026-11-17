@@ -8,14 +8,23 @@ type Props = {
     placeholder?: string;
 };
 
-export function CurrencyInput({ name, id, defaultValue, placeholder = '0,00' }: Props) {
+export function CurrencyInput({
+    name,
+    id,
+    defaultValue,
+    placeholder = '0,00',
+}: Props) {
     const [cents, setCents] = useState(() =>
         defaultValue ? Math.round(defaultValue * 100) : 0,
     );
 
-    const displayValue = cents > 0
-        ? (cents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-        : '';
+    const displayValue =
+        cents > 0
+            ? (cents / 100).toLocaleString('pt-BR', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+              })
+            : '';
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const digits = e.target.value.replace(/\D/g, '');

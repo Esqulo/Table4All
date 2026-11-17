@@ -19,7 +19,9 @@ export default function EditQueue({ queue }: Props) {
             <Head title={t('queues.breadcrumb_edit')} />
 
             <div className="mx-auto max-w-xl space-y-6 p-6">
-                <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">{t('queues.breadcrumb_edit')}</h1>
+                <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">
+                    {t('queues.breadcrumb_edit')}
+                </h1>
 
                 <Form
                     {...QueueController.update.form({ queue: queue.id })}
@@ -28,7 +30,9 @@ export default function EditQueue({ queue }: Props) {
                     {({ processing, errors }) => (
                         <>
                             <div className="grid gap-2">
-                                <Label htmlFor="name">{t('queues.name_label')}</Label>
+                                <Label htmlFor="name">
+                                    {t('queues.name_label')}
+                                </Label>
                                 <Input
                                     id="name"
                                     name="name"

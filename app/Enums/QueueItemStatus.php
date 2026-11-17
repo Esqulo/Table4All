@@ -4,8 +4,8 @@ namespace App\Enums;
 
 enum QueueItemStatus: string
 {
-    case PENDING   = 'pending';
-    case DONE      = 'done';
+    case PENDING = 'pending';
+    case DONE = 'done';
     case DELIVERED = 'delivered';
     /** The table was closed before this item reached it: the customer left without receiving it. */
     case ABANDONED = 'abandoned';

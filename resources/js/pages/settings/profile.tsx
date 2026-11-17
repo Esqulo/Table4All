@@ -101,7 +101,9 @@ export default function Profile({
                     {({ processing, errors }) => (
                         <>
                             <div className="grid gap-2">
-                                <Label htmlFor="name">{t('settings.profile.name_label')}</Label>
+                                <Label htmlFor="name">
+                                    {t('settings.profile.name_label')}
+                                </Label>
                                 <Input
                                     id="name"
                                     className="mt-1 block w-full"
@@ -109,13 +111,20 @@ export default function Profile({
                                     name="name"
                                     required
                                     autoComplete="name"
-                                    placeholder={t('settings.profile.name_placeholder')}
+                                    placeholder={t(
+                                        'settings.profile.name_placeholder',
+                                    )}
                                 />
-                                <InputError className="mt-2" message={errors.name} />
+                                <InputError
+                                    className="mt-2"
+                                    message={errors.name}
+                                />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="email">{t('settings.profile.email_label')}</Label>
+                                <Label htmlFor="email">
+                                    {t('settings.profile.email_label')}
+                                </Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -124,36 +133,58 @@ export default function Profile({
                                     name="email"
                                     required
                                     autoComplete="username"
-                                    placeholder={t('settings.profile.email_placeholder')}
+                                    placeholder={t(
+                                        'settings.profile.email_placeholder',
+                                    )}
                                 />
-                                <InputError className="mt-2" message={errors.email} />
+                                <InputError
+                                    className="mt-2"
+                                    message={errors.email}
+                                />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="phone">{t('settings.profile.phone_label')}</Label>
+                                <Label htmlFor="phone">
+                                    {t('settings.profile.phone_label')}
+                                </Label>
                                 <div className="mt-1 flex">
-                                    <span className="border-input bg-muted text-muted-foreground inline-flex h-9 items-center rounded-l-md border border-r-0 px-3 text-sm select-none">
+                                    <span className="inline-flex h-9 items-center rounded-l-md border border-r-0 border-input bg-muted px-3 text-sm text-muted-foreground select-none">
                                         +55
                                     </span>
                                     <Input
                                         id="phone"
                                         type="tel"
-                                        defaultValue={auth.user.phone?.replace(/^\+55/, '') ?? ''}
+                                        defaultValue={
+                                            auth.user.phone?.replace(
+                                                /^\+55/,
+                                                '',
+                                            ) ?? ''
+                                        }
                                         name="phone"
                                         required
                                         autoComplete="tel"
-                                        placeholder={t('settings.profile.phone_placeholder')}
+                                        placeholder={t(
+                                            'settings.profile.phone_placeholder',
+                                        )}
                                         className="rounded-l-none"
                                     />
                                 </div>
-                                <InputError className="mt-2" message={errors.phone} />
+                                <InputError
+                                    className="mt-2"
+                                    message={errors.phone}
+                                />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="avatar">{t('settings.profile.avatar_label')}</Label>
+                                <Label htmlFor="avatar">
+                                    {t('settings.profile.avatar_label')}
+                                </Label>
                                 <div className="flex items-center gap-4">
                                     <Avatar className="h-16 w-16">
-                                        <AvatarImage src={avatarSrc} alt={auth.user.name} />
+                                        <AvatarImage
+                                            src={avatarSrc}
+                                            alt={auth.user.name}
+                                        />
                                         <AvatarFallback className="text-lg">
                                             {avatarFallback}
                                         </AvatarFallback>
@@ -170,34 +201,47 @@ export default function Profile({
                                         id="avatar"
                                         type="button"
                                         variant="outline"
-                                        onClick={() => pickerRef.current?.click()}
+                                        onClick={() =>
+                                            pickerRef.current?.click()
+                                        }
                                     >
                                         {t('settings.profile.avatar_choose')}
                                     </Button>
                                 </div>
-                                <InputError className="mt-2" message={errors.avatar} />
+                                <InputError
+                                    className="mt-2"
+                                    message={errors.avatar}
+                                />
                             </div>
 
-                            {mustVerifyEmail && auth.user.email_verified_at === null && (
-                                <div>
-                                    <p className="-mt-4 text-sm text-muted-foreground">
-                                        {t('settings.profile.unverified_email')}{' '}
-                                        <Link
-                                            href={send()}
-                                            as="button"
-                                            className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
-                                        >
-                                            {t('settings.profile.resend_verification')}
-                                        </Link>
-                                    </p>
+                            {mustVerifyEmail &&
+                                auth.user.email_verified_at === null && (
+                                    <div>
+                                        <p className="-mt-4 text-sm text-muted-foreground">
+                                            {t(
+                                                'settings.profile.unverified_email',
+                                            )}{' '}
+                                            <Link
+                                                href={send()}
+                                                as="button"
+                                                className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
+                                            >
+                                                {t(
+                                                    'settings.profile.resend_verification',
+                                                )}
+                                            </Link>
+                                        </p>
 
-                                    {status === 'verification-link-sent' && (
-                                        <div className="mt-2 text-sm font-medium text-green-600">
-                                            {t('settings.profile.verification_sent')}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
+                                        {status ===
+                                            'verification-link-sent' && (
+                                            <div className="mt-2 text-sm font-medium text-green-600">
+                                                {t(
+                                                    'settings.profile.verification_sent',
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
 
                             <div className="flex items-center gap-4">
                                 <Button

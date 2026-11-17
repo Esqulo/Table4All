@@ -43,15 +43,15 @@ class JoinController extends Controller
             ->orderBy('name')
             ->get(['id', 'category_id', 'name', 'description', 'picture', 'price', 'price_type', 'queue_id'])
             ->map(fn ($p) => [
-                'id'            => $p->id,
-                'category_id'   => $p->category_id,
+                'id' => $p->id,
+                'category_id' => $p->category_id,
                 'category_name' => $p->category?->name,
-                'name'          => $p->name,
-                'description'   => $p->description,
-                'price'         => (float) ($activeSales[$p->id] ?? $p->price),
-                'price_type'    => $p->price_type,
-                'has_queue'     => $p->queue_id !== null,
-                'picture_url'   => $p->picture ? Storage::disk('public')->url($p->picture) : null,
+                'name' => $p->name,
+                'description' => $p->description,
+                'price' => (float) ($activeSales[$p->id] ?? $p->price),
+                'price_type' => $p->price_type,
+                'has_queue' => $p->queue_id !== null,
+                'picture_url' => $p->picture ? Storage::disk('public')->url($p->picture) : null,
             ]);
 
         $products = DB::table('restaurant_table_product')
@@ -71,14 +71,14 @@ class JoinController extends Controller
             )
             ->get()
             ->map(fn ($row) => [
-                'id'          => $row->id,
-                'name'        => $row->name,
+                'id' => $row->id,
+                'name' => $row->name,
                 'description' => $row->description,
-                'price'       => (float) $row->price,
-                'price_type'  => $row->price_type,
-                'quantity'    => (int) $row->quantity,
+                'price' => (float) $row->price,
+                'price_type' => $row->price_type,
+                'quantity' => (int) $row->quantity,
                 'picture_url' => $row->picture ? Storage::disk('public')->url($row->picture) : null,
-                'ordered_by'  => $row->ordered_by_name ?? $row->ordered_by_email ?? null,
+                'ordered_by' => $row->ordered_by_name ?? $row->ordered_by_email ?? null,
             ]);
 
         $preparing = QueueItem::where('restaurant_table_id', $table->id)
@@ -87,10 +87,10 @@ class JoinController extends Controller
             ->orderBy('created_at')
             ->get()
             ->map(fn ($item) => [
-                'name'       => $item->product->name,
-                'price'      => (float) $item->price,
-                'quantity'   => (int) $item->quantity,
-                'has_queue'  => $item->queue_id !== null,
+                'name' => $item->product->name,
+                'price' => (float) $item->price,
+                'quantity' => (int) $item->quantity,
+                'has_queue' => $item->queue_id !== null,
                 'ordered_by' => $item->orderedBy !== null ? ($item->orderedBy->name ?? $item->orderedBy->email) : null,
             ]);
 
@@ -101,12 +101,12 @@ class JoinController extends Controller
         $paid = (float) $table->payments()->sum('amount');
 
         return Inertia::render('customer/show', [
-            'code'      => $code,
-            'menu'      => $menu,
-            'products'  => $products,
+            'code' => $code,
+            'menu' => $menu,
+            'products' => $products,
             'preparing' => $preparing,
-            'total'     => $total,
-            'paid'      => $paid,
+            'total' => $total,
+            'paid' => $paid,
             'remaining' => max(0.0, $total - $paid),
         ]);
     }
@@ -119,20 +119,20 @@ class JoinController extends Controller
             ->firstOrFail(['id', 'user_id']);
 
         $validated = $request->validate([
-            'items'                => ['required', 'array', 'min:1', 'max:100'],
-            'items.*.product_id'   => ['required', 'integer'],
-            'items.*.quantity'     => ['required', 'integer', 'min:1', 'max:99'],
-            'request_key'          => ['nullable', 'string', 'max:64'],
+            'items' => ['required', 'array', 'min:1', 'max:100'],
+            'items.*.product_id' => ['required', 'integer'],
+            'items.*.quantity' => ['required', 'integer', 'min:1', 'max:99'],
+            'request_key' => ['nullable', 'string', 'max:64'],
         ]);
 
         $productIds = array_column($validated['items'], 'product_id');
-        $products   = Product::where('user_id', $table->user_id)
+        $products = Product::where('user_id', $table->user_id)
             ->whereIn('id', $productIds)
             ->get(['id', 'queue_id', 'price'])
             ->keyBy('id');
         $activeSales = Sale::activePriceMap($table->user_id);
-        $userId      = auth()->id();
-        $now         = now();
+        $userId = auth()->id();
+        $now = now();
 
         // All customer orders go through queue_items (queue_id is null for non-kitchen products).
         // Items reach restaurant_table_product only after a waiter marks them as delivered.
@@ -146,14 +146,14 @@ class JoinController extends Controller
 
             $rows[] = [
                 'restaurant_table_id' => $table->id,
-                'product_id'          => $product->id,
-                'queue_id'            => $product->queue_id ?: null,
-                'ordered_by_user_id'  => $userId,
-                'quantity'            => $item['quantity'],
-                'price'               => (float) ($activeSales[$product->id] ?? $product->price),
-                'status'              => QueueItemStatus::PENDING->value,
-                'created_at'          => $now,
-                'updated_at'          => $now,
+                'product_id' => $product->id,
+                'queue_id' => $product->queue_id ?: null,
+                'ordered_by_user_id' => $userId,
+                'quantity' => $item['quantity'],
+                'price' => (float) ($activeSales[$product->id] ?? $product->price),
+                'status' => QueueItemStatus::PENDING->value,
+                'created_at' => $now,
+                'updated_at' => $now,
             ];
         }
 

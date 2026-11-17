@@ -30,10 +30,10 @@ export default function DeleteUser() {
             />
             <div className="space-y-4 rounded-lg border border-red-100 bg-red-50 p-4 dark:border-red-200/10 dark:bg-red-700/10">
                 <div className="relative space-y-0.5 text-red-600 dark:text-red-100">
-                    <p className="font-medium">{t('delete_user.warning_title')}</p>
-                    <p className="text-sm">
-                        {t('delete_user.warning_text')}
+                    <p className="font-medium">
+                        {t('delete_user.warning_title')}
                     </p>
+                    <p className="text-sm">{t('delete_user.warning_text')}</p>
                 </div>
 
                 <Dialog>
@@ -76,7 +76,9 @@ export default function DeleteUser() {
                                             id="password"
                                             name="password"
                                             ref={passwordInput}
-                                            placeholder={t('delete_user.password_placeholder')}
+                                            placeholder={t(
+                                                'delete_user.password_placeholder',
+                                            )}
                                             autoComplete="current-password"
                                         />
 

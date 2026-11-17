@@ -52,7 +52,9 @@ function QueueRow({ queue }: { queue: RestaurantQueue }) {
             <div>
                 <p className="font-medium">{queue.name}</p>
                 <p className="text-xs text-muted-foreground">
-                    {t('queues.products_count', { count: queue.products_count ?? 0 })}
+                    {t('queues.products_count', {
+                        count: queue.products_count ?? 0,
+                    })}
                 </p>
             </div>
 

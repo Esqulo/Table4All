@@ -1,5 +1,11 @@
 import { Head, Link } from '@inertiajs/react';
-import { BarChart3, PackageX, ShoppingBag, TrendingUp, UtensilsCrossed } from 'lucide-react';
+import {
+    BarChart3,
+    PackageX,
+    ShoppingBag,
+    TrendingUp,
+    UtensilsCrossed,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import DashboardController from '@/actions/App/Http/Controllers/Restaurant/DashboardController';
 import Heading from '@/components/heading';
@@ -19,7 +25,11 @@ type Summary = {
 
 type RevenueDay = { date: string; revenue: number; tables_count: number };
 type TopProduct = { name: string; qty: number; revenue: number };
-type PaymentMethodData = { method: PaymentMethod; count: number; total: number };
+type PaymentMethodData = {
+    method: PaymentMethod;
+    count: number;
+    total: number;
+};
 type RecentTable = {
     id: number;
     title: string;
@@ -43,7 +53,10 @@ function formatCurrency(value: number) {
 }
 
 function formatDate(iso: string) {
-    return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit' }).format(new Date(iso + 'T00:00:00'));
+    return new Intl.DateTimeFormat('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+    }).format(new Date(iso + 'T00:00:00'));
 }
 
 function formatDateTime(iso: string) {
@@ -55,14 +68,26 @@ function formatDateTime(iso: string) {
     }).format(new Date(iso));
 }
 
-function MetricCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function MetricCard({
+    icon,
+    label,
+    value,
+}: {
+    icon: React.ReactNode;
+    label: string;
+    value: string;
+}) {
     return (
         <div className="rounded-xl border bg-card p-4 shadow-xs">
             <div className="mb-3 flex items-center gap-2 text-muted-foreground">
                 {icon}
-                <span className="font-receipt text-[11px] tracking-[0.14em] uppercase">{label}</span>
+                <span className="font-receipt text-[11px] tracking-[0.14em] uppercase">
+                    {label}
+                </span>
             </div>
-            <div className="font-display text-[2.4rem] leading-none font-extrabold tabular-nums">{value}</div>
+            <div className="font-display text-[2.4rem] leading-none font-extrabold tabular-nums">
+                {value}
+            </div>
         </div>
     );
 }
@@ -94,7 +119,11 @@ export default function Dashboards({
                                 className="rounded-full px-4"
                                 asChild
                             >
-                                <Link href={DashboardController.index.url({ query: { period: p } })}>
+                                <Link
+                                    href={DashboardController.index.url({
+                                        query: { period: p },
+                                    })}
+                                >
                                     {t(`dashboards.period_${p}`)}
                                 </Link>
                             </Button>
@@ -110,7 +139,9 @@ export default function Dashboards({
                         value={formatCurrency(summary.total_revenue)}
                     />
                     <MetricCard
-                        icon={<UtensilsCrossed className="h-5 w-5 text-primary" />}
+                        icon={
+                            <UtensilsCrossed className="h-5 w-5 text-primary" />
+                        }
                         label={t('dashboards.tables_closed')}
                         value={String(summary.tables_closed)}
                     />
@@ -131,11 +162,15 @@ export default function Dashboards({
                     <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4">
                         <PackageX className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
                         <div className="min-w-0 flex-1">
-                            <p className="text-sm font-semibold">{t('dashboards.abandoned_title')}</p>
+                            <p className="text-sm font-semibold">
+                                {t('dashboards.abandoned_title')}
+                            </p>
                             <p className="text-sm text-muted-foreground">
                                 {t('dashboards.abandoned_summary', {
                                     count: summary.abandoned_items,
-                                    value: formatCurrency(summary.abandoned_value),
+                                    value: formatCurrency(
+                                        summary.abandoned_value,
+                                    ),
                                 })}
                             </p>
                         </div>
@@ -145,7 +180,9 @@ export default function Dashboards({
                 {/* Revenue bar chart */}
                 {revenue_by_day.length > 0 && (
                     <div className="rounded-xl border bg-card p-4 shadow-xs">
-                        <h3 className="mb-4 border-b border-dashed pb-3 font-receipt text-[11px] font-medium tracking-[0.14em] text-muted-foreground uppercase">{t('dashboards.revenue_by_day')}</h3>
+                        <h3 className="mb-4 border-b border-dashed pb-3 font-receipt text-[11px] font-medium tracking-[0.14em] text-muted-foreground uppercase">
+                            {t('dashboards.revenue_by_day')}
+                        </h3>
                         <div className="flex h-32 items-end gap-1">
                             {revenue_by_day.map((day) => (
                                 <div
@@ -155,7 +192,9 @@ export default function Dashboards({
                                 >
                                     <div
                                         className="w-full rounded-t-sm bg-primary/70 transition-colors hover:bg-primary"
-                                        style={{ height: `${Math.max(4, (day.revenue / maxRevenue) * 100)}%` }}
+                                        style={{
+                                            height: `${Math.max(4, (day.revenue / maxRevenue) * 100)}%`,
+                                        }}
                                     />
                                     {revenue_by_day.length <= 14 && (
                                         <span className="text-[10px] text-muted-foreground">
@@ -167,8 +206,16 @@ export default function Dashboards({
                         </div>
                         {revenue_by_day.length > 14 && (
                             <div className="mt-2 flex justify-between text-xs text-muted-foreground">
-                                <span>{formatDate(revenue_by_day[0].date)}</span>
-                                <span>{formatDate(revenue_by_day[revenue_by_day.length - 1].date)}</span>
+                                <span>
+                                    {formatDate(revenue_by_day[0].date)}
+                                </span>
+                                <span>
+                                    {formatDate(
+                                        revenue_by_day[
+                                            revenue_by_day.length - 1
+                                        ].date,
+                                    )}
+                                </span>
                             </div>
                         )}
                     </div>
@@ -177,18 +224,29 @@ export default function Dashboards({
                 <div className="grid gap-4 lg:grid-cols-2">
                     {/* Top products */}
                     <div className="rounded-xl border bg-card p-4 shadow-xs">
-                        <h3 className="mb-4 border-b border-dashed pb-3 font-receipt text-[11px] font-medium tracking-[0.14em] text-muted-foreground uppercase">{t('dashboards.top_products')}</h3>
+                        <h3 className="mb-4 border-b border-dashed pb-3 font-receipt text-[11px] font-medium tracking-[0.14em] text-muted-foreground uppercase">
+                            {t('dashboards.top_products')}
+                        </h3>
                         {top_products.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">{t('dashboards.no_data')}</p>
+                            <p className="text-sm text-muted-foreground">
+                                {t('dashboards.no_data')}
+                            </p>
                         ) : (
                             <div className="divide-y">
                                 {top_products.map((product, i) => (
-                                    <div key={product.name} className="flex items-center gap-3 py-2">
+                                    <div
+                                        key={product.name}
+                                        className="flex items-center gap-3 py-2"
+                                    >
                                         <span className="w-4 text-sm font-medium text-muted-foreground">
                                             {i + 1}
                                         </span>
-                                        <span className="flex-1 truncate text-sm">{product.name}</span>
-                                        <span className="text-xs text-muted-foreground">{product.qty}×</span>
+                                        <span className="flex-1 truncate text-sm">
+                                            {product.name}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                            {product.qty}×
+                                        </span>
                                         <span className="text-sm font-semibold">
                                             {formatCurrency(product.revenue)}
                                         </span>
@@ -200,17 +258,29 @@ export default function Dashboards({
 
                     {/* Payment methods */}
                     <div className="rounded-xl border bg-card p-4 shadow-xs">
-                        <h3 className="mb-4 border-b border-dashed pb-3 font-receipt text-[11px] font-medium tracking-[0.14em] text-muted-foreground uppercase">{t('dashboards.payment_methods')}</h3>
+                        <h3 className="mb-4 border-b border-dashed pb-3 font-receipt text-[11px] font-medium tracking-[0.14em] text-muted-foreground uppercase">
+                            {t('dashboards.payment_methods')}
+                        </h3>
                         {payment_methods.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">{t('dashboards.no_data')}</p>
+                            <p className="text-sm text-muted-foreground">
+                                {t('dashboards.no_data')}
+                            </p>
                         ) : (
                             <div className="divide-y">
                                 {payment_methods.map((pm) => (
-                                    <div key={pm.method} className="flex items-center gap-3 py-2">
+                                    <div
+                                        key={pm.method}
+                                        className="flex items-center gap-3 py-2"
+                                    >
                                         <span className="flex-1 text-sm">
-                                            {t(`tables.payment_methods.${pm.method}`)}
+                                            {t(
+                                                `tables.payment_methods.${pm.method}`,
+                                            )}
                                         </span>
-                                        <Badge variant="outline" className="text-xs">
+                                        <Badge
+                                            variant="outline"
+                                            className="text-xs"
+                                        >
                                             {pm.count}×
                                         </Badge>
                                         <span className="text-sm font-semibold">
@@ -225,17 +295,27 @@ export default function Dashboards({
 
                 {/* Recent closed tables */}
                 <div className="rounded-xl border bg-card p-4 shadow-xs">
-                    <h3 className="mb-4 border-b border-dashed pb-3 font-receipt text-[11px] font-medium tracking-[0.14em] text-muted-foreground uppercase">{t('dashboards.recent_tables')}</h3>
+                    <h3 className="mb-4 border-b border-dashed pb-3 font-receipt text-[11px] font-medium tracking-[0.14em] text-muted-foreground uppercase">
+                        {t('dashboards.recent_tables')}
+                    </h3>
                     {recent_tables.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">{t('dashboards.no_data')}</p>
+                        <p className="text-sm text-muted-foreground">
+                            {t('dashboards.no_data')}
+                        </p>
                     ) : (
                         <div className="divide-y">
                             {recent_tables.map((table) => (
-                                <div key={table.id} className="flex items-center gap-4 py-2">
+                                <div
+                                    key={table.id}
+                                    className="flex items-center gap-4 py-2"
+                                >
                                     <div className="min-w-0 flex-1">
-                                        <span className="text-sm font-medium">{table.title}</span>
+                                        <span className="text-sm font-medium">
+                                            {table.title}
+                                        </span>
                                         <div className="text-xs text-muted-foreground">
-                                            {formatDateTime(table.closed_at)} · {table.items}{' '}
+                                            {formatDateTime(table.closed_at)} ·{' '}
+                                            {table.items}{' '}
                                             {t('dashboards.items')}
                                         </div>
                                     </div>
@@ -253,5 +333,10 @@ export default function Dashboards({
 }
 
 Dashboards.layout = {
-    breadcrumbs: [{ title: 'dashboards.breadcrumb_index', href: DashboardController.index.url() }],
+    breadcrumbs: [
+        {
+            title: 'dashboards.breadcrumb_index',
+            href: DashboardController.index.url(),
+        },
+    ],
 };

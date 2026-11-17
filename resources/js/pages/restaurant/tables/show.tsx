@@ -1,11 +1,30 @@
 import { Form, Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, Banknote, ConciergeBell, CreditCard, ImageOff, Minus, Plus, QrCode, Search, ShoppingCart, Tag, X } from 'lucide-react';
+import {
+    ArrowLeft,
+    Banknote,
+    ConciergeBell,
+    CreditCard,
+    ImageOff,
+    Minus,
+    Plus,
+    QrCode,
+    Search,
+    ShoppingCart,
+    Tag,
+    X,
+} from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import QueueItemController from '@/actions/App/Http/Controllers/Restaurant/QueueItemController';
 import TableController from '@/actions/App/Http/Controllers/Restaurant/TableController';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -18,9 +37,18 @@ import {
 import { useLiveReload } from '@/hooks/use-live-reload';
 import { formatBRL } from '@/lib/money';
 import { newRequestKey } from '@/lib/request-key';
-import type { PaymentMethod, Product, QueueItem, TableOrderLine, TablePayment } from '@/types';
+import type {
+    PaymentMethod,
+    Product,
+    QueueItem,
+    TableOrderLine,
+    TablePayment,
+} from '@/types';
 
-type AvailableProduct = Pick<Product, 'id' | 'name' | 'picture_url' | 'price' | 'price_type' | 'queue_id'> & {
+type AvailableProduct = Pick<
+    Product,
+    'id' | 'name' | 'picture_url' | 'price' | 'price_type' | 'queue_id'
+> & {
     queue: { id: number; name: string } | null;
 };
 
@@ -44,9 +72,9 @@ type Props = {
 const fmt = (n: number) => formatBRL(n);
 
 const PAYMENT_ICONS: Record<PaymentMethod, React.ReactNode> = {
-    cash:   <Banknote className="h-4 w-4" />,
-    pix:    <QrCode className="h-4 w-4" />,
-    card:   <CreditCard className="h-4 w-4" />,
+    cash: <Banknote className="h-4 w-4" />,
+    pix: <QrCode className="h-4 w-4" />,
+    card: <CreditCard className="h-4 w-4" />,
     coupon: <Tag className="h-4 w-4" />,
 };
 
@@ -54,14 +82,22 @@ const PAYMENT_METHODS: PaymentMethod[] = ['cash', 'pix', 'card', 'coupon'];
 
 // Composite key for a (productId, price) pair — used to keep separate lines
 // when the same product was ordered at different prices (e.g. happy hour vs normal).
-const lineKey = (productId: number, price: number) => `${productId}_${price.toFixed(2)}`;
+const lineKey = (productId: number, price: number) =>
+    `${productId}_${price.toFixed(2)}`;
 
 type OrderLine = { productId: number; price: number; quantity: number };
 type OrderState = Record<string, OrderLine>;
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-export default function ManageOrder({ table, products, orderLines, activeSales, queueItems, orderVersion }: Props) {
+export default function ManageOrder({
+    table,
+    products,
+    orderLines,
+    activeSales,
+    queueItems,
+    orderVersion,
+}: Props) {
     const { t } = useTranslation();
 
     const buildState = (lines: TableOrderLine[]): OrderState => {
@@ -70,16 +106,24 @@ export default function ManageOrder({ table, products, orderLines, activeSales, 
         for (const line of lines) {
             const key = lineKey(line.id, line.price);
             // Sum, never overwrite: overwriting dropped units when several rows shared a product and price.
-            state[key] = { productId: line.id, price: line.price, quantity: (state[key]?.quantity ?? 0) + line.quantity };
+            state[key] = {
+                productId: line.id,
+                price: line.price,
+                quantity: (state[key]?.quantity ?? 0) + line.quantity,
+            };
         }
 
         return state;
     };
 
-    const [orderState, setOrderState] = useState<OrderState>(() => buildState(orderLines));
+    const [orderState, setOrderState] = useState<OrderState>(() =>
+        buildState(orderLines),
+    );
 
     // Sync local state when the server pushes updated orderLines (e.g. after queue delivery).
-    const linesKey = orderLines.map((l) => `${l.id}:${l.price}:${l.quantity}`).join(',');
+    const linesKey = orderLines
+        .map((l) => `${l.id}:${l.price}:${l.quantity}`)
+        .join(',');
     const [prevLinesKey, setPrevLinesKey] = useState(linesKey);
 
     if (prevLinesKey !== linesKey) {
@@ -103,35 +147,45 @@ export default function ManageOrder({ table, products, orderLines, activeSales, 
             const line = prev[key];
 
             if (!line) {
-return prev;
-}
+                return prev;
+            }
 
             const next = Math.max(0, line.quantity + delta);
             const updated = { ...prev };
 
             if (next === 0) {
-delete updated[key];
-} else {
-updated[key] = { ...line, quantity: next };
-}
+                delete updated[key];
+            } else {
+                updated[key] = { ...line, quantity: next };
+            }
 
             return updated;
         });
 
     // Receives the confirmed items from the dialog, each stamped with its effective price.
-    const handleAddProducts = (items: { productId: number; price: number; quantity: number }[]) => {
+    const handleAddProducts = (
+        items: { productId: number; price: number; quantity: number }[],
+    ) => {
         const merged = { ...orderState };
-        const queueAdditions: { product_id: number; price: number; quantity: number }[] = [];
+        const queueAdditions: {
+            product_id: number;
+            price: number;
+            quantity: number;
+        }[] = [];
 
         for (const item of items) {
             if (item.quantity <= 0) {
-continue;
-}
+                continue;
+            }
 
             const product = products.find((p) => p.id === item.productId);
 
             if (product?.queue_id) {
-                queueAdditions.push({ product_id: item.productId, price: item.price, quantity: item.quantity });
+                queueAdditions.push({
+                    product_id: item.productId,
+                    price: item.price,
+                    quantity: item.quantity,
+                });
             } else {
                 const key = lineKey(item.productId, item.price);
                 merged[key] = {
@@ -164,11 +218,20 @@ continue;
         const savedByKey: Record<string, number> = {};
 
         for (const line of orderLines) {
-savedByKey[lineKey(line.id, line.price)] = (savedByKey[lineKey(line.id, line.price)] ?? 0) + line.quantity;
-}
+            savedByKey[lineKey(line.id, line.price)] =
+                (savedByKey[lineKey(line.id, line.price)] ?? 0) + line.quantity;
+        }
 
-        const directProducts: { product_id: number; price: number; quantity: number }[] = [];
-        const queueAdditions: { product_id: number; price: number; quantity: number }[] = [];
+        const directProducts: {
+            product_id: number;
+            price: number;
+            quantity: number;
+        }[] = [];
+        const queueAdditions: {
+            product_id: number;
+            price: number;
+            quantity: number;
+        }[] = [];
 
         for (const line of Object.values(orderState)) {
             const product = products.find((p) => p.id === line.productId);
@@ -181,24 +244,40 @@ savedByKey[lineKey(line.id, line.price)] = (savedByKey[lineKey(line.id, line.pri
                 const delta = line.quantity - deliveredQty;
 
                 if (directQty > 0) {
-directProducts.push({ product_id: line.productId, price: line.price, quantity: directQty });
-}
+                    directProducts.push({
+                        product_id: line.productId,
+                        price: line.price,
+                        quantity: directQty,
+                    });
+                }
 
                 if (delta > 0) {
                     const currentPrice = effectivePriceFor(line.productId);
-                    queueAdditions.push({ product_id: line.productId, price: currentPrice, quantity: delta });
+                    queueAdditions.push({
+                        product_id: line.productId,
+                        price: currentPrice,
+                        quantity: delta,
+                    });
                 }
             } else {
                 if (line.quantity > 0) {
-directProducts.push({ product_id: line.productId, price: line.price, quantity: line.quantity });
-}
+                    directProducts.push({
+                        product_id: line.productId,
+                        price: line.price,
+                        quantity: line.quantity,
+                    });
+                }
             }
         }
 
         setAutoSubmitting(true);
         router.patch(
             TableController.update.url({ table: table.id }),
-            { products: directProducts, queue_additions: queueAdditions, order_version: orderVersion },
+            {
+                products: directProducts,
+                queue_additions: queueAdditions,
+                order_version: orderVersion,
+            },
             { onFinish: () => setAutoSubmitting(false) },
         );
     };
@@ -207,15 +286,19 @@ directProducts.push({ product_id: line.productId, price: line.price, quantity: l
         const savedByKey: Record<string, number> = {};
 
         for (const line of orderLines) {
-savedByKey[lineKey(line.id, line.price)] = (savedByKey[lineKey(line.id, line.price)] ?? 0) + line.quantity;
-}
+            savedByKey[lineKey(line.id, line.price)] =
+                (savedByKey[lineKey(line.id, line.price)] ?? 0) + line.quantity;
+        }
 
-        const allKeys = new Set([...Object.keys(orderState), ...Object.keys(savedByKey)]);
+        const allKeys = new Set([
+            ...Object.keys(orderState),
+            ...Object.keys(savedByKey),
+        ]);
 
         for (const k of allKeys) {
             if ((orderState[k]?.quantity ?? 0) !== (savedByKey[k] ?? 0)) {
-return true;
-}
+                return true;
+            }
         }
 
         return false;
@@ -226,16 +309,31 @@ return true;
     // Saving is still safe if the order changed meanwhile: the server rejects a
     // stale orderVersion instead of overwriting.
     useLiveReload({
-        only: ['table', 'orderLines', 'queueItems', 'activeSales', 'orderVersion'],
+        only: [
+            'table',
+            'orderLines',
+            'queueItems',
+            'activeSales',
+            'orderVersion',
+        ],
         intervalMs: 15_000,
-        enabled: !isDirty && !autoSubmitting && !addProductsOpen && !addPaymentOpen,
+        enabled:
+            !isDirty && !autoSubmitting && !addProductsOpen && !addPaymentOpen,
     });
 
-    const currentLines = Object.values(orderState).filter((l) => l.quantity > 0);
+    const currentLines = Object.values(orderState).filter(
+        (l) => l.quantity > 0,
+    );
     // Money is summed in integer cents: in floating point 1.10 + 2.20 > 3.30,
     // which left a fully paid table unable to close.
-    const productCents = currentLines.reduce((sum, l) => sum + Math.round(l.price * 100) * l.quantity, 0);
-    const paymentCents = table.payments.reduce((sum, p) => sum + Math.round(Number(p.amount) * 100), 0);
+    const productCents = currentLines.reduce(
+        (sum, l) => sum + Math.round(l.price * 100) * l.quantity,
+        0,
+    );
+    const paymentCents = table.payments.reduce(
+        (sum, p) => sum + Math.round(Number(p.amount) * 100),
+        0,
+    );
     const productTotal = productCents / 100;
     const paymentTotal = paymentCents / 100;
     const remaining = (productCents - paymentCents) / 100;
@@ -268,15 +366,21 @@ return true;
                         </Link>
                     </Button>
                     <div>
-                        <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">{table.title}</h1>
-                        <p className="mt-0.5 text-sm text-muted-foreground">{t('tables.manage_products')}</p>
+                        <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">
+                            {table.title}
+                        </h1>
+                        <p className="mt-0.5 text-sm text-muted-foreground">
+                            {t('tables.manage_products')}
+                        </p>
                     </div>
                 </div>
 
                 {/* ── Queue items section ── */}
                 {queueItems.length > 0 && (
                     <div className="space-y-3">
-                        <p className="text-sm font-semibold">{t('queues.items_title')}</p>
+                        <p className="text-sm font-semibold">
+                            {t('queues.items_title')}
+                        </p>
                         <div className="overflow-hidden rounded-xl border border-border">
                             {queueItems.map((item, idx) => (
                                 <div
@@ -288,7 +392,13 @@ return true;
                                 >
                                     <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
                                         {item.product.picture_url ? (
-                                            <img loading="lazy" decoding="async" src={item.product.picture_url} alt={item.product.name} className="h-full w-full object-cover" />
+                                            <img
+                                                loading="lazy"
+                                                decoding="async"
+                                                src={item.product.picture_url}
+                                                alt={item.product.name}
+                                                className="h-full w-full object-cover"
+                                            />
                                         ) : (
                                             <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                                                 <ImageOff className="h-3.5 w-3.5 opacity-40" />
@@ -296,25 +406,52 @@ return true;
                                         )}
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        <p className="truncate text-sm font-medium">{item.product.name}</p>
+                                        <p className="truncate text-sm font-medium">
+                                            {item.product.name}
+                                        </p>
                                         <p className="text-xs text-muted-foreground">
-                                            {item.queue ? `${item.queue.name} · ` : ''}x{item.quantity} · {fmt(item.price)}
+                                            {item.queue
+                                                ? `${item.queue.name} · `
+                                                : ''}
+                                            x{item.quantity} · {fmt(item.price)}
                                         </p>
                                     </div>
-                                    {item.status === 'pending' && item.queue_id !== null ? (
-                                        <Form {...QueueItemController.markDone.form({ queueItem: item.id })}>
+                                    {item.status === 'pending' &&
+                                    item.queue_id !== null ? (
+                                        <Form
+                                            {...QueueItemController.markDone.form(
+                                                { queueItem: item.id },
+                                            )}
+                                        >
                                             {({ processing }) => (
-                                                <Button type="submit" size="sm" variant="outline" disabled={processing} className="shrink-0">
+                                                <Button
+                                                    type="submit"
+                                                    size="sm"
+                                                    variant="outline"
+                                                    disabled={processing}
+                                                    className="shrink-0"
+                                                >
                                                     <ConciergeBell className="mr-1.5 h-3.5 w-3.5" />
                                                     {t('queues.item_mark_done')}
                                                 </Button>
                                             )}
                                         </Form>
                                     ) : item.status !== 'delivered' ? (
-                                        <Form {...QueueItemController.markDelivered.form({ queueItem: item.id })}>
+                                        <Form
+                                            {...QueueItemController.markDelivered.form(
+                                                { queueItem: item.id },
+                                            )}
+                                        >
                                             {({ processing }) => (
-                                                <Button type="submit" size="sm" disabled={processing} className="shrink-0">
-                                                    {t('queues.item_mark_delivered')}
+                                                <Button
+                                                    type="submit"
+                                                    size="sm"
+                                                    disabled={processing}
+                                                    className="shrink-0"
+                                                >
+                                                    {t(
+                                                        'queues.item_mark_delivered',
+                                                    )}
                                                 </Button>
                                             )}
                                         </Form>
@@ -326,151 +463,255 @@ return true;
                 )}
 
                 <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2">
-
-                {/* ── Products form ── */}
-                <div className="space-y-3">
-                <p className="text-sm font-semibold">{t('products.title')}</p>
-                <div className="space-y-3">
-                    {currentLines.length > 0 ? (
-                        <div className="overflow-hidden rounded-xl border border-border">
-                            {currentLines.map((line, idx) => {
-                                const product = products.find((p) => p.id === line.productId);
-                                const suffix = t(`products.price_suffix.${product?.price_type ?? 'unit'}`);
-                                const key = lineKey(line.productId, line.price);
-
-                                return (
-                                    <div
-                                        key={key}
-                                        className={[
-                                            'flex items-center gap-3 px-4 py-3',
-                                            idx > 0 ? 'border-t border-border' : '',
-                                        ].join(' ')}
-                                    >
-                                        <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
-                                            {product?.picture_url ? (
-                                                <img loading="lazy" decoding="async" src={product.picture_url} alt={product.name} className="h-full w-full object-cover" />
-                                            ) : (
-                                                <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                                                    <ImageOff className="h-3.5 w-3.5 opacity-40" />
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                            <p className="truncate text-sm font-medium">{product?.name ?? '—'}</p>
-                                            <p className="text-xs text-muted-foreground">{fmt(line.price)} / {suffix}</p>
-                                        </div>
-                                        <p className="w-20 shrink-0 text-right text-sm font-semibold tabular-nums">
-                                            {fmt(line.price * line.quantity)}
-                                        </p>
-                                        <div className="flex shrink-0 items-center gap-1">
-                                            <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => adjust(key, -1)}>
-                                                <Minus className="h-3 w-3" />
-                                            </Button>
-                                            <span className="w-6 text-center text-sm tabular-nums">{line.quantity}</span>
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="icon"
-                                                className="h-7 w-7"
-                                                onClick={() => {
-                                                    const currentPrice = effectivePriceFor(line.productId);
-
-                                                    if (currentPrice !== line.price) {
-                                                        // Redirect the addition to the current-price line.
-                                                        const targetKey = lineKey(line.productId, currentPrice);
-                                                        setOrderState((prev) => ({
-                                                            ...prev,
-                                                            [targetKey]: {
-                                                                productId: line.productId,
-                                                                price: currentPrice,
-                                                                quantity: (prev[targetKey]?.quantity ?? 0) + 1,
-                                                            },
-                                                        }));
-                                                    } else {
-                                                        adjust(key, +1);
-                                                    }
-                                                }}
-                                            >
-                                                <Plus className="h-3 w-3" />
-                                            </Button>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    ) : (
-                        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border py-8 text-muted-foreground">
-                            <ShoppingCart className="h-7 w-7 opacity-30" />
-                            <p className="text-sm">{t('tables.order_empty')}</p>
-                        </div>
-                    )}
-
-                    <Button type="button" variant="outline" className="w-full" onClick={() => setAddProductsOpen(true)}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        {t('tables.add_products')}
-                    </Button>
-
-                    <div className="flex items-center justify-between rounded-xl border border-border px-5 py-3">
-                        <span className="text-sm text-muted-foreground">{t('tables.order_total')}</span>
-                        <span className="text-lg font-bold tabular-nums">{currentLines.length > 0 ? fmt(productTotal) : '—'}</span>
-                    </div>
-
-                    <Button type="button" onClick={handleSaveOrder} disabled={!isDirty || autoSubmitting} variant="outline" className="w-full">
-                        {t('tables.save_order')}
-                    </Button>
-                </div>
-                </div>
-
-                {/* ── Payments section ── */}
-                <div className="space-y-3">
-                    <p className="text-sm font-semibold">{t('tables.payments_title')}</p>
-
-                    {table.payments.length > 0 ? (
-                        <div className="overflow-hidden rounded-xl border border-border">
-                            {table.payments.map((payment, idx) => (
-                                <PaymentRow key={payment.id} payment={payment} idx={idx} />
-                            ))}
-                        </div>
-                    ) : (
-                        <p className="rounded-xl border border-dashed border-border px-5 py-4 text-sm text-muted-foreground">
-                            {t('tables.payments_empty')}
+                    {/* ── Products form ── */}
+                    <div className="space-y-3">
+                        <p className="text-sm font-semibold">
+                            {t('products.title')}
                         </p>
-                    )}
+                        <div className="space-y-3">
+                            {currentLines.length > 0 ? (
+                                <div className="overflow-hidden rounded-xl border border-border">
+                                    {currentLines.map((line, idx) => {
+                                        const product = products.find(
+                                            (p) => p.id === line.productId,
+                                        );
+                                        const suffix = t(
+                                            `products.price_suffix.${product?.price_type ?? 'unit'}`,
+                                        );
+                                        const key = lineKey(
+                                            line.productId,
+                                            line.price,
+                                        );
 
-                    {table.payments.length > 0 && (
-                        <div className="space-y-1 rounded-xl border border-border px-5 py-3 text-sm">
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">{t('tables.payment_total_paid')}</span>
-                                <span className="font-semibold tabular-nums text-green-600">{fmt(paymentTotal)}</span>
-                            </div>
-                            {remaining > 0 && (
-                                <div className="flex justify-between">
-                                    <span className="text-muted-foreground">{t('tables.payment_remaining')}</span>
-                                    <span className="font-semibold tabular-nums text-destructive">{fmt(remaining)}</span>
+                                        return (
+                                            <div
+                                                key={key}
+                                                className={[
+                                                    'flex items-center gap-3 px-4 py-3',
+                                                    idx > 0
+                                                        ? 'border-t border-border'
+                                                        : '',
+                                                ].join(' ')}
+                                            >
+                                                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
+                                                    {product?.picture_url ? (
+                                                        <img
+                                                            loading="lazy"
+                                                            decoding="async"
+                                                            src={
+                                                                product.picture_url
+                                                            }
+                                                            alt={product.name}
+                                                            className="h-full w-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                                                            <ImageOff className="h-3.5 w-3.5 opacity-40" />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="truncate text-sm font-medium">
+                                                        {product?.name ?? '—'}
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {fmt(line.price)} /{' '}
+                                                        {suffix}
+                                                    </p>
+                                                </div>
+                                                <p className="w-20 shrink-0 text-right text-sm font-semibold tabular-nums">
+                                                    {fmt(
+                                                        line.price *
+                                                            line.quantity,
+                                                    )}
+                                                </p>
+                                                <div className="flex shrink-0 items-center gap-1">
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="icon"
+                                                        className="h-7 w-7"
+                                                        onClick={() =>
+                                                            adjust(key, -1)
+                                                        }
+                                                    >
+                                                        <Minus className="h-3 w-3" />
+                                                    </Button>
+                                                    <span className="w-6 text-center text-sm tabular-nums">
+                                                        {line.quantity}
+                                                    </span>
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="icon"
+                                                        className="h-7 w-7"
+                                                        onClick={() => {
+                                                            const currentPrice =
+                                                                effectivePriceFor(
+                                                                    line.productId,
+                                                                );
+
+                                                            if (
+                                                                currentPrice !==
+                                                                line.price
+                                                            ) {
+                                                                // Redirect the addition to the current-price line.
+                                                                const targetKey =
+                                                                    lineKey(
+                                                                        line.productId,
+                                                                        currentPrice,
+                                                                    );
+                                                                setOrderState(
+                                                                    (prev) => ({
+                                                                        ...prev,
+                                                                        [targetKey]:
+                                                                            {
+                                                                                productId:
+                                                                                    line.productId,
+                                                                                price: currentPrice,
+                                                                                quantity:
+                                                                                    (prev[
+                                                                                        targetKey
+                                                                                    ]
+                                                                                        ?.quantity ??
+                                                                                        0) +
+                                                                                    1,
+                                                                            },
+                                                                    }),
+                                                                );
+                                                            } else {
+                                                                adjust(key, +1);
+                                                            }
+                                                        }}
+                                                    >
+                                                        <Plus className="h-3 w-3" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border py-8 text-muted-foreground">
+                                    <ShoppingCart className="h-7 w-7 opacity-30" />
+                                    <p className="text-sm">
+                                        {t('tables.order_empty')}
+                                    </p>
                                 </div>
                             )}
+
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="w-full"
+                                onClick={() => setAddProductsOpen(true)}
+                            >
+                                <Plus className="mr-2 h-4 w-4" />
+                                {t('tables.add_products')}
+                            </Button>
+
+                            <div className="flex items-center justify-between rounded-xl border border-border px-5 py-3">
+                                <span className="text-sm text-muted-foreground">
+                                    {t('tables.order_total')}
+                                </span>
+                                <span className="text-lg font-bold tabular-nums">
+                                    {currentLines.length > 0
+                                        ? fmt(productTotal)
+                                        : '—'}
+                                </span>
+                            </div>
+
+                            <Button
+                                type="button"
+                                onClick={handleSaveOrder}
+                                disabled={!isDirty || autoSubmitting}
+                                variant="outline"
+                                className="w-full"
+                            >
+                                {t('tables.save_order')}
+                            </Button>
                         </div>
-                    )}
+                    </div>
 
-                    <Button type="button" variant="outline" className="w-full" onClick={() => setAddPaymentOpen(true)}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        {t('tables.payment_add')}
-                    </Button>
+                    {/* ── Payments section ── */}
+                    <div className="space-y-3">
+                        <p className="text-sm font-semibold">
+                            {t('tables.payments_title')}
+                        </p>
+
+                        {table.payments.length > 0 ? (
+                            <div className="overflow-hidden rounded-xl border border-border">
+                                {table.payments.map((payment, idx) => (
+                                    <PaymentRow
+                                        key={payment.id}
+                                        payment={payment}
+                                        idx={idx}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="rounded-xl border border-dashed border-border px-5 py-4 text-sm text-muted-foreground">
+                                {t('tables.payments_empty')}
+                            </p>
+                        )}
+
+                        {table.payments.length > 0 && (
+                            <div className="space-y-1 rounded-xl border border-border px-5 py-3 text-sm">
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">
+                                        {t('tables.payment_total_paid')}
+                                    </span>
+                                    <span className="font-semibold text-green-600 tabular-nums">
+                                        {fmt(paymentTotal)}
+                                    </span>
+                                </div>
+                                {remaining > 0 && (
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">
+                                            {t('tables.payment_remaining')}
+                                        </span>
+                                        <span className="font-semibold text-destructive tabular-nums">
+                                            {fmt(remaining)}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => setAddPaymentOpen(true)}
+                        >
+                            <Plus className="mr-2 h-4 w-4" />
+                            {t('tables.payment_add')}
+                        </Button>
+                    </div>
                 </div>
-
-                </div>{/* ── end grid ── */}
+                {/* ── end grid ── */}
 
                 {/* ── Close table ── */}
                 <div className="space-y-2 border-t border-border pt-4">
                     {!canClose && productTotal > 0 && (
-                        <p className="text-xs text-muted-foreground">{t('tables.close_table_hint')}</p>
+                        <p className="text-xs text-muted-foreground">
+                            {t('tables.close_table_hint')}
+                        </p>
                     )}
                     <Form
                         {...TableController.close.form({ table: table.id })}
                         onBefore={() =>
                             confirm(
                                 queueItems.length > 0
-                                    ? t('tables.close_table_confirm_undelivered', { count: queueItems.reduce((n, i) => n + i.quantity, 0) })
+                                    ? t(
+                                          'tables.close_table_confirm_undelivered',
+                                          {
+                                              count: queueItems.reduce(
+                                                  (n, i) => n + i.quantity,
+                                                  0,
+                                              ),
+                                          },
+                                      )
                                     : t('tables.close_table_confirm'),
                             )
                         }
@@ -486,7 +727,6 @@ return true;
                             </Button>
                         )}
                     </Form>
-
                 </div>
             </div>
         </>
@@ -506,26 +746,42 @@ function PaymentRow({ payment, idx }: { payment: TablePayment; idx: number }) {
     const { t } = useTranslation();
 
     return (
-        <div className={['flex items-center gap-3 px-4 py-3', idx > 0 ? 'border-t border-border' : ''].join(' ')}>
+        <div
+            className={[
+                'flex items-center gap-3 px-4 py-3',
+                idx > 0 ? 'border-t border-border' : '',
+            ].join(' ')}
+        >
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
                 {PAYMENT_ICONS[payment.method]}
             </span>
             <div className="min-w-0 flex-1">
-                <span className="text-sm">{t(`tables.payment_methods.${payment.method}`)}</span>
+                <span className="text-sm">
+                    {t(`tables.payment_methods.${payment.method}`)}
+                </span>
                 {payment.registered_by && (
                     <p className="text-xs text-muted-foreground">
-                        {t('tables.payment_by', { name: payment.registered_by.name })}
+                        {t('tables.payment_by', {
+                            name: payment.registered_by.name,
+                        })}
                     </p>
                 )}
             </div>
-            <span className="text-sm font-semibold tabular-nums">{fmt(payment.amount)}</span>
+            <span className="text-sm font-semibold tabular-nums">
+                {fmt(payment.amount)}
+            </span>
         </div>
     );
 }
 
 // ─── Add payment dialog ───────────────────────────────────────────────────────
 
-function AddPaymentDialog({ open, table, remaining, onClose }: {
+function AddPaymentDialog({
+    open,
+    table,
+    remaining,
+    onClose,
+}: {
     open: boolean;
     table: TableData;
     remaining: number;
@@ -547,9 +803,13 @@ function AddPaymentDialog({ open, table, remaining, onClose }: {
         }
     }
 
-    const displayValue = cents > 0
-        ? (cents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-        : '';
+    const displayValue =
+        cents > 0
+            ? (cents / 100).toLocaleString('pt-BR', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+              })
+            : '';
 
     const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const digits = e.target.value.replace(/\D/g, '');
@@ -557,11 +817,14 @@ function AddPaymentDialog({ open, table, remaining, onClose }: {
     };
 
     return (
-        <Dialog open={open} onOpenChange={(o) => {
- if (!o) {
-onClose();
-} 
-}}>
+        <Dialog
+            open={open}
+            onOpenChange={(o) => {
+                if (!o) {
+                    onClose();
+                }
+            }}
+        >
             <DialogContent className="max-w-sm">
                 <DialogHeader>
                     <DialogTitle>{t('tables.payment_add')}</DialogTitle>
@@ -574,7 +837,9 @@ onClose();
                     {({ processing }) => (
                         <>
                             <div className="grid gap-2">
-                                <Label htmlFor="method">{t('tables.payment_method_label')}</Label>
+                                <Label htmlFor="method">
+                                    {t('tables.payment_method_label')}
+                                </Label>
                                 <Select name="method" defaultValue="cash">
                                     <SelectTrigger id="method">
                                         <SelectValue />
@@ -584,7 +849,9 @@ onClose();
                                             <SelectItem key={m} value={m}>
                                                 <span className="flex items-center gap-2">
                                                     {PAYMENT_ICONS[m]}
-                                                    {t(`tables.payment_methods.${m}`)}
+                                                    {t(
+                                                        `tables.payment_methods.${m}`,
+                                                    )}
                                                 </span>
                                             </SelectItem>
                                         ))}
@@ -593,9 +860,19 @@ onClose();
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="amount">{t('tables.payment_amount_label')}</Label>
-                                <input type="hidden" name="amount" value={(cents / 100).toFixed(2)} />
-                                <input type="hidden" name="request_key" value={requestKey} />
+                                <Label htmlFor="amount">
+                                    {t('tables.payment_amount_label')}
+                                </Label>
+                                <input
+                                    type="hidden"
+                                    name="amount"
+                                    value={(cents / 100).toFixed(2)}
+                                />
+                                <input
+                                    type="hidden"
+                                    name="request_key"
+                                    value={requestKey}
+                                />
                                 <Input
                                     id="amount"
                                     type="text"
@@ -608,10 +885,17 @@ onClose();
                             </div>
 
                             <DialogFooter>
-                                <Button type="button" variant="outline" onClick={onClose}>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={onClose}
+                                >
                                     {t('tables.cancel')}
                                 </Button>
-                                <Button type="submit" disabled={processing || cents === 0}>
+                                <Button
+                                    type="submit"
+                                    disabled={processing || cents === 0}
+                                >
                                     {t('tables.confirm_add')}
                                 </Button>
                             </DialogFooter>
@@ -629,16 +913,26 @@ type DialogProps = {
     open: boolean;
     products: AvailableProduct[];
     activeSales: ActiveSale[];
-    onConfirm: (items: { productId: number; price: number; quantity: number }[]) => void;
+    onConfirm: (
+        items: { productId: number; price: number; quantity: number }[],
+    ) => void;
     onClose: () => void;
 };
 
-function AddProductsDialog({ open, products, activeSales, onConfirm, onClose }: DialogProps) {
+function AddProductsDialog({
+    open,
+    products,
+    activeSales,
+    onConfirm,
+    onClose,
+}: DialogProps) {
     const { t } = useTranslation();
     const [search, setSearch] = useState('');
     const [pending, setPending] = useState<Record<number, number>>({});
 
-    const saleByProductId = Object.fromEntries(activeSales.map((s) => [s.product_id, s.sale_price]));
+    const saleByProductId = Object.fromEntries(
+        activeSales.map((s) => [s.product_id, s.sale_price]),
+    );
 
     const effectivePrice = (product: AvailableProduct): number =>
         saleByProductId[product.id] ?? product.price;
@@ -658,17 +952,18 @@ function AddProductsDialog({ open, products, activeSales, onConfirm, onClose }: 
             const updated = { ...prev };
 
             if (next === 0) {
-delete updated[id];
-} else {
-updated[id] = next;
-}
+                delete updated[id];
+            } else {
+                updated[id] = next;
+            }
 
             return updated;
         });
 
     const reset = () => {
- setSearch(''); setPending({}); 
-};
+        setSearch('');
+        setPending({});
+    };
 
     const handleConfirm = () => {
         const items = Object.entries(pending)
@@ -684,15 +979,19 @@ updated[id] = next;
     };
 
     const handleClose = () => {
- reset(); onClose(); 
-};
+        reset();
+        onClose();
+    };
 
     return (
-        <Dialog open={open} onOpenChange={(o) => {
- if (!o) {
-handleClose();
-} 
-}}>
+        <Dialog
+            open={open}
+            onOpenChange={(o) => {
+                if (!o) {
+                    handleClose();
+                }
+            }}
+        >
             <DialogContent className="flex max-h-[85vh] max-w-lg flex-col gap-4 p-0">
                 <DialogHeader className="px-6 pt-6">
                     <DialogTitle>{t('tables.add_products')}</DialogTitle>
@@ -700,7 +999,7 @@ handleClose();
 
                 <div className="px-6">
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
                             className="pl-9"
                             placeholder={t('tables.search_placeholder')}
@@ -713,74 +1012,129 @@ handleClose();
 
                 <div className="min-h-0 flex-1 overflow-y-auto border-y border-border">
                     {filtered.length === 0 ? (
-                        <p className="py-10 text-center text-sm text-muted-foreground">{t('tables.no_products_hint')}</p>
-                    ) : filtered.map((product, idx) => {
-                        const qty = pending[product.id] ?? 0;
-                        const suffix = t(`products.price_suffix.${product.price_type}`);
-                        const price = effectivePrice(product);
-                        const onSale = isOnSale(product);
+                        <p className="py-10 text-center text-sm text-muted-foreground">
+                            {t('tables.no_products_hint')}
+                        </p>
+                    ) : (
+                        filtered.map((product, idx) => {
+                            const qty = pending[product.id] ?? 0;
+                            const suffix = t(
+                                `products.price_suffix.${product.price_type}`,
+                            );
+                            const price = effectivePrice(product);
+                            const onSale = isOnSale(product);
 
-                        return (
-                            <div
-                                key={product.id}
-                                className={[
-                                    'flex items-center gap-3 px-6 py-3',
-                                    idx > 0 ? 'border-t border-border' : '',
-                                    qty > 0 ? 'bg-primary/5' : '',
-                                ].join(' ')}
-                            >
-                                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
-                                    {product.picture_url ? (
-                                        <img loading="lazy" decoding="async" src={product.picture_url} alt={product.name} className="h-full w-full object-cover" />
+                            return (
+                                <div
+                                    key={product.id}
+                                    className={[
+                                        'flex items-center gap-3 px-6 py-3',
+                                        idx > 0 ? 'border-t border-border' : '',
+                                        qty > 0 ? 'bg-primary/5' : '',
+                                    ].join(' ')}
+                                >
+                                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
+                                        {product.picture_url ? (
+                                            <img
+                                                loading="lazy"
+                                                decoding="async"
+                                                src={product.picture_url}
+                                                alt={product.name}
+                                                className="h-full w-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                                                <ImageOff className="h-3.5 w-3.5 opacity-40" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="truncate text-sm font-medium">
+                                            {product.name}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {onSale ? (
+                                                <>
+                                                    <span className="font-semibold text-green-600">
+                                                        {fmt(price)}
+                                                    </span>
+                                                    <span className="ml-1 line-through opacity-60">
+                                                        {fmt(product.price)}
+                                                    </span>
+                                                </>
+                                            ) : (
+                                                fmt(price)
+                                            )}
+                                            {' / '}
+                                            {suffix}
+                                            {product.queue_id && (
+                                                <span className="ml-1.5 rounded bg-muted px-1 py-0.5 text-[10px] font-medium">
+                                                    {product.queue?.name}
+                                                </span>
+                                            )}
+                                        </p>
+                                    </div>
+                                    {qty === 0 ? (
+                                        <Button
+                                            type="button"
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() =>
+                                                setPendingQty(product.id, 1)
+                                            }
+                                        >
+                                            <Plus className="mr-1 h-3.5 w-3.5" />
+                                            {t('tables.item_add')}
+                                        </Button>
                                     ) : (
-                                        <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                                            <ImageOff className="h-3.5 w-3.5 opacity-40" />
+                                        <div className="flex items-center gap-1">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="icon"
+                                                className="h-8 w-8"
+                                                onClick={() =>
+                                                    setPendingQty(
+                                                        product.id,
+                                                        -1,
+                                                    )
+                                                }
+                                            >
+                                                <Minus className="h-3.5 w-3.5" />
+                                            </Button>
+                                            <span className="w-6 text-center text-sm tabular-nums">
+                                                {qty}
+                                            </span>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="icon"
+                                                className="h-8 w-8"
+                                                onClick={() =>
+                                                    setPendingQty(
+                                                        product.id,
+                                                        +1,
+                                                    )
+                                                }
+                                            >
+                                                <Plus className="h-3.5 w-3.5" />
+                                            </Button>
                                         </div>
                                     )}
                                 </div>
-                                <div className="min-w-0 flex-1">
-                                    <p className="truncate text-sm font-medium">{product.name}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                        {onSale ? (
-                                            <>
-                                                <span className="font-semibold text-green-600">{fmt(price)}</span>
-                                                <span className="ml-1 line-through opacity-60">{fmt(product.price)}</span>
-                                            </>
-                                        ) : (
-                                            fmt(price)
-                                        )}
-                                        {' / '}{suffix}
-                                        {product.queue_id && (
-                                            <span className="ml-1.5 rounded bg-muted px-1 py-0.5 text-[10px] font-medium">
-                                                {product.queue?.name}
-                                            </span>
-                                        )}
-                                    </p>
-                                </div>
-                                {qty === 0 ? (
-                                    <Button type="button" size="sm" variant="outline" onClick={() => setPendingQty(product.id, 1)}>
-                                        <Plus className="mr-1 h-3.5 w-3.5" />
-                                        {t('tables.item_add')}
-                                    </Button>
-                                ) : (
-                                    <div className="flex items-center gap-1">
-                                        <Button type="button" variant="outline" size="icon" className="h-8 w-8" onClick={() => setPendingQty(product.id, -1)}>
-                                            <Minus className="h-3.5 w-3.5" />
-                                        </Button>
-                                        <span className="w-6 text-center text-sm tabular-nums">{qty}</span>
-                                        <Button type="button" variant="outline" size="icon" className="h-8 w-8" onClick={() => setPendingQty(product.id, +1)}>
-                                            <Plus className="h-3.5 w-3.5" />
-                                        </Button>
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })}
+                            );
+                        })
+                    )}
                 </div>
 
                 <DialogFooter className="px-6 pb-6">
-                    <Button variant="outline" onClick={handleClose}>{t('tables.cancel')}</Button>
-                    <Button onClick={handleConfirm} disabled={totalSelected === 0}>
+                    <Button variant="outline" onClick={handleClose}>
+                        {t('tables.cancel')}
+                    </Button>
+                    <Button
+                        onClick={handleConfirm}
+                        disabled={totalSelected === 0}
+                    >
                         {t('tables.confirm_add')}
                         {totalSelected > 0 && (
                             <span className="ml-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-white/20 text-xs tabular-nums">

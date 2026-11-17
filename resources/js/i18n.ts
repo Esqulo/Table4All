@@ -10,7 +10,10 @@ const SUPPORTED: Locale[] = ['pt_BR', 'en'];
 // localStorage can throw (old browsers, private mode, blocked storage).
 function readStoredLocale(): Locale | null {
     try {
-        const value = typeof window !== 'undefined' ? window.localStorage.getItem('locale') : null;
+        const value =
+            typeof window !== 'undefined'
+                ? window.localStorage.getItem('locale')
+                : null;
 
         return SUPPORTED.includes(value as Locale) ? (value as Locale) : null;
     } catch {

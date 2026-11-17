@@ -24,11 +24,11 @@ class DeliveryController extends Controller
             ->where(function ($q) {
                 // Kitchen items flagged as done by the cook
                 $q->where('status', QueueItemStatus::DONE->value)
-                  ->orWhere(function ($inner) {
-                      // Non-kitchen customer orders waiting for a waiter
-                      $inner->where('status', QueueItemStatus::PENDING->value)
+                    ->orWhere(function ($inner) {
+                        // Non-kitchen customer orders waiting for a waiter
+                        $inner->where('status', QueueItemStatus::PENDING->value)
                             ->whereNull('queue_id');
-                  });
+                    });
             })
             ->with([
                 'product:id,name,picture',
@@ -38,17 +38,17 @@ class DeliveryController extends Controller
             ->oldest('updated_at')
             ->get()
             ->map(fn ($item) => [
-                'id'          => $item->id,
-                'table_id'    => $item->restaurant_table_id,
+                'id' => $item->id,
+                'table_id' => $item->restaurant_table_id,
                 'table_title' => $item->restaurantTable->title,
-                'product'     => $item->product->name,
+                'product' => $item->product->name,
                 'picture_url' => $item->product->picture
                     ? Storage::disk('public')->url($item->product->picture)
                     : null,
-                'quantity'    => $item->quantity,
-                'price'       => (float) $item->price,
-                'status'      => $item->status->value,
-                'ordered_by'  => $item->orderedBy !== null ? ($item->orderedBy->name ?? $item->orderedBy->email) : null,
+                'quantity' => $item->quantity,
+                'price' => (float) $item->price,
+                'status' => $item->status->value,
+                'ordered_by' => $item->orderedBy !== null ? ($item->orderedBy->name ?? $item->orderedBy->email) : null,
                 'waiting_since' => $item->updated_at->toISOString(),
             ]);
 

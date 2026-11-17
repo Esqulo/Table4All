@@ -22,18 +22,26 @@ const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6] as const;
 
 // Parse a datetime-local string (local time) and return UTC ISO string.
 function localToUtcIso(localStr: string): string {
-    if (!localStr) return '';
+    if (!localStr) {
+        return '';
+    }
+
     const [datePart, timePart] = localStr.split('T');
     const [y, m, d] = datePart.split('-').map(Number);
     const [h, min] = timePart.split(':').map(Number);
+
     return new Date(y, m - 1, d, h, min).toISOString();
 }
 
 // Convert a UTC ISO string (from server) to the local datetime-local input format.
 function utcToDatetimeLocal(utcStr: string | null): string {
-    if (!utcStr) return '';
+    if (!utcStr) {
+        return '';
+    }
+
     const dt = new Date(utcStr); // parses UTC (Z suffix present via datetime cast)
     const pad = (n: number) => String(n).padStart(2, '0');
+
     return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
 }
 
@@ -56,16 +64,22 @@ function ProductCombobox({
     const searchRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        if (open) searchRef.current?.focus();
+        if (open) {
+            searchRef.current?.focus();
+        }
     }, [open]);
 
     useEffect(() => {
         const handler = (e: MouseEvent) => {
-            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+            if (
+                containerRef.current &&
+                !containerRef.current.contains(e.target as Node)
+            ) {
                 setOpen(false);
             }
         };
         document.addEventListener('mousedown', handler);
+
         return () => document.removeEventListener('mousedown', handler);
     }, []);
 
@@ -88,7 +102,7 @@ function ProductCombobox({
                 onClick={() => setOpen((o) => !o)}
                 className={[
                     'flex h-9 w-full items-center justify-between rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs transition-colors',
-                    'focus:outline-none focus:ring-1 focus:ring-ring',
+                    'focus:ring-1 focus:ring-ring focus:outline-none',
                     error ? 'border-destructive' : 'border-input',
                     'text-foreground',
                 ].join(' ')}
@@ -101,11 +115,13 @@ function ProductCombobox({
                 <div className="absolute z-50 mt-1 w-full rounded-md border border-border bg-popover shadow-md">
                     <div className="p-2">
                         <div className="relative">
-                            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                            <Search className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                             <Input
                                 ref={searchRef}
-                                className="pl-8 h-8 text-sm"
-                                placeholder={t('sales.product_search_placeholder')}
+                                className="h-8 pl-8 text-sm"
+                                placeholder={t(
+                                    'sales.product_search_placeholder',
+                                )}
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                             />
@@ -128,10 +144,14 @@ function ProductCombobox({
                                     <Check
                                         className={[
                                             'h-3.5 w-3.5 shrink-0',
-                                            selected.id === product.id ? 'opacity-100' : 'opacity-0',
+                                            selected.id === product.id
+                                                ? 'opacity-100'
+                                                : 'opacity-0',
                                         ].join(' ')}
                                     />
-                                    <span className="truncate">{product.name}</span>
+                                    <span className="truncate">
+                                        {product.name}
+                                    </span>
                                 </button>
                             ))
                         )}
@@ -144,7 +164,13 @@ function ProductCombobox({
 
 // ─── Day-of-week picker ───────────────────────────────────────────────────────
 
-function DayPicker({ defaultDays, error }: { defaultDays: number[]; error?: string }) {
+function DayPicker({
+    defaultDays,
+    error,
+}: {
+    defaultDays: number[];
+    error?: string;
+}) {
     const { t } = useTranslation();
     const [selected, setSelected] = useState<string[]>(defaultDays.map(String));
 
@@ -191,7 +217,9 @@ function DatetimeField({
     defaultUtc?: string | null;
     error?: string;
 }) {
-    const [local, setLocal] = useState(() => utcToDatetimeLocal(defaultUtc ?? null));
+    const [local, setLocal] = useState(() =>
+        utcToDatetimeLocal(defaultUtc ?? null),
+    );
 
     return (
         <div className="grid gap-2">
@@ -226,7 +254,9 @@ export default function EditSale({ sale, products }: Props) {
             <Head title={t('sales.breadcrumb_edit')} />
 
             <div className="mx-auto max-w-xl space-y-6 p-6">
-                <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">{t('sales.breadcrumb_edit')}</h1>
+                <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">
+                    {t('sales.breadcrumb_edit')}
+                </h1>
 
                 <Form
                     {...SaleController.update.form({ sale: sale.id })}
@@ -242,20 +272,30 @@ export default function EditSale({ sale, products }: Props) {
                                     type="single"
                                     variant="outline"
                                     value={saleType}
-                                    onValueChange={(v) => v && setSaleType(v as SaleType)}
+                                    onValueChange={(v) =>
+                                        v && setSaleType(v as SaleType)
+                                    }
                                     className="justify-start gap-1"
                                 >
-                                    <ToggleGroupItem value="periodic" className="text-sm px-4">
+                                    <ToggleGroupItem
+                                        value="periodic"
+                                        className="px-4 text-sm"
+                                    >
                                         {t('sales.type_periodic')}
                                     </ToggleGroupItem>
-                                    <ToggleGroupItem value="scheduled" className="text-sm px-4">
+                                    <ToggleGroupItem
+                                        value="scheduled"
+                                        className="px-4 text-sm"
+                                    >
                                         {t('sales.type_scheduled')}
                                     </ToggleGroupItem>
                                 </ToggleGroup>
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="product_id">{t('sales.product_label')}</Label>
+                                <Label htmlFor="product_id">
+                                    {t('sales.product_label')}
+                                </Label>
                                 <ProductCombobox
                                     products={products}
                                     defaultProduct={defaultProduct}
@@ -265,8 +305,14 @@ export default function EditSale({ sale, products }: Props) {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="sale_price">{t('sales.sale_price_label')}</Label>
-                                <CurrencyInput id="sale_price" name="sale_price" defaultValue={sale.sale_price} />
+                                <Label htmlFor="sale_price">
+                                    {t('sales.sale_price_label')}
+                                </Label>
+                                <CurrencyInput
+                                    id="sale_price"
+                                    name="sale_price"
+                                    defaultValue={sale.sale_price}
+                                />
                                 <InputError message={errors.sale_price} />
                             </div>
 
@@ -274,30 +320,51 @@ export default function EditSale({ sale, products }: Props) {
                                 <>
                                     <div className="grid gap-2">
                                         <Label>{t('sales.days_label')}</Label>
-                                        <DayPicker defaultDays={sale.days ?? []} error={errors.days} />
+                                        <DayPicker
+                                            defaultDays={sale.days ?? []}
+                                            error={errors.days}
+                                        />
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="grid gap-2">
-                                            <Label htmlFor="start_time">{t('sales.start_time_label')}</Label>
+                                            <Label htmlFor="start_time">
+                                                {t('sales.start_time_label')}
+                                            </Label>
                                             <Input
                                                 id="start_time"
                                                 name="start_time"
                                                 type="time"
-                                                defaultValue={sale.start_time?.slice(0, 5) ?? ''}
+                                                defaultValue={
+                                                    sale.start_time?.slice(
+                                                        0,
+                                                        5,
+                                                    ) ?? ''
+                                                }
                                             />
-                                            <InputError message={errors.start_time} />
+                                            <InputError
+                                                message={errors.start_time}
+                                            />
                                         </div>
 
                                         <div className="grid gap-2">
-                                            <Label htmlFor="end_time">{t('sales.end_time_label')}</Label>
+                                            <Label htmlFor="end_time">
+                                                {t('sales.end_time_label')}
+                                            </Label>
                                             <Input
                                                 id="end_time"
                                                 name="end_time"
                                                 type="time"
-                                                defaultValue={sale.end_time?.slice(0, 5) ?? ''}
+                                                defaultValue={
+                                                    sale.end_time?.slice(
+                                                        0,
+                                                        5,
+                                                    ) ?? ''
+                                                }
                                             />
-                                            <InputError message={errors.end_time} />
+                                            <InputError
+                                                message={errors.end_time}
+                                            />
                                         </div>
                                     </div>
                                 </>

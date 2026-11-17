@@ -38,20 +38,28 @@ export default function Waiters({ waiters, invitations }: Props) {
                     onSubmit={handleInvite}
                     className="rounded-lg border border-border bg-card p-5 shadow-xs"
                 >
-                    <p className="mb-4 text-sm font-medium">{t('waiters.invite_heading')}</p>
+                    <p className="mb-4 text-sm font-medium">
+                        {t('waiters.invite_heading')}
+                    </p>
                     <div className="flex gap-3">
                         <div className="flex-1 space-y-1">
-                            <Label htmlFor="waiter-email">{t('waiters.email_label')}</Label>
+                            <Label htmlFor="waiter-email">
+                                {t('waiters.email_label')}
+                            </Label>
                             <Input
                                 id="waiter-email"
                                 type="email"
                                 value={form.data.email}
-                                onChange={(e) => form.setData('email', e.target.value)}
+                                onChange={(e) =>
+                                    form.setData('email', e.target.value)
+                                }
                                 placeholder={t('waiters.email_placeholder')}
                                 autoComplete="off"
                             />
                             {form.errors.email && (
-                                <p className="text-xs text-destructive">{form.errors.email}</p>
+                                <p className="text-xs text-destructive">
+                                    {form.errors.email}
+                                </p>
                             )}
                         </div>
                         <div className="flex items-end">
@@ -61,13 +69,15 @@ export default function Waiters({ waiters, invitations }: Props) {
                             </Button>
                         </div>
                     </div>
-                    <p className="mt-2 text-xs text-muted-foreground">{t('waiters.invite_hint')}</p>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                        {t('waiters.invite_hint')}
+                    </p>
                 </form>
 
                 {/* pending invitations */}
                 {invitations.length > 0 && (
                     <section className="space-y-3">
-                        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                        <h2 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
                             {t('waiters.pending_heading')}
                         </h2>
                         <ul className="divide-y divide-border rounded-lg border border-border">
@@ -76,15 +86,19 @@ export default function Waiters({ waiters, invitations }: Props) {
                                     key={inv.id}
                                     className="flex items-center justify-between gap-3 px-4 py-3"
                                 >
-                                    <div className="flex items-center gap-3 min-w-0">
+                                    <div className="flex min-w-0 items-center gap-3">
                                         <Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
                                         <span className="truncate text-sm text-muted-foreground">
                                             {inv.email}
                                         </span>
                                     </div>
                                     <Form
-                                        {...WaiterController.cancelInvitation.form({ invitation: inv.id })}
-                                        onBefore={() => confirm(t('waiters.cancel_confirm'))}
+                                        {...WaiterController.cancelInvitation.form(
+                                            { invitation: inv.id },
+                                        )}
+                                        onBefore={() =>
+                                            confirm(t('waiters.cancel_confirm'))
+                                        }
                                     >
                                         {({ processing }) => (
                                             <Button
@@ -106,7 +120,7 @@ export default function Waiters({ waiters, invitations }: Props) {
 
                 {/* active waiters */}
                 <section className="space-y-3">
-                    <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                    <h2 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
                         {t('waiters.active_heading')}
                     </h2>
                     {waiters.length === 0 ? (
@@ -121,14 +135,20 @@ export default function Waiters({ waiters, invitations }: Props) {
                                     className="flex items-center justify-between gap-3 px-4 py-3"
                                 >
                                     <div className="min-w-0">
-                                        <p className="truncate text-sm font-medium">{waiter.name}</p>
+                                        <p className="truncate text-sm font-medium">
+                                            {waiter.name}
+                                        </p>
                                         <p className="truncate text-xs text-muted-foreground">
                                             {waiter.email}
                                         </p>
                                     </div>
                                     <Form
-                                        {...WaiterController.destroy.form({ waiter: waiter.id })}
-                                        onBefore={() => confirm(t('waiters.delete_confirm'))}
+                                        {...WaiterController.destroy.form({
+                                            waiter: waiter.id,
+                                        })}
+                                        onBefore={() =>
+                                            confirm(t('waiters.delete_confirm'))
+                                        }
                                     >
                                         {({ processing }) => (
                                             <Button

@@ -35,7 +35,7 @@ class QueueController extends Controller
     {
         RestaurantQueue::create([
             'user_id' => $request->user()->id,
-            'name'    => $request->validated('name'),
+            'name' => $request->validated('name'),
         ]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'queues.msg_created']);

@@ -24,14 +24,17 @@ export default function MenuShow({ menu, categories, products }: Props) {
     const tabs = [
         { id: ALL_ID, name: 'Todos' },
         ...categories,
-        ...(products.some((p) => p.category_id === null) ? [{ id: -1, name: 'Outros' }] : []),
+        ...(products.some((p) => p.category_id === null)
+            ? [{ id: -1, name: 'Outros' }]
+            : []),
     ];
 
-    const filtered = activeCategory === ALL_ID
-        ? products
-        : activeCategory === -1
-          ? products.filter((p) => p.category_id === null)
-          : products.filter((p) => p.category_id === activeCategory);
+    const filtered =
+        activeCategory === ALL_ID
+            ? products
+            : activeCategory === -1
+              ? products.filter((p) => p.category_id === null)
+              : products.filter((p) => p.category_id === activeCategory);
 
     return (
         <>
@@ -39,37 +42,45 @@ export default function MenuShow({ menu, categories, products }: Props) {
 
             <div className="min-h-screen bg-background">
                 {/* Header */}
-                <div className="bg-card border-b border-border px-4 pt-8 pb-4">
-                    <div className="mx-auto max-w-2xl flex items-center gap-3">
+                <div className="border-b border-border bg-card px-4 pt-8 pb-4">
+                    <div className="mx-auto flex max-w-2xl items-center gap-3">
                         {menu.user.avatar_url ? (
-                            <img loading="lazy" decoding="async"
+                            <img
+                                loading="lazy"
+                                decoding="async"
                                 src={menu.user.avatar_url}
                                 alt={menu.user.name}
-                                className="h-12 w-12 rounded-full object-cover shrink-0"
+                                className="h-12 w-12 shrink-0 rounded-full object-cover"
                             />
                         ) : (
-                            <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center shrink-0">
+                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-muted">
                                 <span className="text-lg font-bold text-muted-foreground">
                                     {menu.user.name[0].toUpperCase()}
                                 </span>
                             </div>
                         )}
                         <div>
-                            <p className="text-xs text-muted-foreground">{menu.user.name}</p>
-                            <h1 className="text-lg font-bold leading-tight">{menu.name}</h1>
+                            <p className="text-xs text-muted-foreground">
+                                {menu.user.name}
+                            </p>
+                            <h1 className="text-lg leading-tight font-bold">
+                                {menu.name}
+                            </h1>
                         </div>
                     </div>
                 </div>
 
                 {/* Category tabs */}
                 {tabs.length > 1 && (
-                    <div className="sticky top-0 z-10 bg-background border-b border-border">
+                    <div className="sticky top-0 z-10 border-b border-border bg-background">
                         <div className="mx-auto max-w-2xl">
-                            <div className="flex overflow-x-auto scrollbar-none gap-1 px-4 py-2">
+                            <div className="flex scrollbar-none gap-1 overflow-x-auto px-4 py-2">
                                 {tabs.map((tab) => (
                                     <button
                                         key={tab.id}
-                                        onClick={() => setActiveCategory(tab.id)}
+                                        onClick={() =>
+                                            setActiveCategory(tab.id)
+                                        }
                                         className={[
                                             'shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-colors',
                                             activeCategory === tab.id
@@ -86,9 +97,9 @@ export default function MenuShow({ menu, categories, products }: Props) {
                 )}
 
                 {/* Products */}
-                <div className="mx-auto max-w-2xl px-4 py-6 space-y-3">
+                <div className="mx-auto max-w-2xl space-y-3 px-4 py-6">
                     {filtered.length === 0 ? (
-                        <p className="text-center text-sm text-muted-foreground py-16">
+                        <p className="py-16 text-center text-sm text-muted-foreground">
                             Nenhum produto disponível.
                         </p>
                     ) : (
@@ -117,7 +128,9 @@ function ProductCard({ product }: { product: Product }) {
         <div className="flex gap-3 rounded-xl border border-border bg-card p-3">
             <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-muted">
                 {product.picture_url ? (
-                    <img loading="lazy" decoding="async"
+                    <img
+                        loading="lazy"
+                        decoding="async"
                         src={product.picture_url}
                         alt={product.name}
                         className="h-full w-full object-cover"
@@ -129,11 +142,11 @@ function ProductCard({ product }: { product: Product }) {
                 )}
             </div>
 
-            <div className="flex flex-1 flex-col justify-between min-w-0">
+            <div className="flex min-w-0 flex-1 flex-col justify-between">
                 <div>
-                    <p className="font-medium leading-snug">{product.name}</p>
+                    <p className="leading-snug font-medium">{product.name}</p>
                     {product.description && (
-                        <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
+                        <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
                             {product.description}
                         </p>
                     )}

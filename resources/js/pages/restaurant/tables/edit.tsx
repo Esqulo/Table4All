@@ -19,7 +19,9 @@ export default function EditTable({ table }: Props) {
             <Head title={t('tables.breadcrumb_edit')} />
 
             <div className="mx-auto max-w-md space-y-6 p-6">
-                <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">{t('tables.breadcrumb_edit')}</h1>
+                <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">
+                    {t('tables.breadcrumb_edit')}
+                </h1>
 
                 <Form
                     {...TableController.update.form({ table: table.id })}
@@ -28,7 +30,9 @@ export default function EditTable({ table }: Props) {
                     {({ processing, errors }) => (
                         <>
                             <div className="grid gap-2">
-                                <Label htmlFor="title">{t('tables.title_label')}</Label>
+                                <Label htmlFor="title">
+                                    {t('tables.title_label')}
+                                </Label>
                                 <Input
                                     id="title"
                                     name="title"

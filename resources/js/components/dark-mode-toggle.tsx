@@ -1,7 +1,7 @@
 import { Moon, Sun } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useAppearance } from '@/hooks/use-appearance';
 import { Button } from '@/components/ui/button';
+import { useAppearance } from '@/hooks/use-appearance';
 
 export function DarkModeToggle() {
     const { t } = useTranslation();
@@ -13,9 +13,17 @@ export function DarkModeToggle() {
             variant="ghost"
             size="icon"
             onClick={() => updateAppearance(isDark ? 'light' : 'dark')}
-            aria-label={isDark ? t('appearance.switch_to_light') : t('appearance.switch_to_dark')}
+            aria-label={
+                isDark
+                    ? t('appearance.switch_to_light')
+                    : t('appearance.switch_to_dark')
+            }
         >
-            {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            {isDark ? (
+                <Sun className="h-4 w-4" />
+            ) : (
+                <Moon className="h-4 w-4" />
+            )}
         </Button>
     );
 }

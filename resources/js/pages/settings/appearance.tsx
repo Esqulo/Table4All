@@ -25,7 +25,10 @@ export default function Appearance() {
                 <AppearanceTabs />
 
                 <div className="pt-2">
-                    <Heading variant="small" title={t('language.toggle_label')} />
+                    <Heading
+                        variant="small"
+                        title={t('language.toggle_label')}
+                    />
                     <div className="mt-3 inline-flex gap-1 rounded-full bg-muted p-1">
                         {(['pt_BR', 'en'] as const).map((locale) => (
                             <button

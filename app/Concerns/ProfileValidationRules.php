@@ -66,7 +66,6 @@ trait ProfileValidationRules
             $digits = substr($digits, 2);
         }
 
-        return '+55' . $digits;
+        return '+55'.$digits;
     }
-
 }

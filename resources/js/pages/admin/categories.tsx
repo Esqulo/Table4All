@@ -27,7 +27,9 @@ export default function Categories({ categories }: Props) {
                     {...CategoryController.store.form()}
                     className="flex gap-2"
                     onSuccess={() => {
-                        if (inputRef.current) inputRef.current.value = '';
+                        if (inputRef.current) {
+                            inputRef.current.value = '';
+                        }
                     }}
                 >
                     {({ processing }) => (
@@ -47,17 +49,26 @@ export default function Categories({ categories }: Props) {
                 </Form>
 
                 {categories.length === 0 ? (
-                    <p className="text-center text-sm text-muted-foreground py-12">
+                    <p className="py-12 text-center text-sm text-muted-foreground">
                         {t('categories.empty')}
                     </p>
                 ) : (
                     <ul className="divide-y divide-border rounded-lg border border-border">
                         {categories.map((category) => (
-                            <li key={category.id} className="flex items-center justify-between px-4 py-3">
-                                <span className="text-sm font-medium">{category.name}</span>
+                            <li
+                                key={category.id}
+                                className="flex items-center justify-between px-4 py-3"
+                            >
+                                <span className="text-sm font-medium">
+                                    {category.name}
+                                </span>
                                 <Form
-                                    {...CategoryController.destroy.form({ category: category.id })}
-                                    onBefore={() => confirm(t('categories.delete_confirm'))}
+                                    {...CategoryController.destroy.form({
+                                        category: category.id,
+                                    })}
+                                    onBefore={() =>
+                                        confirm(t('categories.delete_confirm'))
+                                    }
                                 >
                                     {({ processing }) => (
                                         <Button

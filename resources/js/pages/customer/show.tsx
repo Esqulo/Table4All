@@ -39,7 +39,13 @@ type OrderLine = {
     ordered_by: string | null;
 };
 
-type PreparingItem = { name: string; price: number; quantity: number; ordered_by: string | null; has_queue: boolean };
+type PreparingItem = {
+    name: string;
+    price: number;
+    quantity: number;
+    ordered_by: string | null;
+    has_queue: boolean;
+};
 
 type Props = {
     code: string;
@@ -51,7 +57,15 @@ type Props = {
     remaining: number;
 };
 
-export default function CustomerShow({ code, menu, products, preparing, total, paid, remaining }: Props) {
+export default function CustomerShow({
+    code,
+    menu,
+    products,
+    preparing,
+    total,
+    paid,
+    remaining,
+}: Props) {
     const { t, i18n } = useTranslation();
     const locale = i18n.language === 'pt_BR' ? 'pt-BR' : 'en-US';
     const [people, setPeople] = useState(1);
@@ -77,17 +91,23 @@ export default function CustomerShow({ code, menu, products, preparing, total, p
         const seen = new Set<number>();
 
         return menu
-            .filter((item) => item.category_id !== null && item.category_name !== null)
+            .filter(
+                (item) =>
+                    item.category_id !== null && item.category_name !== null,
+            )
             .filter((item) => {
                 if (seen.has(item.category_id!)) {
-return false;
-}
+                    return false;
+                }
 
                 seen.add(item.category_id!);
 
                 return true;
             })
-            .map((item) => ({ id: item.category_id!, name: item.category_name! }));
+            .map((item) => ({
+                id: item.category_id!,
+                name: item.category_name!,
+            }));
     }, [menu]);
 
     const filteredMenu = useMemo(() => {
@@ -146,7 +166,11 @@ return false;
     );
 
     const cartTotal = useMemo(
-        () => cartLines.reduce((sum, { item, quantity }) => sum + item.price * quantity, 0),
+        () =>
+            cartLines.reduce(
+                (sum, { item, quantity }) => sum + item.price * quantity,
+                0,
+            ),
         [cartLines],
     );
 
@@ -160,8 +184,8 @@ return false;
 
     function submitOrder() {
         if (totalCartItems === 0 || submitting) {
-return;
-}
+            return;
+        }
 
         setSubmitting(true);
         router.post(
@@ -187,13 +211,17 @@ return;
 
             <div className="mx-auto max-w-5xl px-4 py-6">
                 <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-
                     {/* Left — preparing + items on table */}
                     <div className="flex-1 space-y-6">
-
                         <div className="flex items-center justify-between">
-                            <p className="text-sm font-semibold">{t('join_table.my_order')}</p>
-                            <Button onClick={() => setMenuOpen(true)} size="sm" className="gap-1.5">
+                            <p className="text-sm font-semibold">
+                                {t('join_table.my_order')}
+                            </p>
+                            <Button
+                                onClick={() => setMenuOpen(true)}
+                                size="sm"
+                                className="gap-1.5"
+                            >
                                 <ShoppingBag className="h-3.5 w-3.5" />
                                 {t('join_table.order_button')}
                             </Button>
@@ -220,12 +248,16 @@ return;
 
                         {products.length > 0 && (
                             <div className="space-y-2">
-                                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                                     {t('join_table.products_title')}
                                 </p>
                                 <div className="space-y-2">
                                     {products.map((line, i) => (
-                                        <OrderCard key={i} line={line} fmt={fmt} />
+                                        <OrderCard
+                                            key={i}
+                                            line={line}
+                                            fmt={fmt}
+                                        />
                                     ))}
                                 </div>
                             </div>
@@ -236,48 +268,72 @@ return;
                                 {t('join_table.no_products')}
                             </p>
                         )}
-
                     </div>
 
                     {/* Right — payment summary */}
                     <div className="flex w-full flex-col gap-4 lg:w-72 lg:shrink-0">
-
                         <div className="space-y-2">
-                            <p className="text-sm font-semibold">{t('join_table.summary_title')}</p>
-                            <div className="rounded-xl border border-border bg-card p-4 space-y-1.5 text-sm">
+                            <p className="text-sm font-semibold">
+                                {t('join_table.summary_title')}
+                            </p>
+                            <div className="space-y-1.5 rounded-xl border border-border bg-card p-4 text-sm">
                                 <div className="flex justify-between">
-                                    <span className="text-muted-foreground">{t('join_table.total')}</span>
-                                    <span className="font-medium tabular-nums">{fmt(total)}</span>
+                                    <span className="text-muted-foreground">
+                                        {t('join_table.total')}
+                                    </span>
+                                    <span className="font-medium tabular-nums">
+                                        {fmt(total)}
+                                    </span>
                                 </div>
                                 {paid > 0 && (
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground">{t('join_table.paid')}</span>
-                                        <span className="font-medium tabular-nums text-green-600">{fmt(paid)}</span>
+                                        <span className="text-muted-foreground">
+                                            {t('join_table.paid')}
+                                        </span>
+                                        <span className="font-medium text-green-600 tabular-nums">
+                                            {fmt(paid)}
+                                        </span>
                                     </div>
                                 )}
                                 <div className="flex justify-between border-t border-border pt-1.5">
-                                    <span className="font-semibold">{t('join_table.remaining')}</span>
-                                    <span className="font-bold tabular-nums text-destructive">{fmt(remaining)}</span>
+                                    <span className="font-semibold">
+                                        {t('join_table.remaining')}
+                                    </span>
+                                    <span className="font-bold text-destructive tabular-nums">
+                                        {fmt(remaining)}
+                                    </span>
                                 </div>
                             </div>
                         </div>
 
                         {remaining > 0 && (
-                            <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-                                <p className="text-sm font-semibold">{t('join_table.split_title')}</p>
+                            <div className="space-y-3 rounded-xl border border-border bg-card p-4">
+                                <p className="text-sm font-semibold">
+                                    {t('join_table.split_title')}
+                                </p>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm text-muted-foreground">{t('join_table.people')}</span>
+                                    <span className="text-sm text-muted-foreground">
+                                        {t('join_table.people')}
+                                    </span>
                                     <div className="flex items-center gap-3">
                                         <button
-                                            onClick={() => setPeople((n) => Math.max(1, n - 1))}
+                                            onClick={() =>
+                                                setPeople((n) =>
+                                                    Math.max(1, n - 1),
+                                                )
+                                            }
                                             disabled={people <= 1}
                                             className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-muted text-muted-foreground transition-colors hover:bg-muted/80 disabled:opacity-40"
                                         >
                                             <Minus className="h-3.5 w-3.5" />
                                         </button>
-                                        <span className="w-6 text-center text-lg font-bold tabular-nums">{people}</span>
+                                        <span className="w-6 text-center text-lg font-bold tabular-nums">
+                                            {people}
+                                        </span>
                                         <button
-                                            onClick={() => setPeople((n) => n + 1)}
+                                            onClick={() =>
+                                                setPeople((n) => n + 1)
+                                            }
                                             className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-muted text-muted-foreground transition-colors hover:bg-muted/80"
                                         >
                                             <Plus className="h-3.5 w-3.5" />
@@ -285,28 +341,36 @@ return;
                                     </div>
                                 </div>
                                 <div className="flex items-baseline justify-between rounded-lg bg-muted px-3 py-2">
-                                    <span className="text-sm text-muted-foreground">{t('join_table.each_pays')}</span>
-                                    <span className="text-xl font-bold tabular-nums">{fmt(perPerson)}</span>
+                                    <span className="text-sm text-muted-foreground">
+                                        {t('join_table.each_pays')}
+                                    </span>
+                                    <span className="text-xl font-bold tabular-nums">
+                                        {fmt(perPerson)}
+                                    </span>
                                 </div>
                             </div>
                         )}
-
                     </div>
                 </div>
             </div>
 
             {/* Order modal */}
-            <Dialog open={menuOpen} onOpenChange={(open) => {
- if (!open) {
-closeModal();
-} else {
-setMenuOpen(true);
-} 
-}}>
+            <Dialog
+                open={menuOpen}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        closeModal();
+                    } else {
+                        setMenuOpen(true);
+                    }
+                }}
+            >
                 <DialogContent className="flex max-h-[85vh] flex-col gap-0 p-0 sm:max-w-lg">
                     <DialogHeader className="shrink-0 border-b border-border px-6 py-4">
                         <DialogTitle>
-                            {step === 'menu' ? t('join_table.menu_title') : t('join_table.review_title')}
+                            {step === 'menu'
+                                ? t('join_table.menu_title')
+                                : t('join_table.review_title')}
                         </DialogTitle>
                     </DialogHeader>
 
@@ -315,19 +379,25 @@ setMenuOpen(true);
                             {/* Search + category filters */}
                             <div className="shrink-0 space-y-3 border-b border-border px-4 py-3">
                                 <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                     <Input
-                                        placeholder={t('join_table.search_placeholder')}
+                                        placeholder={t(
+                                            'join_table.search_placeholder',
+                                        )}
                                         value={search}
-                                        onChange={(e) => setSearch(e.target.value)}
+                                        onChange={(e) =>
+                                            setSearch(e.target.value)
+                                        }
                                         className="pl-9"
                                     />
                                 </div>
 
                                 {categories.length > 0 && (
-                                    <div className="flex gap-1.5 overflow-x-auto scrollbar-none pb-0.5">
+                                    <div className="flex scrollbar-none gap-1.5 overflow-x-auto pb-0.5">
                                         <button
-                                            onClick={() => setActiveCategory(null)}
+                                            onClick={() =>
+                                                setActiveCategory(null)
+                                            }
                                             className={cn(
                                                 'shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors',
                                                 activeCategory === null
@@ -340,7 +410,9 @@ setMenuOpen(true);
                                         {categories.map((cat) => (
                                             <button
                                                 key={cat.id}
-                                                onClick={() => setActiveCategory(cat.id)}
+                                                onClick={() =>
+                                                    setActiveCategory(cat.id)
+                                                }
                                                 className={cn(
                                                     'shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors',
                                                     activeCategory === cat.id
@@ -369,8 +441,12 @@ setMenuOpen(true);
                                                 item={item}
                                                 fmt={fmt}
                                                 quantity={cart[item.id] ?? 0}
-                                                onIncrement={() => increment(item.id)}
-                                                onDecrement={() => decrement(item.id)}
+                                                onIncrement={() =>
+                                                    increment(item.id)
+                                                }
+                                                onDecrement={() =>
+                                                    decrement(item.id)
+                                                }
                                             />
                                         ))}
                                     </div>
@@ -385,7 +461,7 @@ setMenuOpen(true);
                                         onClick={() => setStep('review')}
                                     >
                                         {t('join_table.next')}
-                                        <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary-foreground/20 px-1.5 text-xs font-bold tabular-nums text-primary-foreground">
+                                        <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary-foreground/20 px-1.5 text-xs font-bold text-primary-foreground tabular-nums">
                                             {totalCartItems}
                                         </span>
                                     </Button>
@@ -403,20 +479,28 @@ setMenuOpen(true);
                                             item={item}
                                             fmt={fmt}
                                             quantity={quantity}
-                                            onIncrement={() => increment(item.id)}
-                                            onDecrement={() => decrement(item.id)}
+                                            onIncrement={() =>
+                                                increment(item.id)
+                                            }
+                                            onDecrement={() =>
+                                                decrement(item.id)
+                                            }
                                         />
                                     ))}
                                 </div>
 
                                 <div className="flex items-baseline justify-between border-t border-border px-4 py-3">
-                                    <span className="text-sm font-semibold">{t('join_table.total')}</span>
-                                    <span className="text-lg font-bold tabular-nums">{fmt(cartTotal)}</span>
+                                    <span className="text-sm font-semibold">
+                                        {t('join_table.total')}
+                                    </span>
+                                    <span className="text-lg font-bold tabular-nums">
+                                        {fmt(cartTotal)}
+                                    </span>
                                 </div>
                             </div>
 
                             {/* Confirm footer */}
-                            <div className="shrink-0 grid grid-cols-2 gap-3 border-t border-border p-4">
+                            <div className="grid shrink-0 grid-cols-2 gap-3 border-t border-border p-4">
                                 <Button
                                     variant="outline"
                                     onClick={() => setStep('menu')}
@@ -442,10 +526,18 @@ setMenuOpen(true);
 }
 
 CustomerShow.layout = {
-    breadcrumbs: [{ title: 'join_table.title', href: JoinController.index.url() }],
+    breadcrumbs: [
+        { title: 'join_table.title', href: JoinController.index.url() },
+    ],
 };
 
-function OrderCard({ line, fmt }: { line: OrderLine; fmt: (n: number) => string }) {
+function OrderCard({
+    line,
+    fmt,
+}: {
+    line: OrderLine;
+    fmt: (n: number) => string;
+}) {
     const suffix: Record<string, string> = {
         unit: 'un.',
         kg: 'kg',
@@ -458,7 +550,13 @@ function OrderCard({ line, fmt }: { line: OrderLine; fmt: (n: number) => string 
         <div className="flex gap-3 rounded-xl border border-border bg-card p-3">
             <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-muted">
                 {line.picture_url ? (
-                    <img loading="lazy" decoding="async" src={line.picture_url} alt={line.name} className="h-full w-full object-cover" />
+                    <img
+                        loading="lazy"
+                        decoding="async"
+                        src={line.picture_url}
+                        alt={line.name}
+                        className="h-full w-full object-cover"
+                    />
                 ) : (
                     <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                         <ImageOff className="h-5 w-5 opacity-30" />
@@ -468,12 +566,16 @@ function OrderCard({ line, fmt }: { line: OrderLine; fmt: (n: number) => string 
 
             <div className="flex min-w-0 flex-1 flex-col justify-between">
                 <div>
-                    <p className="font-medium leading-snug">{line.name}</p>
+                    <p className="leading-snug font-medium">{line.name}</p>
                     {line.description && (
-                        <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">{line.description}</p>
+                        <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+                            {line.description}
+                        </p>
                     )}
                     {line.ordered_by && (
-                        <p className="mt-0.5 text-xs text-muted-foreground/70">{line.ordered_by}</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground/70">
+                            {line.ordered_by}
+                        </p>
                     )}
                 </div>
                 <div className="flex items-baseline justify-between">
@@ -483,7 +585,9 @@ function OrderCard({ line, fmt }: { line: OrderLine; fmt: (n: number) => string 
                             / {suffix[line.price_type] ?? line.price_type}
                         </span>
                     </p>
-                    <span className="text-xs text-muted-foreground">× {line.quantity}</span>
+                    <span className="text-xs text-muted-foreground">
+                        × {line.quantity}
+                    </span>
                 </div>
             </div>
         </div>
@@ -505,26 +609,26 @@ function PreparingSection({
 }) {
     const colors = {
         amber: {
-            dot:    'bg-amber-500',
-            ping:   'bg-amber-400',
-            label:  'text-amber-600 dark:text-amber-400',
+            dot: 'bg-amber-500',
+            ping: 'bg-amber-400',
+            label: 'text-amber-600 dark:text-amber-400',
             border: 'border-amber-200 dark:border-amber-900/50',
-            bg:     'bg-amber-50 dark:bg-amber-950/20',
+            bg: 'bg-amber-50 dark:bg-amber-950/20',
             divide: 'divide-amber-100 dark:divide-amber-900/40',
-            qty:    'text-amber-500',
-            by:     'text-amber-500/80',
-            price:  'text-amber-700 dark:text-amber-300',
+            qty: 'text-amber-500',
+            by: 'text-amber-500/80',
+            price: 'text-amber-700 dark:text-amber-300',
         },
         blue: {
-            dot:    'bg-blue-500',
-            ping:   'bg-blue-400',
-            label:  'text-blue-600 dark:text-blue-400',
+            dot: 'bg-blue-500',
+            ping: 'bg-blue-400',
+            label: 'text-blue-600 dark:text-blue-400',
             border: 'border-blue-200 dark:border-blue-900/50',
-            bg:     'bg-blue-50 dark:bg-blue-950/20',
+            bg: 'bg-blue-50 dark:bg-blue-950/20',
             divide: 'divide-blue-100 dark:divide-blue-900/40',
-            qty:    'text-blue-500',
-            by:     'text-blue-500/80',
-            price:  'text-blue-700 dark:text-blue-300',
+            qty: 'text-blue-500',
+            by: 'text-blue-500/80',
+            price: 'text-blue-700 dark:text-blue-300',
         },
     }[colorClass];
 
@@ -533,29 +637,48 @@ function PreparingSection({
             <div className="flex items-center gap-2">
                 <span className="relative flex h-2 w-2 shrink-0">
                     {pulse && (
-                        <span className={`absolute inline-flex h-full w-full animate-ping rounded-full ${colors.ping} opacity-75`} />
+                        <span
+                            className={`absolute inline-flex h-full w-full animate-ping rounded-full ${colors.ping} opacity-75`}
+                        />
                     )}
-                    <span className={`relative inline-flex h-2 w-2 rounded-full ${colors.dot}`} />
+                    <span
+                        className={`relative inline-flex h-2 w-2 rounded-full ${colors.dot}`}
+                    />
                 </span>
-                <p className={`text-xs font-semibold uppercase tracking-wide ${colors.label}`}>
+                <p
+                    className={`text-xs font-semibold tracking-wide uppercase ${colors.label}`}
+                >
                     {label}
                 </p>
             </div>
-            <div className={`divide-y ${colors.divide} rounded-xl border ${colors.border} ${colors.bg}`}>
+            <div
+                className={`divide-y ${colors.divide} rounded-xl border ${colors.border} ${colors.bg}`}
+            >
                 {items.map((item, i) => (
-                    <div key={i} className="flex items-center justify-between px-4 py-2.5 text-sm">
+                    <div
+                        key={i}
+                        className="flex items-center justify-between px-4 py-2.5 text-sm"
+                    >
                         <div>
                             <span>
                                 {item.name}
                                 {item.quantity > 1 && (
-                                    <span className={`ml-1 text-xs ${colors.qty}`}>×{item.quantity}</span>
+                                    <span
+                                        className={`ml-1 text-xs ${colors.qty}`}
+                                    >
+                                        ×{item.quantity}
+                                    </span>
                                 )}
                             </span>
                             {item.ordered_by && (
-                                <p className={`text-xs ${colors.by}`}>{item.ordered_by}</p>
+                                <p className={`text-xs ${colors.by}`}>
+                                    {item.ordered_by}
+                                </p>
                             )}
                         </div>
-                        <span className={`font-medium tabular-nums ${colors.price}`}>
+                        <span
+                            className={`font-medium tabular-nums ${colors.price}`}
+                        >
                             {fmt(item.price)}
                         </span>
                     </div>
@@ -582,7 +705,13 @@ function ReviewRow({
         <div className="flex items-center gap-3 px-4 py-3">
             <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted">
                 {item.picture_url ? (
-                    <img loading="lazy" decoding="async" src={item.picture_url} alt={item.name} className="h-full w-full object-cover" />
+                    <img
+                        loading="lazy"
+                        decoding="async"
+                        src={item.picture_url}
+                        alt={item.name}
+                        className="h-full w-full object-cover"
+                    />
                 ) : (
                     <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                         <ImageOff className="h-4 w-4 opacity-30" />
@@ -604,7 +733,9 @@ function ReviewRow({
                 >
                     <Minus className="h-3.5 w-3.5" />
                 </button>
-                <span className="w-5 text-center text-sm font-bold tabular-nums">{quantity}</span>
+                <span className="w-5 text-center text-sm font-bold tabular-nums">
+                    {quantity}
+                </span>
                 <button
                     onClick={onIncrement}
                     className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity hover:opacity-90 active:scale-95"
@@ -641,7 +772,13 @@ function MenuRow({
         <div className="flex items-center gap-3 px-4 py-3">
             <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted">
                 {item.picture_url ? (
-                    <img loading="lazy" decoding="async" src={item.picture_url} alt={item.name} className="h-full w-full object-cover" />
+                    <img
+                        loading="lazy"
+                        decoding="async"
+                        src={item.picture_url}
+                        alt={item.name}
+                        className="h-full w-full object-cover"
+                    />
                 ) : (
                     <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                         <ImageOff className="h-4 w-4 opacity-30" />
@@ -652,7 +789,9 @@ function MenuRow({
             <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{item.name}</p>
                 {item.description && (
-                    <p className="truncate text-xs text-muted-foreground">{item.description}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                        {item.description}
+                    </p>
                 )}
                 <p className="text-xs font-semibold text-primary">
                     {fmt(item.price)}
@@ -677,7 +816,9 @@ function MenuRow({
                     >
                         <Minus className="h-3.5 w-3.5" />
                     </button>
-                    <span className="w-5 text-center text-sm font-bold tabular-nums">{quantity}</span>
+                    <span className="w-5 text-center text-sm font-bold tabular-nums">
+                        {quantity}
+                    </span>
                     <button
                         onClick={onIncrement}
                         className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity hover:opacity-90 active:scale-95"

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { setLocale } from '@/i18n';
 import { Button } from '@/components/ui/button';
+import { setLocale } from '@/i18n';
 
 export function LanguageToggle() {
     const { i18n } = useTranslation();

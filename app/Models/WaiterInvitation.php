@@ -36,6 +36,6 @@ final class WaiterInvitation extends Model
     public function scopePending(Builder $query): void
     {
         $query->whereNull('accepted_at')
-              ->where('created_at', '>=', now()->subDays(7));
+            ->where('created_at', '>=', now()->subDays(7));
     }
 }

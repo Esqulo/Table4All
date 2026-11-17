@@ -25,7 +25,7 @@ class ProductController extends Controller
             ->get();
 
         return Inertia::render('restaurant/products', [
-            'products'  => $products,
+            'products' => $products,
             'canManage' => $user->account_type->value === 'restaurant',
         ]);
     }
@@ -34,7 +34,7 @@ class ProductController extends Controller
     {
         return Inertia::render('restaurant/products/create', [
             'categories' => Category::orderBy('name')->get(['id', 'name']),
-            'queues'     => RestaurantQueue::where('user_id', $request->user()->id)->orderBy('name')->get(['id', 'name']),
+            'queues' => RestaurantQueue::where('user_id', $request->user()->id)->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -59,9 +59,9 @@ class ProductController extends Controller
         abort_unless($product->user_id === $request->user()->id, 403);
 
         return Inertia::render('restaurant/products/edit', [
-            'product'    => $product,
+            'product' => $product,
             'categories' => Category::orderBy('name')->get(['id', 'name']),
-            'queues'     => RestaurantQueue::where('user_id', $request->user()->id)->orderBy('name')->get(['id', 'name']),
+            'queues' => RestaurantQueue::where('user_id', $request->user()->id)->orderBy('name')->get(['id', 'name']),
         ]);
     }
 

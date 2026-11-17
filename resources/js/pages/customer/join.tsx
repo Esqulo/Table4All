@@ -2,7 +2,11 @@ import { Head, router } from '@inertiajs/react';
 import { REGEXP_ONLY_DIGITS } from 'input-otp';
 import { useTranslation } from 'react-i18next';
 import JoinController from '@/actions/App/Http/Controllers/Customer/JoinController';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import {
+    InputOTP,
+    InputOTPGroup,
+    InputOTPSlot,
+} from '@/components/ui/input-otp';
 
 export default function CustomerJoin() {
     const { t } = useTranslation();
@@ -35,7 +39,11 @@ export default function CustomerJoin() {
                 >
                     <InputOTPGroup>
                         {Array.from({ length: 6 }, (_, i) => (
-                            <InputOTPSlot key={i} index={i} className="h-14 w-12 text-xl" />
+                            <InputOTPSlot
+                                key={i}
+                                index={i}
+                                className="h-14 w-12 text-xl"
+                            />
                         ))}
                     </InputOTPGroup>
                 </InputOTP>
@@ -45,5 +53,7 @@ export default function CustomerJoin() {
 }
 
 CustomerJoin.layout = {
-    breadcrumbs: [{ title: 'join_table.title', href: JoinController.index.url() }],
+    breadcrumbs: [
+        { title: 'join_table.title', href: JoinController.index.url() },
+    ],
 };

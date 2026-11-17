@@ -27,7 +27,11 @@ const STALE_REQUEST_MS = 45_000;
  *
  * See docs/performance.md.
  */
-export function useLiveReload({ only, intervalMs, enabled = true }: Options): void {
+export function useLiveReload({
+    only,
+    intervalMs,
+    enabled = true,
+}: Options): void {
     const onlyKey = only.join(',');
 
     useEffect(() => {
@@ -40,7 +44,8 @@ export function useLiveReload({ only, intervalMs, enabled = true }: Options): vo
         let inFlightSince: number | null = null;
         let stopped = false;
 
-        const canRun = () => !stopped && !document.hidden && navigator.onLine !== false;
+        const canRun = () =>
+            !stopped && !document.hidden && navigator.onLine !== false;
 
         const schedule = (delay: number) => {
             clearTimeout(timer);
@@ -55,7 +60,10 @@ export function useLiveReload({ only, intervalMs, enabled = true }: Options): vo
                 return;
             }
 
-            if (inFlightSince !== null && Date.now() - inFlightSince < STALE_REQUEST_MS) {
+            if (
+                inFlightSince !== null &&
+                Date.now() - inFlightSince < STALE_REQUEST_MS
+            ) {
                 schedule(intervalMs);
 
                 return;

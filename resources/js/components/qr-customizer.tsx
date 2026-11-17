@@ -61,7 +61,11 @@ export function QRCustomizerDialog({ menu, onClose }: Props) {
 
     const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (!file) return;
+
+        if (!file) {
+            return;
+        }
+
         const reader = new FileReader();
         reader.onload = (ev) => set('logo', ev.target?.result as string);
         reader.readAsDataURL(file);
@@ -69,34 +73,47 @@ export function QRCustomizerDialog({ menu, onClose }: Props) {
     };
 
     const handlePrint = () => {
-        if (!printRef.current) return;
+        if (!printRef.current) {
+            return;
+        }
+
         const win = window.open('', '_blank', 'width=600,height=700');
-        if (!win) return;
+
+        if (!win) {
+            return;
+        }
+
         win.document.write(
             `<!DOCTYPE html><html><head><title>${menu?.name ?? 'QR Code'}</title>` +
-            `<style>*{box-sizing:border-box;margin:0;padding:0}body{display:flex;justify-content:center;align-items:center;min-height:100vh;background:#fff;font-family:sans-serif;}</style>` +
-            `</head><body>${printRef.current.outerHTML}</body></html>`,
+                `<style>*{box-sizing:border-box;margin:0;padding:0}body{display:flex;justify-content:center;align-items:center;min-height:100vh;background:#fff;font-family:sans-serif;}</style>` +
+                `</head><body>${printRef.current.outerHTML}</body></html>`,
         );
         win.document.close();
         win.focus();
-        setTimeout(() => { win.print(); win.close(); }, 300);
+        setTimeout(() => {
+            win.print();
+            win.close();
+        }, 300);
     };
 
     return (
-        <Dialog open={menu !== null} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="sm:max-w-3xl p-0 gap-0 flex flex-col h-[90vh]">
-                <DialogHeader className="px-6 pt-5 pb-4 border-b border-border shrink-0">
+        <Dialog
+            open={menu !== null}
+            onOpenChange={(open) => !open && onClose()}
+        >
+            <DialogContent className="flex h-[90vh] flex-col gap-0 p-0 sm:max-w-3xl">
+                <DialogHeader className="shrink-0 border-b border-border px-6 pt-5 pb-4">
                     <DialogTitle>
                         {t('menus.qr_title')} — {menu?.name}
                     </DialogTitle>
                 </DialogHeader>
 
-                <div className="flex flex-col md:flex-row flex-1 overflow-hidden min-h-0">
+                <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
                     {/* Controls */}
-                    <div className="overflow-y-auto md:w-72 shrink-0 p-5 space-y-5 border-b md:border-b-0 md:border-r border-border">
+                    <div className="shrink-0 space-y-5 overflow-y-auto border-b border-border p-5 md:w-72 md:border-r md:border-b-0">
                         {/* Colors */}
                         <section className="space-y-3">
-                            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                            <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                                 {t('menus.qr_colors')}
                             </p>
                             <ColorRow
@@ -115,14 +132,18 @@ export function QRCustomizerDialog({ menu, onClose }: Props) {
 
                         {/* Text */}
                         <section className="space-y-3">
-                            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                            <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                                 {t('menus.qr_text_section')}
                             </p>
                             <div className="space-y-1">
-                                <Label className="text-xs">{t('menus.qr_text_label')}</Label>
+                                <Label className="text-xs">
+                                    {t('menus.qr_text_label')}
+                                </Label>
                                 <Input
                                     value={cfg.text}
-                                    onChange={(e) => set('text', e.target.value)}
+                                    onChange={(e) =>
+                                        set('text', e.target.value)
+                                    }
                                     placeholder={t('menus.qr_text_placeholder')}
                                     maxLength={80}
                                 />
@@ -137,7 +158,8 @@ export function QRCustomizerDialog({ menu, onClose }: Props) {
                                     <NumRow
                                         label={t('menus.qr_text_size')}
                                         value={cfg.textSize}
-                                        min={10} max={48}
+                                        min={10}
+                                        max={48}
                                         onChange={(v) => set('textSize', v)}
                                     />
                                 </div>
@@ -149,7 +171,7 @@ export function QRCustomizerDialog({ menu, onClose }: Props) {
                         {/* Frame */}
                         <section className="space-y-3">
                             <div className="flex items-center justify-between">
-                                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                                     {t('menus.qr_frame_section')}
                                 </p>
                                 <Toggle
@@ -165,9 +187,33 @@ export function QRCustomizerDialog({ menu, onClose }: Props) {
                                         onChange={(v) => set('frameColor', v)}
                                     />
                                     <div className="grid grid-cols-3 gap-2">
-                                        <NumRow label={t('menus.qr_frame_width')}   value={cfg.frameWidth}   min={1}  max={20} onChange={(v) => set('frameWidth', v)} />
-                                        <NumRow label={t('menus.qr_frame_radius')}  value={cfg.frameRadius}  min={0}  max={60} onChange={(v) => set('frameRadius', v)} />
-                                        <NumRow label={t('menus.qr_frame_padding')} value={cfg.framePadding} min={8}  max={64} onChange={(v) => set('framePadding', v)} />
+                                        <NumRow
+                                            label={t('menus.qr_frame_width')}
+                                            value={cfg.frameWidth}
+                                            min={1}
+                                            max={20}
+                                            onChange={(v) =>
+                                                set('frameWidth', v)
+                                            }
+                                        />
+                                        <NumRow
+                                            label={t('menus.qr_frame_radius')}
+                                            value={cfg.frameRadius}
+                                            min={0}
+                                            max={60}
+                                            onChange={(v) =>
+                                                set('frameRadius', v)
+                                            }
+                                        />
+                                        <NumRow
+                                            label={t('menus.qr_frame_padding')}
+                                            value={cfg.framePadding}
+                                            min={8}
+                                            max={64}
+                                            onChange={(v) =>
+                                                set('framePadding', v)
+                                            }
+                                        />
                                     </div>
                                 </div>
                             )}
@@ -177,7 +223,7 @@ export function QRCustomizerDialog({ menu, onClose }: Props) {
 
                         {/* Logo */}
                         <section className="space-y-3">
-                            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                            <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                                 {t('menus.qr_logo_section')}
                             </p>
                             <input
@@ -192,9 +238,13 @@ export function QRCustomizerDialog({ menu, onClose }: Props) {
                                     type="button"
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => logoInputRef.current?.click()}
+                                    onClick={() =>
+                                        logoInputRef.current?.click()
+                                    }
                                 >
-                                    {cfg.logo ? t('menus.qr_logo_change') : t('menus.qr_logo_select')}
+                                    {cfg.logo
+                                        ? t('menus.qr_logo_change')
+                                        : t('menus.qr_logo_select')}
                                 </Button>
                                 {cfg.logo && (
                                     <Button
@@ -211,7 +261,8 @@ export function QRCustomizerDialog({ menu, onClose }: Props) {
                                 <NumRow
                                     label={t('menus.qr_logo_size')}
                                     value={cfg.logoSize}
-                                    min={20} max={100}
+                                    min={20}
+                                    max={100}
                                     onChange={(v) => set('logoSize', v)}
                                 />
                             )}
@@ -219,8 +270,8 @@ export function QRCustomizerDialog({ menu, onClose }: Props) {
                     </div>
 
                     {/* Preview + Print */}
-                    <div className="flex flex-1 flex-col items-center justify-between gap-6 p-6 overflow-y-auto">
-                        <p className="self-start text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    <div className="flex flex-1 flex-col items-center justify-between gap-6 overflow-y-auto p-6">
+                        <p className="self-start text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                             {t('menus.qr_preview')}
                         </p>
 
@@ -233,11 +284,15 @@ export function QRCustomizerDialog({ menu, onClose }: Props) {
                                     flexDirection: 'column',
                                     alignItems: 'center',
                                     gap: '12px',
-                                    padding: cfg.frameEnabled ? `${cfg.framePadding}px` : '0',
+                                    padding: cfg.frameEnabled
+                                        ? `${cfg.framePadding}px`
+                                        : '0',
                                     border: cfg.frameEnabled
                                         ? `${cfg.frameWidth}px solid ${cfg.frameColor}`
                                         : 'none',
-                                    borderRadius: cfg.frameEnabled ? `${cfg.frameRadius}px` : '0',
+                                    borderRadius: cfg.frameEnabled
+                                        ? `${cfg.frameRadius}px`
+                                        : '0',
                                     backgroundColor: cfg.bgColor,
                                 }}
                             >
@@ -308,7 +363,9 @@ function ColorRow({
                     onChange={(e) => onChange(e.target.value)}
                     className="h-7 w-7 cursor-pointer rounded border border-border bg-transparent p-0.5"
                 />
-                <span className="font-mono text-xs text-muted-foreground">{value}</span>
+                <span className="font-mono text-xs text-muted-foreground">
+                    {value}
+                </span>
             </div>
         </div>
     );
@@ -356,7 +413,7 @@ function Toggle({
             aria-checked={checked}
             onClick={() => onChange(!checked)}
             className={[
-                'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
                 checked ? 'bg-primary' : 'bg-muted',
             ].join(' ')}
         >

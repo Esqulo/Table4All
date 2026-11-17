@@ -52,6 +52,7 @@ function GridScanIcon() {
 
 function ManualCodeSeparator() {
     const { t } = useTranslation();
+
     return (
         <span className="relative bg-card px-2 py-1">
             {t('two_factor.manual_code_separator')}

@@ -33,7 +33,7 @@ class WaiterInvitationMail extends Mailable
             markdown: 'emails.waiter-invitation',
             with: [
                 'restaurantName' => $this->restaurant->name,
-                'acceptUrl'      => route('waiter.invite.accept', $this->invitation->token),
+                'acceptUrl' => route('waiter.invite.accept', $this->invitation->token),
             ],
         );
     }

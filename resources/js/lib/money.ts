@@ -9,7 +9,10 @@ export function formatBRL(value: number, locale = 'pt-BR'): string {
     let formatter = formatters.get(locale);
 
     if (!formatter) {
-        formatter = new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL' });
+        formatter = new Intl.NumberFormat(locale, {
+            style: 'currency',
+            currency: 'BRL',
+        });
         formatters.set(locale, formatter);
     }
 

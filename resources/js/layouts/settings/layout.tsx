@@ -18,7 +18,11 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     const sidebarNavItems: NavItem[] = [
         { title: t('settings.nav_profile'), href: edit(), icon: null },
         { title: t('settings.nav_security'), href: editSecurity(), icon: null },
-        { title: t('settings.nav_appearance'), href: editAppearance(), icon: null },
+        {
+            title: t('settings.nav_appearance'),
+            href: editAppearance(),
+            icon: null,
+        },
     ];
 
     return (

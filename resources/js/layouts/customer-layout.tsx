@@ -29,7 +29,10 @@ export default function CustomerLayout({ children }: PropsWithChildren) {
                 ].join(' ')}
             >
                 <div className="flex h-14 shrink-0 items-center justify-between border-b border-dashed border-border px-4">
-                    <span className="flex items-center gap-2" aria-label="Table4All">
+                    <span
+                        className="flex items-center gap-2"
+                        aria-label="Table4All"
+                    >
                         <AppLogoIcon className="size-7" />
                         <AppLogoWordmark className="h-4" />
                     </span>
@@ -66,9 +69,7 @@ export default function CustomerLayout({ children }: PropsWithChildren) {
                     </button>
                 </header>
 
-                <main className="flex flex-1 flex-col">
-                    {children}
-                </main>
+                <main className="flex flex-1 flex-col">{children}</main>
             </div>
         </div>
     );

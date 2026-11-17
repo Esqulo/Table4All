@@ -14,13 +14,17 @@ export default function CreateTable() {
             <Head title={t('tables.breadcrumb_create')} />
 
             <div className="mx-auto max-w-md space-y-6 p-6">
-                <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">{t('tables.breadcrumb_create')}</h1>
+                <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">
+                    {t('tables.breadcrumb_create')}
+                </h1>
 
                 <Form {...TableController.store.form()} className="space-y-5">
                     {({ processing, errors }) => (
                         <>
                             <div className="grid gap-2">
-                                <Label htmlFor="title">{t('tables.title_label')}</Label>
+                                <Label htmlFor="title">
+                                    {t('tables.title_label')}
+                                </Label>
                                 <Input
                                     id="title"
                                     name="title"
@@ -52,6 +56,9 @@ export default function CreateTable() {
 CreateTable.layout = {
     breadcrumbs: [
         { title: 'tables.breadcrumb_index', href: TableController.index.url() },
-        { title: 'tables.breadcrumb_create', href: TableController.create.url() },
+        {
+            title: 'tables.breadcrumb_create',
+            href: TableController.create.url(),
+        },
     ],
 };

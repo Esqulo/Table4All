@@ -22,10 +22,10 @@ class WaiterInvitationController extends Controller
         $restaurant = User::findOrFail($invitation->restaurant_id, ['id', 'name']);
 
         return Inertia::render('waiter/accept', [
-            'token'        => $token,
-            'email'        => $invitation->email,
-            'restaurant'   => $restaurant,
-            'email_taken'  => User::where('email', $invitation->email)->exists(),
+            'token' => $token,
+            'email' => $invitation->email,
+            'restaurant' => $restaurant,
+            'email_taken' => User::where('email', $invitation->email)->exists(),
         ]);
     }
 
@@ -40,17 +40,17 @@ class WaiterInvitationController extends Controller
         }
 
         $validated = $request->validate([
-            'name'                  => ['required', 'string', 'max:255'],
-            'password'              => ['required', 'string', 'min:8', 'confirmed'],
+            'name' => ['required', 'string', 'max:255'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
             'password_confirmation' => ['required'],
         ]);
 
         $user = User::create([
-            'name'              => $validated['name'],
-            'email'             => $invitation->email,
-            'password'          => $validated['password'],
-            'account_type'      => AccountType::WAITER,
-            'restaurant_id'     => $invitation->restaurant_id,
+            'name' => $validated['name'],
+            'email' => $invitation->email,
+            'password' => $validated['password'],
+            'account_type' => AccountType::WAITER,
+            'restaurant_id' => $invitation->restaurant_id,
         ]);
         // The invitation link proved the address. Not mass-assignable, hence forceFill:
         // passing it to create() silently dropped it.

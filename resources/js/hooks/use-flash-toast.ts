@@ -16,7 +16,9 @@ export function useFlashToast(): void {
                 return;
             }
 
-            const message = i18n.exists(data.message) ? t(data.message) : data.message;
+            const message = i18n.exists(data.message)
+                ? t(data.message)
+                : data.message;
             toast[data.type](message);
         });
     }, [t, i18n]);

@@ -13,7 +13,10 @@ type Props = {
 };
 
 function fmtTime(iso: string) {
-    return new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    return new Date(iso).toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit',
+    });
 }
 
 export default function QueueShow({ queue, items }: Props) {
@@ -34,8 +37,12 @@ export default function QueueShow({ queue, items }: Props) {
 
             <div className="mx-auto max-w-5xl space-y-10 p-6">
                 <div>
-                    <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">{queue.name}</h1>
-                    <p className="mt-1 text-sm text-muted-foreground">{t('queues.kitchen_subtitle')}</p>
+                    <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">
+                        {queue.name}
+                    </h1>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                        {t('queues.kitchen_subtitle')}
+                    </p>
                 </div>
 
                 {items.length === 0 && (
@@ -48,14 +55,20 @@ export default function QueueShow({ queue, items }: Props) {
                     <section className="space-y-4">
                         <div className="flex items-center gap-2">
                             <Clock className="h-5 w-5 text-muted-foreground" />
-                            <h2 className="text-base font-semibold">{t('queues.status_pending')}</h2>
+                            <h2 className="text-base font-semibold">
+                                {t('queues.status_pending')}
+                            </h2>
                             <span className="ml-auto rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
                                 {pending.length}
                             </span>
                         </div>
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             {pending.map((item) => (
-                                <PendingCard key={item.id} item={item} pos={position.get(item.id)!} />
+                                <PendingCard
+                                    key={item.id}
+                                    item={item}
+                                    pos={position.get(item.id)!}
+                                />
                             ))}
                         </div>
                     </section>
@@ -65,14 +78,20 @@ export default function QueueShow({ queue, items }: Props) {
                     <section className="space-y-4">
                         <div className="flex items-center gap-2">
                             <CheckCircle2 className="h-5 w-5 text-green-600" />
-                            <h2 className="text-base font-semibold">{t('queues.status_done')}</h2>
+                            <h2 className="text-base font-semibold">
+                                {t('queues.status_done')}
+                            </h2>
                             <span className="ml-auto rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
                                 {done.length}
                             </span>
                         </div>
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             {done.map((item) => (
-                                <DoneCard key={item.id} item={item} pos={position.get(item.id)!} />
+                                <DoneCard
+                                    key={item.id}
+                                    item={item}
+                                    pos={position.get(item.id)!}
+                                />
                             ))}
                         </div>
                     </section>
@@ -80,7 +99,9 @@ export default function QueueShow({ queue, items }: Props) {
 
                 <div className="border-t border-border pt-4">
                     <Button variant="ghost" size="sm" asChild>
-                        <Link href={QueueController.index.url()}>{t('queues.back_to_queues')}</Link>
+                        <Link href={QueueController.index.url()}>
+                            {t('queues.back_to_queues')}
+                        </Link>
                     </Button>
                 </div>
             </div>
@@ -103,7 +124,9 @@ function PendingCard({ item, pos }: { item: QueueItem; pos: number }) {
             {/* Image banner with overlaid badges */}
             <div className="relative h-40 w-full bg-muted">
                 {item.product.picture_url ? (
-                    <img loading="lazy" decoding="async"
+                    <img
+                        loading="lazy"
+                        decoding="async"
                         src={item.product.picture_url}
                         alt={item.product.name}
                         className="h-full w-full object-cover"
@@ -114,28 +137,36 @@ function PendingCard({ item, pos }: { item: QueueItem; pos: number }) {
                     </div>
                 )}
                 {/* Arrival order badge */}
-                <span className="absolute left-3 top-3 rounded-lg bg-background/90 px-2.5 py-1 text-xs font-bold shadow-sm backdrop-blur-sm">
+                <span className="absolute top-3 left-3 rounded-lg bg-background/90 px-2.5 py-1 text-xs font-bold shadow-sm backdrop-blur-sm">
                     #{pos}
                 </span>
                 {/* Time badge */}
-                <span className="absolute right-3 top-3 rounded-lg bg-background/90 px-2.5 py-1 text-xs text-muted-foreground shadow-sm backdrop-blur-sm">
+                <span className="absolute top-3 right-3 rounded-lg bg-background/90 px-2.5 py-1 text-xs text-muted-foreground shadow-sm backdrop-blur-sm">
                     {fmtTime(item.created_at)}
                 </span>
                 {/* Quantity badge */}
-                <span className="absolute bottom-3 right-3 rounded-xl bg-foreground px-3 py-1.5 text-2xl font-black tabular-nums text-background shadow">
+                <span className="absolute right-3 bottom-3 rounded-xl bg-foreground px-3 py-1.5 text-2xl font-black text-background tabular-nums shadow">
                     ×{item.quantity}
                 </span>
             </div>
 
             {/* Product info */}
             <div className="flex-1 px-5 py-4">
-                <p className="text-lg font-semibold leading-snug">{item.product.name}</p>
-                <p className="mt-1 text-sm font-medium text-muted-foreground">{item.restaurant_table?.title}</p>
+                <p className="text-lg leading-snug font-semibold">
+                    {item.product.name}
+                </p>
+                <p className="mt-1 text-sm font-medium text-muted-foreground">
+                    {item.restaurant_table?.title}
+                </p>
             </div>
 
             {/* Action */}
             <div className="px-4 pb-4">
-                <Form {...QueueItemController.markDone.form({ queueItem: item.id })}>
+                <Form
+                    {...QueueItemController.markDone.form({
+                        queueItem: item.id,
+                    })}
+                >
                     {({ processing }) => (
                         <Button
                             type="submit"
@@ -159,12 +190,20 @@ function DoneCard({ item, pos }: { item: QueueItem; pos: number }) {
     return (
         <div className="flex items-center gap-4 overflow-hidden rounded-2xl border border-border bg-card px-5 py-4 shadow-sm">
             {/* Order number */}
-            <span className="shrink-0 text-sm font-bold text-muted-foreground">#{pos}</span>
+            <span className="shrink-0 text-sm font-bold text-muted-foreground">
+                #{pos}
+            </span>
 
             {/* Thumbnail */}
             <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-muted">
                 {item.product.picture_url ? (
-                    <img loading="lazy" decoding="async" src={item.product.picture_url} alt={item.product.name} className="h-full w-full object-cover" />
+                    <img
+                        loading="lazy"
+                        decoding="async"
+                        src={item.product.picture_url}
+                        alt={item.product.name}
+                        className="h-full w-full object-cover"
+                    />
                 ) : (
                     <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                         <ImageOff className="h-5 w-5 opacity-40" />
@@ -176,14 +215,23 @@ function DoneCard({ item, pos }: { item: QueueItem; pos: number }) {
             <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold">{item.product.name}</p>
                 <p className="mt-0.5 text-sm text-muted-foreground">
-                    {item.restaurant_table?.title} · ×{item.quantity} · {fmtTime(item.created_at)}
+                    {item.restaurant_table?.title} · ×{item.quantity} ·{' '}
+                    {fmtTime(item.created_at)}
                 </p>
             </div>
 
             {/* Action */}
-            <Form {...QueueItemController.markDelivered.form({ queueItem: item.id })}>
+            <Form
+                {...QueueItemController.markDelivered.form({
+                    queueItem: item.id,
+                })}
+            >
                 {({ processing }) => (
-                    <Button type="submit" disabled={processing} className="h-10 shrink-0 px-4">
+                    <Button
+                        type="submit"
+                        disabled={processing}
+                        className="h-10 shrink-0 px-4"
+                    >
                         <CheckCircle2 className="mr-1.5 h-4 w-4" />
                         {t('queues.item_mark_delivered')}
                     </Button>

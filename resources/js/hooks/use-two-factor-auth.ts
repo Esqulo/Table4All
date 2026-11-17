@@ -69,7 +69,10 @@ export const useTwoFactorAuth = (): UseTwoFactorAuthReturn => {
 
             setManualSetupKey(key);
         } catch {
-            setErrors((prev) => [...prev, i18n.t('two_factor.error_setup_key')]);
+            setErrors((prev) => [
+                ...prev,
+                i18n.t('two_factor.error_setup_key'),
+            ]);
             setManualSetupKey(null);
         }
     }, [submit]);
@@ -80,7 +83,10 @@ export const useTwoFactorAuth = (): UseTwoFactorAuthReturn => {
             const codes = (await submit(recoveryCodes())) as string[];
             setRecoveryCodesList(codes);
         } catch {
-            setErrors((prev) => [...prev, i18n.t('two_factor.error_recovery_codes')]);
+            setErrors((prev) => [
+                ...prev,
+                i18n.t('two_factor.error_recovery_codes'),
+            ]);
             setRecoveryCodesList([]);
         }
     }, [submit]);

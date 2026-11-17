@@ -62,7 +62,7 @@ class SaleController extends Controller
             ->get(['id', 'name', 'price', 'price_type']);
 
         return Inertia::render('restaurant/sales/edit', [
-            'sale'     => $sale,
+            'sale' => $sale,
             'products' => $products,
         ]);
     }
@@ -87,13 +87,13 @@ class SaleController extends Controller
     private function normalizeByType(array $data): array
     {
         if (($data['type'] ?? 'periodic') === 'periodic') {
-            $data['days']       = array_map('intval', $data['days'] ?? []);
-            $data['starts_at']  = null;
-            $data['ends_at']    = null;
+            $data['days'] = array_map('intval', $data['days'] ?? []);
+            $data['starts_at'] = null;
+            $data['ends_at'] = null;
         } else {
-            $data['days']       = null;
+            $data['days'] = null;
             $data['start_time'] = null;
-            $data['end_time']   = null;
+            $data['end_time'] = null;
         }
 
         return $data;

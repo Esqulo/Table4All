@@ -1,5 +1,11 @@
 import { Form, Head } from '@inertiajs/react';
-import { Check, CheckCheck, ConciergeBell, ImageOff, PackageCheck } from 'lucide-react';
+import {
+    Check,
+    CheckCheck,
+    ConciergeBell,
+    ImageOff,
+    PackageCheck,
+} from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import DeliveryController from '@/actions/App/Http/Controllers/Restaurant/DeliveryController';
@@ -67,8 +73,12 @@ export default function DeliveryIndex({ items }: Props) {
                         <ConciergeBell className="h-5 w-5" />
                     </div>
                     <div>
-                        <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">{t('delivery.title')}</h1>
-                        <p className="text-sm text-muted-foreground">{t('delivery.subtitle')}</p>
+                        <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">
+                            {t('delivery.title')}
+                        </h1>
+                        <p className="text-sm text-muted-foreground">
+                            {t('delivery.subtitle')}
+                        </p>
                     </div>
                     {items.length > 0 && (
                         <span className="ml-auto flex h-7 min-w-7 items-center justify-center rounded-full bg-destructive px-2 text-sm font-bold text-destructive-foreground tabular-nums">
@@ -81,28 +91,45 @@ export default function DeliveryIndex({ items }: Props) {
                     <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-border py-20 text-center text-muted-foreground">
                         <PackageCheck className="h-12 w-12 opacity-20" />
                         <div>
-                            <p className="font-medium">{t('delivery.empty_title')}</p>
-                            <p className="mt-1 text-sm">{t('delivery.empty_subtitle')}</p>
+                            <p className="font-medium">
+                                {t('delivery.empty_title')}
+                            </p>
+                            <p className="mt-1 text-sm">
+                                {t('delivery.empty_subtitle')}
+                            </p>
                         </div>
                     </div>
                 ) : (
                     <div className="space-y-4">
                         {byTable.map((group) => (
-                            <div key={group.id} className="overflow-hidden rounded-2xl border border-border bg-card">
+                            <div
+                                key={group.id}
+                                className="overflow-hidden rounded-2xl border border-border bg-card"
+                            >
                                 <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-4 py-2.5">
                                     <CheckCheck className="h-4 w-4 text-muted-foreground" />
-                                    <span className="text-sm font-semibold">{group.title}</span>
+                                    <span className="text-sm font-semibold">
+                                        {group.title}
+                                    </span>
                                     <span className="ml-auto text-xs text-muted-foreground">
-                                        {group.items.length} {group.items.length === 1 ? t('delivery.item') : t('delivery.items')}
+                                        {group.items.length}{' '}
+                                        {group.items.length === 1
+                                            ? t('delivery.item')
+                                            : t('delivery.items')}
                                     </span>
                                 </div>
 
                                 <div className="divide-y divide-border">
                                     {group.items.map((item) => (
-                                        <div key={item.id} className="flex items-center gap-3 px-4 py-3">
+                                        <div
+                                            key={item.id}
+                                            className="flex items-center gap-3 px-4 py-3"
+                                        >
                                             <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted">
                                                 {item.picture_url ? (
-                                                    <img loading="lazy" decoding="async"
+                                                    <img
+                                                        loading="lazy"
+                                                        decoding="async"
                                                         src={item.picture_url}
                                                         alt={item.product}
                                                         className="h-full w-full object-cover"
@@ -116,25 +143,52 @@ export default function DeliveryIndex({ items }: Props) {
 
                                             <div className="min-w-0 flex-1">
                                                 <div className="flex items-baseline gap-1.5">
-                                                    <p className="truncate text-sm font-medium">{item.product}</p>
-                                                    <span className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold tabular-nums text-primary-foreground">
+                                                    <p className="truncate text-sm font-medium">
+                                                        {item.product}
+                                                    </p>
+                                                    <span className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold text-primary-foreground tabular-nums">
                                                         {item.quantity}
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                                     {item.ordered_by && (
-                                                        <span>{item.ordered_by}</span>
+                                                        <span>
+                                                            {item.ordered_by}
+                                                        </span>
                                                     )}
-                                                    {item.ordered_by && <span>·</span>}
-                                                    <span className={item.status === 'done' ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400'}>
-                                                        {item.status === 'done' ? t('delivery.status_done') : t('delivery.status_pending')}
+                                                    {item.ordered_by && (
+                                                        <span>·</span>
+                                                    )}
+                                                    <span
+                                                        className={
+                                                            item.status ===
+                                                            'done'
+                                                                ? 'text-green-600 dark:text-green-400'
+                                                                : 'text-blue-600 dark:text-blue-400'
+                                                        }
+                                                    >
+                                                        {item.status === 'done'
+                                                            ? t(
+                                                                  'delivery.status_done',
+                                                              )
+                                                            : t(
+                                                                  'delivery.status_pending',
+                                                              )}
                                                     </span>
                                                     <span>·</span>
-                                                    <span>{waitingLabel(item.waiting_since)}</span>
+                                                    <span>
+                                                        {waitingLabel(
+                                                            item.waiting_since,
+                                                        )}
+                                                    </span>
                                                 </div>
                                             </div>
 
-                                            <Form {...QueueItemController.markDelivered.form({ queueItem: item.id })}>
+                                            <Form
+                                                {...QueueItemController.markDelivered.form(
+                                                    { queueItem: item.id },
+                                                )}
+                                            >
                                                 {({ processing }) => (
                                                     <Button
                                                         type="submit"
@@ -160,5 +214,7 @@ export default function DeliveryIndex({ items }: Props) {
 }
 
 DeliveryIndex.layout = {
-    breadcrumbs: [{ title: 'delivery.title', href: DeliveryController.index.url() }],
+    breadcrumbs: [
+        { title: 'delivery.title', href: DeliveryController.index.url() },
+    ],
 };

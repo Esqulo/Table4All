@@ -18,17 +18,17 @@ class SaleRequest extends FormRequest
         $type = $this->input('type', 'periodic');
 
         return [
-            'product_id'  => ['required', 'integer', Rule::exists('products', 'id')->where('user_id', $this->user()?->id)->whereNull('deleted_at')],
-            'type'        => ['required', 'in:periodic,scheduled'],
-            'sale_price'  => ['required', 'numeric', 'min:0.01', 'max:99999.99'],
+            'product_id' => ['required', 'integer', Rule::exists('products', 'id')->where('user_id', $this->user()?->id)->whereNull('deleted_at')],
+            'type' => ['required', 'in:periodic,scheduled'],
+            'sale_price' => ['required', 'numeric', 'min:0.01', 'max:99999.99'],
             // periodic
-            'days'        => [$type === 'periodic' ? 'required' : 'nullable', 'array', 'min:1'],
-            'days.*'      => ['integer', 'between:0,6'],
-            'start_time'  => [$type === 'periodic' ? 'required' : 'nullable', 'date_format:H:i'],
-            'end_time'    => [$type === 'periodic' ? 'required' : 'nullable', 'date_format:H:i', 'after:start_time'],
+            'days' => [$type === 'periodic' ? 'required' : 'nullable', 'array', 'min:1'],
+            'days.*' => ['integer', 'between:0,6'],
+            'start_time' => [$type === 'periodic' ? 'required' : 'nullable', 'date_format:H:i'],
+            'end_time' => [$type === 'periodic' ? 'required' : 'nullable', 'date_format:H:i', 'after:start_time'],
             // scheduled
-            'starts_at'   => [$type === 'scheduled' ? 'required' : 'nullable', 'date'],
-            'ends_at'     => [$type === 'scheduled' ? 'required' : 'nullable', 'date', 'after:starts_at'],
+            'starts_at' => [$type === 'scheduled' ? 'required' : 'nullable', 'date'],
+            'ends_at' => [$type === 'scheduled' ? 'required' : 'nullable', 'date', 'after:starts_at'],
         ];
     }
 }

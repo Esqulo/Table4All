@@ -19,7 +19,7 @@ class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input): User
     {
-        if (!empty($input['phone'])) {
+        if (! empty($input['phone'])) {
             $input['phone'] = $this->normalizePhone($input['phone']);
         }
 

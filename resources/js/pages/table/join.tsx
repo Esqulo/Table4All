@@ -1,7 +1,11 @@
 import { Head, router } from '@inertiajs/react';
 import { REGEXP_ONLY_DIGITS } from 'input-otp';
 import { useTranslation } from 'react-i18next';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import {
+    InputOTP,
+    InputOTPGroup,
+    InputOTPSlot,
+} from '@/components/ui/input-otp';
 
 export default function JoinTable() {
     const { t } = useTranslation();
@@ -36,7 +40,11 @@ export default function JoinTable() {
                         >
                             <InputOTPGroup>
                                 {Array.from({ length: 6 }, (_, i) => (
-                                    <InputOTPSlot key={i} index={i} className="h-14 w-12 text-xl" />
+                                    <InputOTPSlot
+                                        key={i}
+                                        index={i}
+                                        className="h-14 w-12 text-xl"
+                                    />
                                 ))}
                             </InputOTPGroup>
                         </InputOTP>

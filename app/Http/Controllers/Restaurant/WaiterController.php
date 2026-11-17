@@ -31,7 +31,7 @@ class WaiterController extends Controller
             ->get(['id', 'email', 'created_at']);
 
         return Inertia::render('restaurant/waiters', [
-            'waiters'     => $waiters,
+            'waiters' => $waiters,
             'invitations' => $invitations,
         ]);
     }
@@ -43,12 +43,12 @@ class WaiterController extends Controller
         ]);
 
         $restaurantId = $request->user()->id;
-        $email        = $validated['email'];
+        $email = $validated['email'];
 
         if (User::where('email', $email)
-                ->where('restaurant_id', $restaurantId)
-                ->where('account_type', AccountType::WAITER)
-                ->exists()) {
+            ->where('restaurant_id', $restaurantId)
+            ->where('account_type', AccountType::WAITER)
+            ->exists()) {
             return back()->withErrors(['email' => __('waiters.error_already_waiter')]);
         }
 
@@ -60,8 +60,8 @@ class WaiterController extends Controller
 
         $invitation = WaiterInvitation::create([
             'restaurant_id' => $restaurantId,
-            'email'         => $email,
-            'token'         => Str::random(64),
+            'email' => $email,
+            'token' => Str::random(64),
         ]);
 
         Mail::to($email)->send(new WaiterInvitationMail($invitation, $request->user()));
@@ -88,7 +88,7 @@ class WaiterController extends Controller
 
         $waiter->update([
             'restaurant_id' => null,
-            'account_type'  => AccountType::CUSTOMER,
+            'account_type' => AccountType::CUSTOMER,
         ]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'waiters.msg_deleted']);

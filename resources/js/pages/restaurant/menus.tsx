@@ -3,8 +3,8 @@ import { Plus, Printer, QrCode, ScrollText } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import MenuController from '@/actions/App/Http/Controllers/Restaurant/MenuController';
-import { QRCustomizerDialog } from '@/components/qr-customizer';
 import Heading from '@/components/heading';
+import { QRCustomizerDialog } from '@/components/qr-customizer';
 import { Button } from '@/components/ui/button';
 import type { Menu } from '@/types';
 
@@ -34,18 +34,23 @@ export default function Menus({ menus }: Props) {
                 </div>
 
                 {menus.length === 0 ? (
-                    <p className="text-center text-sm text-muted-foreground py-12">
+                    <p className="py-12 text-center text-sm text-muted-foreground">
                         {t('menus.empty')}
                     </p>
                 ) : (
                     <ul className="divide-y divide-border rounded-lg border border-border">
                         {menus.map((menu) => (
-                            <li key={menu.id} className="flex items-center justify-between gap-3 px-4 py-3">
-                                <div className="flex items-center gap-3 min-w-0">
-                                    <ScrollText className="h-4 w-4 text-muted-foreground shrink-0" />
-                                    <span className="text-sm font-medium truncate">{menu.name}</span>
+                            <li
+                                key={menu.id}
+                                className="flex items-center justify-between gap-3 px-4 py-3"
+                            >
+                                <div className="flex min-w-0 items-center gap-3">
+                                    <ScrollText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                    <span className="truncate text-sm font-medium">
+                                        {menu.name}
+                                    </span>
                                 </div>
-                                <div className="flex items-center gap-2 shrink-0">
+                                <div className="flex shrink-0 items-center gap-2">
                                     <Button
                                         variant="outline"
                                         size="sm"
@@ -55,7 +60,11 @@ export default function Menus({ menus }: Props) {
                                         {t('menus.qr_code')}
                                     </Button>
                                     <Button variant="outline" size="sm" asChild>
-                                        <Link href={MenuController.printMenu.url({ menu: menu.id })}>
+                                        <Link
+                                            href={MenuController.printMenu.url({
+                                                menu: menu.id,
+                                            })}
+                                        >
                                             <Printer className="mr-1.5 h-4 w-4" />
                                             {t('menus.print_menu')}
                                         </Link>

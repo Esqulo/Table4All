@@ -37,7 +37,10 @@ export default function CreateProduct({ categories, queues }: Props) {
     const onFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
         const src = imageSourceUrl(e.target.files?.[0]);
         e.target.value = '';
-        if (src) setCropSrc(src);
+
+        if (src) {
+            setCropSrc(src);
+        }
     };
 
     const onCropConfirm = useCallback((blob: Blob) => {
@@ -66,10 +69,18 @@ export default function CreateProduct({ categories, queues }: Props) {
             )}
 
             {/* hidden picker — not inside the form so it doesn't submit */}
-            <input ref={pickerRef} type="file" accept="image/*" className="hidden" onChange={onFileSelected} />
+            <input
+                ref={pickerRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={onFileSelected}
+            />
 
             <div className="mx-auto max-w-xl space-y-6 p-6">
-                <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">{t('products.breadcrumb_create')}</h1>
+                <h1 className="font-display text-[2rem] leading-none font-extrabold tracking-[-0.005em] text-balance">
+                    {t('products.breadcrumb_create')}
+                </h1>
 
                 <Form
                     {...ProductController.store.form()}
@@ -80,15 +91,26 @@ export default function CreateProduct({ categories, queues }: Props) {
                         <>
                             {categories.length > 0 && (
                                 <div className="grid gap-2">
-                                    <Label htmlFor="category_id">{t('products.category_label')}</Label>
+                                    <Label htmlFor="category_id">
+                                        {t('products.category_label')}
+                                    </Label>
                                     <Select name="category_id" defaultValue="">
                                         <SelectTrigger id="category_id">
-                                            <SelectValue placeholder={t('products.category_none')} />
+                                            <SelectValue
+                                                placeholder={t(
+                                                    'products.category_none',
+                                                )}
+                                            />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="">{t('products.category_none')}</SelectItem>
+                                            <SelectItem value="">
+                                                {t('products.category_none')}
+                                            </SelectItem>
                                             {categories.map((cat) => (
-                                                <SelectItem key={cat.id} value={String(cat.id)}>
+                                                <SelectItem
+                                                    key={cat.id}
+                                                    value={String(cat.id)}
+                                                >
                                                     {cat.name}
                                                 </SelectItem>
                                             ))}
@@ -100,15 +122,26 @@ export default function CreateProduct({ categories, queues }: Props) {
 
                             {queues.length > 0 && (
                                 <div className="grid gap-2">
-                                    <Label htmlFor="queue_id">{t('products.queue_label')}</Label>
+                                    <Label htmlFor="queue_id">
+                                        {t('products.queue_label')}
+                                    </Label>
                                     <Select name="queue_id" defaultValue="">
                                         <SelectTrigger id="queue_id">
-                                            <SelectValue placeholder={t('products.queue_none')} />
+                                            <SelectValue
+                                                placeholder={t(
+                                                    'products.queue_none',
+                                                )}
+                                            />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="">{t('products.queue_none')}</SelectItem>
+                                            <SelectItem value="">
+                                                {t('products.queue_none')}
+                                            </SelectItem>
                                             {queues.map((q) => (
-                                                <SelectItem key={q.id} value={String(q.id)}>
+                                                <SelectItem
+                                                    key={q.id}
+                                                    value={String(q.id)}
+                                                >
                                                     {q.name}
                                                 </SelectItem>
                                             ))}
@@ -119,7 +152,9 @@ export default function CreateProduct({ categories, queues }: Props) {
                             )}
 
                             <div className="grid gap-2">
-                                <Label htmlFor="name">{t('products.name_label')}</Label>
+                                <Label htmlFor="name">
+                                    {t('products.name_label')}
+                                </Label>
                                 <Input
                                     id="name"
                                     name="name"
@@ -131,11 +166,15 @@ export default function CreateProduct({ categories, queues }: Props) {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="description">{t('products.description_label')}</Label>
+                                <Label htmlFor="description">
+                                    {t('products.description_label')}
+                                </Label>
                                 <Textarea
                                     id="description"
                                     name="description"
-                                    placeholder={t('products.description_placeholder')}
+                                    placeholder={t(
+                                        'products.description_placeholder',
+                                    )}
                                     rows={3}
                                 />
                                 <InputError message={errors.description} />
@@ -143,7 +182,9 @@ export default function CreateProduct({ categories, queues }: Props) {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="price">{t('products.price_label')}</Label>
+                                    <Label htmlFor="price">
+                                        {t('products.price_label')}
+                                    </Label>
                                     <Input
                                         id="price"
                                         name="price"
@@ -157,15 +198,22 @@ export default function CreateProduct({ categories, queues }: Props) {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="price_type">{t('products.price_type_label')}</Label>
-                                    <Select name="price_type" defaultValue="unit">
+                                    <Label htmlFor="price_type">
+                                        {t('products.price_type_label')}
+                                    </Label>
+                                    <Select
+                                        name="price_type"
+                                        defaultValue="unit"
+                                    >
                                         <SelectTrigger id="price_type">
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {PRICE_TYPES.map((pt) => (
                                                 <SelectItem key={pt} value={pt}>
-                                                    {t(`products.price_types.${pt}`)}
+                                                    {t(
+                                                        `products.price_types.${pt}`,
+                                                    )}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
@@ -181,17 +229,29 @@ export default function CreateProduct({ categories, queues }: Props) {
                                         <img
                                             src={preview}
                                             alt={t('products.picture_label')}
-                                            className="h-24 w-24 rounded-lg object-cover border border-border"
+                                            className="h-24 w-24 rounded-lg border border-border object-cover"
                                         />
                                     ) : (
                                         <div className="h-24 w-24 rounded-lg border border-dashed border-border bg-muted" />
                                     )}
-                                    <Button type="button" variant="outline" onClick={openPicker}>
-                                        {preview ? t('products.picture_change') : t('products.picture_select')}
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={openPicker}
+                                    >
+                                        {preview
+                                            ? t('products.picture_change')
+                                            : t('products.picture_select')}
                                     </Button>
                                 </div>
                                 {/* actual file input submitted with the form */}
-                                <input ref={formPictureRef} type="file" name="picture" className="hidden" readOnly />
+                                <input
+                                    ref={formPictureRef}
+                                    type="file"
+                                    name="picture"
+                                    className="hidden"
+                                    readOnly
+                                />
                                 <InputError message={errors.picture} />
                             </div>
 

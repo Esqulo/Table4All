@@ -66,8 +66,8 @@ class TableController extends Controller
         $restaurantId = $request->user()->effectiveRestaurantId();
 
         RestaurantTable::create([
-            'user_id'     => $restaurantId,
-            'title'       => $request->validated('title'),
+            'user_id' => $restaurantId,
+            'title' => $request->validated('title'),
             'access_code' => RestaurantTable::generateUniqueCode(),
         ]);
 
@@ -117,13 +117,13 @@ class TableController extends Controller
             ->selectRaw('SUM(restaurant_table_product.quantity) as quantity')
             ->get()
             ->map(fn ($row) => [
-                'id'          => $row->id,
-                'name'        => $row->name,
-                'picture'     => $row->picture,
+                'id' => $row->id,
+                'name' => $row->name,
+                'picture' => $row->picture,
                 'picture_url' => $row->picture ? Storage::disk('public')->url($row->picture) : null,
-                'price_type'  => $row->price_type,
-                'price'       => (float) $row->price,
-                'quantity'    => (int) $row->quantity,
+                'price_type' => $row->price_type,
+                'price' => (float) $row->price,
+                'quantity' => (int) $row->quantity,
             ]);
 
         $activeSales = Sale::query()
@@ -140,11 +140,11 @@ class TableController extends Controller
             ->get();
 
         return Inertia::render('restaurant/tables/show', [
-            'table'        => $table,
-            'products'     => $products,
-            'orderLines'   => $orderLines,
-            'activeSales'  => $activeSales,
-            'queueItems'   => $queueItems,
+            'table' => $table,
+            'products' => $products,
+            'orderLines' => $orderLines,
+            'activeSales' => $activeSales,
+            'queueItems' => $queueItems,
             // Lets the client prove which version of the order it edited (see syncOrder).
             'orderVersion' => $this->orderVersion($table->id),
         ]);
@@ -166,6 +166,7 @@ class TableController extends Controller
         if ($request->has('title')) {
             $table->update(['title' => $request->validated('title')]);
             Inertia::flash('toast', ['type' => 'success', 'message' => 'tables.msg_updated']);
+
             return to_route('restaurant.tables.index');
         }
 
@@ -176,6 +177,7 @@ class TableController extends Controller
         }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'tables.msg_products_updated']);
+
         return to_route('restaurant.tables.show', $table);
     }
 
@@ -185,22 +187,23 @@ class TableController extends Controller
         abort_if($table->closed_at !== null, 422, __('tables.error_already_closed'));
 
         $validated = $request->validate([
-            'method'      => ['required', Rule::enum(PaymentMethod::class)],
-            'amount'      => ['required', 'numeric', 'min:0.01', 'max:99999.99'],
+            'method' => ['required', Rule::enum(PaymentMethod::class)],
+            'amount' => ['required', 'numeric', 'min:0.01', 'max:99999.99'],
             'request_key' => ['nullable', 'string', 'max:64'],
         ]);
 
         // A retried submit (slow network, double tap) must not record the payment twice.
         Idempotency::once($request, 'table-payment:'.$table->id, function () use ($request, $table, $validated): void {
             $table->payments()->create([
-                'method'             => $validated['method'],
-                'amount'             => $validated['amount'],
-                'registered_by_id'   => $request->user()->id,
+                'method' => $validated['method'],
+                'amount' => $validated['amount'],
+                'registered_by_id' => $request->user()->id,
                 'registered_by_type' => $request->user()->account_type->value,
             ]);
         });
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'tables.msg_payment_added']);
+
         return to_route('restaurant.tables.show', $table);
     }
 
@@ -229,7 +232,7 @@ class TableController extends Controller
                 return false;
             }
 
-            $locked->closed_at   = now();
+            $locked->closed_at = now();
             $locked->access_code = null;
             $locked->save();
 
@@ -244,10 +247,12 @@ class TableController extends Controller
 
         if (! $closed) {
             Inertia::flash('toast', ['type' => 'error', 'message' => 'tables.msg_insufficient_payment']);
+
             return to_route('restaurant.tables.show', $table);
         }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'tables.msg_closed']);
+
         return to_route('restaurant.tables.index');
     }
 
@@ -258,6 +263,7 @@ class TableController extends Controller
         $table->delete();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'tables.msg_deleted']);
+
         return to_route('restaurant.tables.index');
     }
 
@@ -295,8 +301,8 @@ class TableController extends Controller
         $desired = [];
         foreach ($submitted as $item) {
             $productId = (int) ($item['product_id'] ?? 0);
-            $qty       = (int) ($item['quantity'] ?? 0);
-            $price     = (float) ($item['price'] ?? 0);
+            $qty = (int) ($item['quantity'] ?? 0);
+            $price = (float) ($item['price'] ?? 0);
 
             if (! $ownedProducts->has($productId) || $qty <= 0 || $price < 0) {
                 continue;
@@ -307,11 +313,11 @@ class TableController extends Controller
             $desired[$key]['quantity'] += $qty;
         }
 
-        $now       = now();
+        $now = now();
         $queueRows = [];
         foreach ($queueAdditions as $item) {
             $product = $ownedProducts->get((int) ($item['product_id'] ?? 0));
-            $qty     = (int) ($item['quantity'] ?? 0);
+            $qty = (int) ($item['quantity'] ?? 0);
 
             if ($product === null || $product->queue_id === null || $qty <= 0) {
                 continue;
@@ -319,13 +325,13 @@ class TableController extends Controller
 
             $queueRows[] = [
                 'restaurant_table_id' => $table->id,
-                'product_id'          => $product->id,
-                'queue_id'            => $product->queue_id,
-                'quantity'            => $qty,
-                'price'               => (float) ($item['price'] ?? 0),
-                'status'              => QueueItemStatus::PENDING->value,
-                'created_at'          => $now,
-                'updated_at'          => $now,
+                'product_id' => $product->id,
+                'queue_id' => $product->queue_id,
+                'quantity' => $qty,
+                'price' => (float) ($item['price'] ?? 0),
+                'status' => QueueItemStatus::PENDING->value,
+                'created_at' => $now,
+                'updated_at' => $now,
             ];
         }
 
@@ -354,10 +360,10 @@ class TableController extends Controller
             foreach ($desired as $line) {
                 DB::table('restaurant_table_product')->insert([
                     'restaurant_table_id' => $table->id,
-                    'product_id'          => $line['product_id'],
-                    'ordered_by_user_id'  => null,
-                    'price'               => $line['price'],
-                    'quantity'            => $line['quantity'],
+                    'product_id' => $line['product_id'],
+                    'ordered_by_user_id' => null,
+                    'price' => $line['price'],
+                    'quantity' => $line['quantity'],
                 ]);
             }
 
@@ -379,8 +385,8 @@ class TableController extends Controller
     private function applyLineQuantity(int $tableId, Collection $rows, int $target): void
     {
         $productId = $rows->first()->product_id;
-        $price     = $rows->first()->price;
-        $line      = fn () => DB::table('restaurant_table_product')
+        $price = $rows->first()->price;
+        $line = fn () => DB::table('restaurant_table_product')
             ->where('restaurant_table_id', $tableId)
             ->where('product_id', $productId)
             ->where('price', $price);
@@ -401,10 +407,10 @@ class TableController extends Controller
 
         if ($target > $total) {
             $newUnattributed = $unattributed + ($target - $total);
-            $toRemove        = 0;
+            $toRemove = 0;
         } else {
             $newUnattributed = max(0, $unattributed - ($total - $target));
-            $toRemove        = ($total - $target) - ($unattributed - $newUnattributed);
+            $toRemove = ($total - $target) - ($unattributed - $newUnattributed);
         }
 
         // Collapse the unattributed units into a single row.
@@ -413,10 +419,10 @@ class TableController extends Controller
         if ($newUnattributed > 0) {
             DB::table('restaurant_table_product')->insert([
                 'restaurant_table_id' => $tableId,
-                'product_id'          => $productId,
-                'ordered_by_user_id'  => null,
-                'price'               => $price,
-                'quantity'            => $newUnattributed,
+                'product_id' => $productId,
+                'ordered_by_user_id' => null,
+                'price' => $price,
+                'quantity' => $newUnattributed,
             ]);
         }
 
@@ -426,9 +432,9 @@ class TableController extends Controller
             }
 
             $quantity = (int) $row->quantity;
-            $take     = min($quantity, $toRemove);
+            $take = min($quantity, $toRemove);
             $toRemove -= $take;
-            $query    = $line()->where('ordered_by_user_id', $row->ordered_by_user_id);
+            $query = $line()->where('ordered_by_user_id', $row->ordered_by_user_id);
 
             if ($take === $quantity) {
                 $query->delete();

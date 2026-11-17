@@ -18,7 +18,7 @@ class ProductRequest extends FormRequest
     {
         $this->merge([
             'category_id' => $this->category_id !== '' ? $this->category_id : null,
-            'queue_id'    => $this->queue_id !== '' ? $this->queue_id : null,
+            'queue_id' => $this->queue_id !== '' ? $this->queue_id : null,
         ]);
     }
 

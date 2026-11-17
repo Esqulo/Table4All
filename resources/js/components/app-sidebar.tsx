@@ -1,5 +1,19 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BarChart3, Inbox, ConciergeBell, LayoutGrid, ListOrdered, Percent, QrCode, ScrollText, ShoppingBag, Store, Tag, Users, UtensilsCrossed } from 'lucide-react';
+import {
+    BarChart3,
+    Inbox,
+    ConciergeBell,
+    LayoutGrid,
+    ListOrdered,
+    Percent,
+    QrCode,
+    ScrollText,
+    ShoppingBag,
+    Store,
+    Tag,
+    Users,
+    UtensilsCrossed,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AdminAdmissionRequestController from '@/actions/App/Http/Controllers/Admin/AdmissionRequestController';
 import CategoryController from '@/actions/App/Http/Controllers/Admin/CategoryController';
@@ -98,39 +112,38 @@ export function AppSidebar() {
                 },
             ]
           : isWaiter
-          ? [
-                {
-                    title: t('nav.tables'),
-                    href: TableController.index.url(),
-                    icon: UtensilsCrossed,
-                },
-                {
-                    title: t('nav.products'),
-                    href: ProductController.index.url(),
-                    icon: ShoppingBag,
-                },
-                {
-                    title: t('nav.delivery'),
-                    href: DeliveryController.index.url(),
-                    icon: ConciergeBell,
-                },
-            ]
-          : isCustomer
-          ? [
-                {
-                    title: t('nav.join_table'),
-                    href: CustomerJoinController.index.url(),
-                    icon: QrCode,
-                },
-            ]
-          : [
-                {
-                    title: t('nav.dashboard'),
-                    href: dashboard(),
-                    icon: LayoutGrid,
-                },
-            ];
-
+            ? [
+                  {
+                      title: t('nav.tables'),
+                      href: TableController.index.url(),
+                      icon: UtensilsCrossed,
+                  },
+                  {
+                      title: t('nav.products'),
+                      href: ProductController.index.url(),
+                      icon: ShoppingBag,
+                  },
+                  {
+                      title: t('nav.delivery'),
+                      href: DeliveryController.index.url(),
+                      icon: ConciergeBell,
+                  },
+              ]
+            : isCustomer
+              ? [
+                    {
+                        title: t('nav.join_table'),
+                        href: CustomerJoinController.index.url(),
+                        icon: QrCode,
+                    },
+                ]
+              : [
+                    {
+                        title: t('nav.dashboard'),
+                        href: dashboard(),
+                        icon: LayoutGrid,
+                    },
+                ];
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -138,7 +151,20 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={isAdmin ? CategoryController.index.url() : isRestaurant ? ProductController.index.url() : isWaiter ? TableController.index.url() : isCustomer ? CustomerJoinController.index.url() : dashboard()} prefetch>
+                            <Link
+                                href={
+                                    isAdmin
+                                        ? CategoryController.index.url()
+                                        : isRestaurant
+                                          ? ProductController.index.url()
+                                          : isWaiter
+                                            ? TableController.index.url()
+                                            : isCustomer
+                                              ? CustomerJoinController.index.url()
+                                              : dashboard()
+                                }
+                                prefetch
+                            >
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>

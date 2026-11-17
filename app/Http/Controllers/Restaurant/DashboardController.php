@@ -18,8 +18,8 @@ class DashboardController extends Controller
         $period = in_array($period, [7, 30, 90]) ? $period : 30;
         // Days are the restaurant's local days: a table closed at 22:00 in
         // Brasilia is 01:00 UTC of the next day and must count on its own day.
-        $tz        = (string) config('app.business_timezone');
-        $from      = now($tz)->subDays($period)->startOfDay()->utc();
+        $tz = (string) config('app.business_timezone');
+        $from = now($tz)->subDays($period)->startOfDay()->utc();
         [$closedDay, $closedDayBindings] = $this->localClosedDate($tz);
 
         $summary = DB::table('restaurant_table_product as rtp')
@@ -99,19 +99,19 @@ class DashboardController extends Controller
             ->first();
 
         return Inertia::render('restaurant/dashboards', [
-            'period'          => $period,
-            'summary'         => [
-                'total_revenue'     => (float) $summary->total_revenue,
-                'tables_closed'     => (int) $summary->tables_closed,
-                'items_sold'        => (int) $summary->items_sold,
+            'period' => $period,
+            'summary' => [
+                'total_revenue' => (float) $summary->total_revenue,
+                'tables_closed' => (int) $summary->tables_closed,
+                'items_sold' => (int) $summary->items_sold,
                 'avg_table_revenue' => $avgRevenue,
-                'abandoned_items'   => (int) ($abandoned->items ?? 0),
-                'abandoned_value'   => (float) ($abandoned->value ?? 0),
+                'abandoned_items' => (int) ($abandoned->items ?? 0),
+                'abandoned_value' => (float) ($abandoned->value ?? 0),
             ],
-            'revenue_by_day'  => $revenueByDay,
-            'top_products'    => $topProducts,
+            'revenue_by_day' => $revenueByDay,
+            'top_products' => $topProducts,
             'payment_methods' => $paymentMethods,
-            'recent_tables'   => $recentTables,
+            'recent_tables' => $recentTables,
         ]);
     }
 

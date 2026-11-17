@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\RestaurantQueue;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -24,7 +25,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            $table->dropForeignIdFor(\App\Models\RestaurantQueue::class);
+            $table->dropForeignIdFor(RestaurantQueue::class);
             $table->dropColumn('queue_id');
         });
     }
