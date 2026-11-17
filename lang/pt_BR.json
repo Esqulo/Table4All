@@ -13,6 +13,8 @@
     "establishment.error_photos_limit": "Você pode manter no máximo :max fotos do local.",
     "establishment.error_handle_format": "Use só letras minúsculas, números, hífen (-) ou sublinhado (_), começando e terminando com letra ou número.",
     "establishment.error_handle_taken": "Esse @ já está em uso por outro estabelecimento.",
+    "social.error_emoji": "Escolha um único emoji.",
+    "social.error_post_empty": "Escreva um texto ou adicione uma foto.",
     "venue_profile.meta_description": "Cardápio, fotos e horários de :name.",
 
     "mail.waiter_invitation.subject": "Convite para ser garçom — :restaurant",

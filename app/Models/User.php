@@ -58,6 +58,17 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
         });
     }
 
+    /** Whether $viewer can see this restaurant's public profile and its posts. */
+    public function publicProfileVisibleTo(?User $viewer): bool
+    {
+        if ($this->account_type !== AccountType::RESTAURANT) {
+            return false;
+        }
+
+        return $this->profile_public
+            || ($viewer !== null && $viewer->account_type === AccountType::RESTAURANT && $viewer->id === $this->id);
+    }
+
     public function effectiveRestaurantId(): int
     {
         return $this->account_type === AccountType::WAITER

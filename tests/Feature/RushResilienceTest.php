@@ -3,8 +3,11 @@
 namespace Tests\Feature;
 
 use App\Enums\QueueItemStatus;
+use App\Models\PostComment;
+use App\Models\PostReaction;
 use App\Models\Product;
 use App\Models\QueueItem;
+use App\Models\RestaurantPost;
 use App\Models\RestaurantQueue;
 use App\Models\RestaurantTable;
 use App\Models\Sale;
@@ -302,6 +305,41 @@ class RushResilienceTest extends TestCase
         $this->actingAs($this->restaurant)->post(route('restaurant.tables.add-payment', $this->table), $payload);
 
         $this->assertSame(1, $this->table->payments()->count());
+    }
+
+    public function test_restaurant_post_resent_with_the_same_key_is_published_once(): void
+    {
+        $payload = ['body' => 'Happy hour hoje!', 'request_key' => 'post-1'];
+
+        $this->actingAs($this->restaurant)->post(route('restaurant.posts.store'), $payload)->assertSessionHasNoErrors();
+        $this->actingAs($this->restaurant)->post(route('restaurant.posts.store'), $payload)->assertSessionHasNoErrors();
+
+        $this->assertSame(1, RestaurantPost::count());
+    }
+
+    public function test_comment_resent_with_the_same_key_is_recorded_once(): void
+    {
+        $post = RestaurantPost::create(['user_id' => $this->restaurant->id, 'body' => 'Oi']);
+        $customer = User::factory()->create();
+        $payload = ['body' => 'Vou!', 'request_key' => 'comment-1'];
+
+        $this->actingAs($customer)->post(route('posts.comments.store', $post), $payload)->assertSessionHasNoErrors();
+        $this->actingAs($customer)->post(route('posts.comments.store', $post), $payload)->assertSessionHasNoErrors();
+
+        $this->assertSame(1, PostComment::count());
+    }
+
+    public function test_double_tapped_reaction_is_counted_once(): void
+    {
+        $post = RestaurantPost::create(['user_id' => $this->restaurant->id, 'body' => 'Oi']);
+        $customer = User::factory()->create();
+
+        $this->actingAs($customer)->putJson(route('posts.react', $post), ['emoji' => '🍺'])->assertOk();
+        $this->actingAs($customer)->putJson(route('posts.react', $post), ['emoji' => '🍺'])
+            ->assertOk()
+            ->assertJson(['total' => 1, 'mine' => '🍺']);
+
+        $this->assertSame(1, PostReaction::count());
     }
 
     public function test_tables_board_totals_use_order_time_prices(): void

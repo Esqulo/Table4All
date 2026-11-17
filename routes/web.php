@@ -4,10 +4,12 @@ use App\Http\Controllers\Admin\AdmissionRequestController as AdminAdmissionReque
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\AdmissionRequestController;
 use App\Http\Controllers\Customer\JoinController as CustomerJoinController;
+use App\Http\Controllers\PostInteractionController;
 use App\Http\Controllers\Restaurant\DashboardController;
 use App\Http\Controllers\Restaurant\DeliveryController;
 use App\Http\Controllers\Restaurant\EstablishmentController;
 use App\Http\Controllers\Restaurant\MenuController;
+use App\Http\Controllers\Restaurant\PostController;
 use App\Http\Controllers\Restaurant\ProductController;
 use App\Http\Controllers\Restaurant\QueueController;
 use App\Http\Controllers\Restaurant\QueueItemController;
@@ -36,6 +38,10 @@ Route::get('/menu/{menu}', [MenuController::class, 'show'])->name('menu.show');
 Route::get('/vempro/{handle}', [RestaurantProfileController::class, 'show'])
     ->where('handle', '@?[A-Za-z0-9_-]{1,40}')
     ->name('restaurant-profile.show');
+Route::get('/vempro/{handle}/p/{post}', [RestaurantProfileController::class, 'showPost'])
+    ->where('handle', '@?[A-Za-z0-9_-]{1,40}')
+    ->whereNumber('post')
+    ->name('restaurant-profile.post');
 
 Route::get('/mesa', [TableJoinController::class, 'index'])->name('table.join');
 Route::get('/mesa/{code}', [TableJoinController::class, 'show'])->name('table.show');
@@ -56,6 +62,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('mesa/{code}', [CustomerJoinController::class, 'show'])->name('table');
             Route::post('mesa/{code}/pedido', [CustomerJoinController::class, 'order'])->name('order');
         });
+
+    // Social: anyone signed in reacts to and comments on restaurant posts
+    Route::put('publicacoes/{post}/reacao', [PostInteractionController::class, 'react'])
+        ->middleware('throttle:60,1')
+        ->name('posts.react');
+    Route::delete('publicacoes/{post}/reacao', [PostInteractionController::class, 'unreact'])
+        ->middleware('throttle:60,1')
+        ->name('posts.unreact');
+    Route::post('publicacoes/{post}/comentarios', [PostInteractionController::class, 'storeComment'])
+        ->middleware('throttle:10,1')
+        ->name('posts.comments.store');
+    Route::delete('comentarios/{comment}', [PostInteractionController::class, 'destroyComment'])
+        ->name('comments.destroy');
 });
 
 // Tables (full CRUD) + product listing: accessible by restaurant and waiter
@@ -89,6 +108,11 @@ Route::middleware(['auth', 'verified', EnsureRestaurant::class])
         // Venue settings: opening hours, photos, logo and banner
         Route::get('estabelecimento', [EstablishmentController::class, 'edit'])->name('establishment.edit');
         Route::put('estabelecimento/perfil', [EstablishmentController::class, 'updateProfile'])->name('establishment.profile.update');
+        // Social posts on the public profile
+        Route::post('publicacoes', [PostController::class, 'store'])
+            ->middleware('throttle:20,1')
+            ->name('posts.store');
+        Route::delete('publicacoes/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
         Route::put('estabelecimento/horarios', [EstablishmentController::class, 'updateHours'])->name('establishment.hours.update');
         Route::post('estabelecimento/logo', [EstablishmentController::class, 'updateLogo'])->name('establishment.logo.update');
         Route::delete('estabelecimento/logo', [EstablishmentController::class, 'destroyLogo'])->name('establishment.logo.destroy');

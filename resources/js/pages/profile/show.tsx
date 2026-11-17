@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, InfiniteScroll, Link, router, usePage } from '@inertiajs/react';
 import {
     BookOpen,
     ChevronLeft,
@@ -17,6 +17,9 @@ import { toast } from 'sonner';
 import EstablishmentController from '@/actions/App/Http/Controllers/Restaurant/EstablishmentController';
 import MenuController from '@/actions/App/Http/Controllers/Restaurant/MenuController';
 import AppLogoWordmark from '@/components/app-logo-wordmark';
+import { PostCard } from '@/components/social/post-card';
+import { PostComposer } from '@/components/social/post-composer';
+import { StarRating } from '@/components/social/star-rating';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -26,16 +29,16 @@ import {
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { home } from '@/routes';
-import type { OpeningHourInterval, VenuePhoto } from '@/types';
+import type {
+    OpeningHourInterval,
+    PublicRestaurant,
+    RatingSummary,
+    RestaurantPost,
+    VenuePhoto,
+} from '@/types';
 
 type Props = {
-    restaurant: {
-        id: number;
-        name: string;
-        handle: string;
-        logo_url: string | null;
-        banner_url: string | null;
-    };
+    restaurant: PublicRestaurant;
     hours: OpeningHourInterval[];
     /** Null when the restaurant hasn't set its hours. */
     isOpen: boolean | null;
@@ -46,6 +49,12 @@ type Props = {
     isOwner: boolean;
     /** False only when the owner hid the profile; then only the owner reaches this page. */
     isPublic: boolean;
+    /** Signed in with a verified email: may react and comment. */
+    canInteract: boolean;
+    suggestedReactions: string[];
+    rating: RatingSummary;
+    /** One page of the feed; InfiniteScroll merges the next ones in. */
+    posts: { data: RestaurantPost[] };
     url: string;
 };
 
@@ -61,10 +70,17 @@ export default function ProfileShow({
     menus,
     isOwner,
     isPublic,
+    canInteract,
+    suggestedReactions,
+    rating,
+    posts,
     url,
 }: Props) {
     const { t } = useTranslation();
+    // auth.user is null for guests on public pages, despite the shared type.
+    const signedIn = Boolean(usePage().props.auth?.user);
     const [publishing, setPublishing] = useState(false);
+    const [tab, setTab] = useState<'posts' | 'about'>('posts');
 
     const publish = () =>
         router.put(
@@ -185,6 +201,7 @@ export default function ProfileShow({
                                 </span>
                                 {isOpen !== null && <OpenBadge open={isOpen} />}
                             </div>
+                            <StarRating rating={rating} />
                         </div>
 
                         {menus.length > 0 && (
@@ -214,13 +231,80 @@ export default function ProfileShow({
                     </div>
                 </header>
 
-                <main className="mx-auto mt-8 max-w-3xl space-y-8 px-4 sm:px-6">
-                    {photos.length > 0 && <Gallery photos={photos} />}
-                    <Hours hours={hours} today={today} />
-                    {isOwner && photos.length === 0 && hours.length === 0 && (
-                        <p className="rounded-xl border border-dashed p-5 text-sm text-muted-foreground">
-                            {t('venue_profile.owner_empty_hint')}
-                        </p>
+                <main className="mx-auto mt-6 max-w-3xl px-4 sm:px-6">
+                    <div
+                        role="tablist"
+                        aria-label={t('social.tabs_label')}
+                        className="mb-6 flex gap-6 border-b"
+                    >
+                        {(['posts', 'about'] as const).map((key) => (
+                            <button
+                                key={key}
+                                type="button"
+                                role="tab"
+                                aria-selected={tab === key}
+                                onClick={() => setTab(key)}
+                                className={cn(
+                                    '-mb-px border-b-2 pb-2.5 text-sm font-semibold transition-colors',
+                                    tab === key
+                                        ? 'border-primary text-foreground'
+                                        : 'border-transparent text-muted-foreground hover:text-foreground',
+                                )}
+                            >
+                                {t(`social.tab_${key}`)}
+                            </button>
+                        ))}
+                    </div>
+
+                    {tab === 'posts' ? (
+                        <div className="mx-auto max-w-xl space-y-4">
+                            {isOwner && <PostComposer />}
+                            {posts.data.length === 0 ? (
+                                <p className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+                                    {isOwner
+                                        ? t('social.feed_empty_owner')
+                                        : t('social.feed_empty')}
+                                </p>
+                            ) : (
+                                <InfiniteScroll
+                                    data="posts"
+                                    onlyNext
+                                    className="space-y-4"
+                                    loading={() => (
+                                        <p className="py-4 text-center text-sm text-muted-foreground">
+                                            {t('social.feed_loading')}
+                                        </p>
+                                    )}
+                                >
+                                    {posts.data.map((post, i) => (
+                                        <PostCard
+                                            key={post.id}
+                                            post={post}
+                                            restaurant={restaurant}
+                                            isOwner={isOwner}
+                                            canInteract={canInteract}
+                                            signedIn={signedIn}
+                                            suggestedReactions={
+                                                suggestedReactions
+                                            }
+                                            eagerImage={i === 0}
+                                        />
+                                    ))}
+                                </InfiniteScroll>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="space-y-8">
+                            {photos.length > 0 && <Gallery photos={photos} />}
+                            <Hours hours={hours} today={today} />
+                            {photos.length === 0 && hours.length === 0 && (
+                                <p className="rounded-xl border border-dashed p-5 text-sm text-muted-foreground">
+                                    {isOwner
+                                        ? t('venue_profile.owner_empty_hint')
+                                        : t('social.about_empty')}
+                                </p>
+                            )}
+                        </div>
                     )}
                 </main>
 
