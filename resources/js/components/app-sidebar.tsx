@@ -5,6 +5,7 @@ import {
     ConciergeBell,
     LayoutGrid,
     ListOrdered,
+    Newspaper,
     Percent,
     QrCode,
     ScrollText,
@@ -27,6 +28,7 @@ import QueueController from '@/actions/App/Http/Controllers/Restaurant/QueueCont
 import SaleController from '@/actions/App/Http/Controllers/Restaurant/SaleController';
 import TableController from '@/actions/App/Http/Controllers/Restaurant/TableController';
 import WaiterController from '@/actions/App/Http/Controllers/Restaurant/WaiterController';
+import SocialFeedController from '@/actions/App/Http/Controllers/SocialFeedController';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -110,6 +112,11 @@ export function AppSidebar() {
                     href: EstablishmentController.edit.url(),
                     icon: Store,
                 },
+                {
+                    title: t('nav.feed'),
+                    href: SocialFeedController.index.url(),
+                    icon: Newspaper,
+                },
             ]
           : isWaiter
             ? [
@@ -131,6 +138,11 @@ export function AppSidebar() {
               ]
             : isCustomer
               ? [
+                    {
+                        title: t('nav.feed'),
+                        href: SocialFeedController.index.url(),
+                        icon: Newspaper,
+                    },
                     {
                         title: t('nav.join_table'),
                         href: CustomerJoinController.index.url(),
@@ -160,7 +172,7 @@ export function AppSidebar() {
                                           : isWaiter
                                             ? TableController.index.url()
                                             : isCustomer
-                                              ? CustomerJoinController.index.url()
+                                              ? SocialFeedController.index.url()
                                               : dashboard()
                                 }
                                 prefetch

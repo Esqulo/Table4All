@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Enums\AccountType;
 use App\Models\PostComment;
 use App\Models\PostReaction;
 use App\Models\RestaurantPost;
@@ -18,11 +19,15 @@ final class PostFeed
     /** Columns the feed reads from restaurant_posts. */
     public const COLUMNS = ['id', 'user_id', 'body', 'image', 'image_aspect', 'created_at'];
 
+    /** Restaurant columns a feed of several restaurants needs (public fields only). */
+    public const RESTAURANT_COLUMNS = ['id', 'name', 'handle', 'logo', 'account_type'];
+
     /**
      * @param  Collection<int, RestaurantPost>  $posts
+     * @param  bool  $withRestaurant  add each post's restaurant (posts must have `restaurant` loaded)
      * @return list<array<string, mixed>>
      */
-    public static function present(Collection $posts, ?User $viewer): array
+    public static function present(Collection $posts, ?User $viewer, bool $withRestaurant = false): array
     {
         if ($posts->isEmpty()) {
             return [];
@@ -34,15 +39,33 @@ final class PostFeed
             ->groupBy('post_id')
             ->pluck(DB::raw('COUNT(*)'), 'post_id');
 
-        return array_values($posts->map(fn (RestaurantPost $post): array => [
-            'id' => $post->id,
-            'body' => $post->body,
-            'image_url' => $post->image_url,
-            'image_aspect' => $post->image_aspect,
-            'created_at' => $post->created_at?->toIso8601String(),
-            'reactions' => $reactions[$post->id] ?? self::emptyReactions(),
-            'comments_count' => (int) ($comments[$post->id] ?? 0),
-        ])->all());
+        return array_values($posts->map(function (RestaurantPost $post) use ($reactions, $comments, $viewer, $withRestaurant): array {
+            $item = [
+                'id' => $post->id,
+                'body' => $post->body,
+                'image_url' => $post->image_url,
+                'image_aspect' => $post->image_aspect,
+                'created_at' => $post->created_at?->toIso8601String(),
+                'reactions' => $reactions[$post->id] ?? self::emptyReactions(),
+                'comments_count' => (int) ($comments[$post->id] ?? 0),
+            ];
+
+            if ($withRestaurant) {
+                $restaurant = $post->restaurant;
+                $item['restaurant'] = [
+                    'id' => $restaurant->id,
+                    'name' => $restaurant->name,
+                    'handle' => (string) $restaurant->handle,
+                    'logo_url' => $restaurant->logo_url,
+                    'banner_url' => null,
+                ];
+                $item['is_owner'] = $viewer !== null
+                    && $viewer->account_type === AccountType::RESTAURANT
+                    && $viewer->id === $restaurant->id;
+            }
+
+            return $item;
+        })->all());
     }
 
     /**

@@ -1,0 +1,67 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Enums\AccountType;
+use App\Models\RestaurantPost;
+use App\Models\User;
+use App\Support\Emoji;
+use App\Support\PostFeed;
+use App\Support\RestaurantDirectory;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
+
+/** The social network as consumers see it: posts from every public restaurant. */
+class SocialFeedController extends Controller
+{
+    /** Posts per page (infinite scroll). */
+    private const PER_PAGE = 10;
+
+    /** Restaurants in the "browse" strip at the top of the feed. */
+    private const STRIP_SIZE = 12;
+
+    /**
+     * Newest first for now; a ranking algorithm comes later. Restaurants that
+     * hid their profile are left out, their own posts included.
+     */
+    public function index(Request $request): Response
+    {
+        $viewer = $request->user();
+
+        return Inertia::render('social/feed', [
+            'posts' => Inertia::scroll(function () use ($viewer) {
+                $page = RestaurantPost::whereIn(
+                    'user_id',
+                    User::select('id')
+                        ->where('account_type', AccountType::RESTAURANT)
+                        ->where('profile_public', true),
+                )
+                    ->with(['restaurant' => fn ($q) => $q->select(PostFeed::RESTAURANT_COLUMNS)])
+                    ->orderByDesc('id')
+                    ->cursorPaginate(self::PER_PAGE, PostFeed::COLUMNS);
+
+                return $page->setCollection(collect(PostFeed::present($page->getCollection(), $viewer, withRestaurant: true)));
+            }),
+            'canInteract' => $viewer !== null && $viewer->hasVerifiedEmail(),
+            'suggestedReactions' => Emoji::SUGGESTED,
+            // Search by name or @handle. The page reloads only these two props while typing.
+            'q' => $q = trim((string) $request->query('q', '')),
+            'searchResults' => fn () => mb_strlen($q) >= RestaurantDirectory::MIN_TERM
+                ? RestaurantDirectory::search($q)
+                : null,
+            'restaurants' => fn () => RestaurantDirectory::recentlyActive(self::STRIP_SIZE),
+        ]);
+    }
+
+    /** Where signed-in users land. Customers have no dashboard: their home is the feed. */
+    public function home(Request $request): Response|RedirectResponse
+    {
+        if ($request->user()->account_type === AccountType::CUSTOMER) {
+            return to_route('social.feed');
+        }
+
+        return Inertia::render('dashboard');
+    }
+}

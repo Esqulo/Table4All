@@ -19,6 +19,7 @@ import MenuController from '@/actions/App/Http/Controllers/Restaurant/MenuContro
 import AppLogoWordmark from '@/components/app-logo-wordmark';
 import { PostCard } from '@/components/social/post-card';
 import { PostComposer } from '@/components/social/post-composer';
+import { SocialTopBar } from '@/components/social/social-nav';
 import { StarRating } from '@/components/social/star-rating';
 import { Button } from '@/components/ui/button';
 import {
@@ -117,6 +118,8 @@ export default function ProfileShow({
             <Head title={restaurant.name} />
 
             <div className="min-h-screen bg-background pb-12">
+                <SocialTopBar />
+
                 {!isPublic && (
                     <div className="border-b bg-muted px-4 py-3">
                         <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-3">

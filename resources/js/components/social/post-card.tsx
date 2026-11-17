@@ -54,6 +54,9 @@ export function PostCard({
         handle: restaurant.handle,
         post: post.id,
     });
+    const profileUrl = restaurantProfile.show.url({
+        handle: restaurant.handle,
+    });
 
     const remove = () =>
         router.delete(PostController.destroy.url({ post: post.id }), {
@@ -67,7 +70,13 @@ export function PostCard({
     return (
         <article className="overflow-hidden rounded-2xl border bg-card shadow-xs">
             <header className="flex items-center gap-3 px-4 pt-4 pb-3">
-                <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-muted">
+                <Link
+                    href={profileUrl}
+                    className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-muted"
+                    aria-label={t('social.open_profile', {
+                        name: restaurant.name,
+                    })}
+                >
                     {restaurant.logo_url ? (
                         <img
                             src={restaurant.logo_url}
@@ -79,19 +88,25 @@ export function PostCard({
                     ) : (
                         <Store className="size-4 text-muted-foreground/60" />
                     )}
-                </div>
+                </Link>
                 <div className="min-w-0 flex-1 leading-tight">
-                    <p className="truncate text-sm font-semibold">
-                        {restaurant.name}
-                    </p>
                     <Link
-                        href={postUrl}
-                        className="text-xs text-muted-foreground hover:underline"
+                        href={profileUrl}
+                        className="block truncate text-sm font-semibold hover:underline"
                     >
-                        <time dateTime={post.created_at}>
-                            {timeAgo(post.created_at, i18n.language)}
-                        </time>
+                        {restaurant.name}
                     </Link>
+                    <p className="truncate text-xs text-muted-foreground">
+                        <span className="font-receipt">
+                            @{restaurant.handle}
+                        </span>
+                        {' · '}
+                        <Link href={postUrl} className="hover:underline">
+                            <time dateTime={post.created_at}>
+                                {timeAgo(post.created_at, i18n.language)}
+                            </time>
+                        </Link>
+                    </p>
                 </div>
                 {isOwner && (
                     <DropdownMenu>

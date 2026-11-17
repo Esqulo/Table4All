@@ -17,6 +17,7 @@ use App\Http\Controllers\Restaurant\SaleController;
 use App\Http\Controllers\Restaurant\TableController;
 use App\Http\Controllers\Restaurant\WaiterController;
 use App\Http\Controllers\RestaurantProfileController;
+use App\Http\Controllers\SocialFeedController;
 use App\Http\Controllers\TableJoinController;
 use App\Http\Controllers\WaiterInvitationController;
 use App\Http\Middleware\EnsureAdmin;
@@ -53,7 +54,11 @@ Route::post('/garcom/aceitar/{token}', [WaiterInvitationController::class, 'stor
     ->name('waiter.invite.accept');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    // Customers land on the social feed; other accounts get the dashboard.
+    Route::get('dashboard', [SocialFeedController::class, 'home'])->name('dashboard');
+
+    // The social network for consumers: posts from every public restaurant, newest first
+    Route::get('vempro', [SocialFeedController::class, 'index'])->name('social.feed');
 
     Route::prefix('customer')
         ->name('customer.')

@@ -40,3 +40,19 @@ export type PublicRestaurant = {
 };
 
 export type RatingSummary = { average: number; count: number };
+
+/** A restaurant as consumers find it (search results, browse strip). */
+export type DirectoryRestaurant = {
+    id: number;
+    name: string;
+    handle: string;
+    logo_url: string | null;
+    rating: RatingSummary;
+};
+
+/** A post in the consumers' feed, which mixes restaurants: each carries its own. */
+export type FeedPost = RestaurantPost & {
+    restaurant: PublicRestaurant;
+    /** The viewer is the restaurant that posted it (may delete it). */
+    is_owner: boolean;
+};

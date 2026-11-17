@@ -16,6 +16,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -23,6 +24,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 /**
  * @property int $id
  * @property string $name
+ * @property string|null $search_name
  * @property string $email
  * @property string|null $phone
  * @property string|null $avatar
@@ -42,20 +44,31 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'email', 'phone', 'avatar', 'logo', 'banner', 'handle', 'profile_public', 'account_type', 'password', 'restaurant_id'])]
-#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
+#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token', 'search_name'])]
 class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
-    /** Every restaurant has a public @handle; it starts from its name and the owner can change it. */
     protected static function booted(): void
     {
         static::saving(function (User $user): void {
+            // Every restaurant has a public @handle; it starts from its name and the owner can change it.
             if ($user->account_type === AccountType::RESTAURANT && blank($user->handle)) {
                 $user->handle = RestaurantHandle::generate($user->name, $user->id);
             }
+
+            // Accent-free copy of the name for the restaurant search ("cafe" finds "Café").
+            if ($user->isDirty('name') || $user->search_name === null) {
+                $user->search_name = self::searchable((string) $user->name);
+            }
         });
+    }
+
+    /** Lowercase without accents: how names and search terms are compared. */
+    public static function searchable(string $value): string
+    {
+        return Str::lower(Str::ascii($value));
     }
 
     /** Whether $viewer can see this restaurant's public profile and its posts. */
@@ -98,6 +111,22 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     public function photos(): HasMany
     {
         return $this->hasMany(RestaurantPhoto::class);
+    }
+
+    /** @return HasMany<RestaurantPost, $this> */
+    public function posts(): HasMany
+    {
+        return $this->hasMany(RestaurantPost::class);
+    }
+
+    /**
+     * Reviews this restaurant received.
+     *
+     * @return HasMany<RestaurantReview, $this>
+     */
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(RestaurantReview::class, 'restaurant_id');
     }
 
     protected $appends = ['avatar_url', 'logo_url', 'banner_url'];

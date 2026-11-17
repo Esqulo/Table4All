@@ -74,7 +74,14 @@ class PostController extends Controller
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'social.msg_post_deleted']);
 
-        // The post page no longer exists: go back to the profile.
-        return to_route('restaurant-profile.show', $user->handle);
+        // Deleted from its own page, which no longer exists: go to the profile.
+        // From the profile or the feed, stay where the restaurant was.
+        $postPage = route('restaurant-profile.post', [$user->handle, $post->id]);
+
+        if (url()->previous() === $postPage) {
+            return to_route('restaurant-profile.show', $user->handle);
+        }
+
+        return back(fallback: route('restaurant-profile.show', $user->handle));
     }
 }

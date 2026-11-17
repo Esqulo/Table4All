@@ -7,6 +7,7 @@ import AppLogoWordmark from '@/components/app-logo-wordmark';
 import InputError from '@/components/input-error';
 import { ConfirmDialog } from '@/components/social/confirm-dialog';
 import { PostCard } from '@/components/social/post-card';
+import { SocialNavActions } from '@/components/social/social-nav';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { timeAgo } from '@/lib/relative-time';
@@ -94,6 +95,9 @@ export default function ProfilePost({
                                 </span>
                             </span>
                         </Link>
+                        <div className="ml-auto">
+                            <SocialNavActions />
+                        </div>
                     </div>
                 </header>
 
