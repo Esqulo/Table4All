@@ -24,8 +24,16 @@ final class RestaurantPost extends Model
 {
     public const BODY_MAX = 2000;
 
-    /** Crop formats offered when posting, as CSS aspect ratios. */
-    public const ASPECTS = ['square' => 1, 'portrait' => 4 / 5, 'landscape' => 16 / 9];
+    /**
+     * Crop formats offered when posting (width / height), the same ones Instagram and
+     * Facebook use, so a picture can be reused there without cropping it again:
+     * feed portrait 4:5, feed square 1:1, feed landscape 1.91:1, and stories/reels/
+     * WhatsApp status 9:16.
+     */
+    public const ASPECTS = ['portrait' => 4 / 5, 'square' => 1, 'landscape' => 1.91, 'story' => 9 / 16];
+
+    /** Width the editor exports, Instagram's standard (1080×1350, 1080×1920, ...). */
+    public const IMAGE_WIDTH = 1080;
 
     protected $fillable = ['user_id', 'body', 'image', 'image_aspect'];
 

@@ -16,8 +16,8 @@ use Inertia\Inertia;
 /** The restaurant publishes and removes posts on its public profile. */
 class PostController extends Controller
 {
-    /** Posts can go full width on a desktop feed. */
-    private const IMAGE_MAX_SIDE = 1600;
+    /** Longest side kept: a 1080×1920 story (9:16) must stay at full Instagram size. */
+    private const IMAGE_MAX_SIDE = 1920;
 
     public function store(Request $request): RedirectResponse
     {

@@ -12,7 +12,6 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { timeAgo } from '@/lib/relative-time';
-import { cn } from '@/lib/utils';
 import restaurantProfile from '@/routes/restaurant-profile';
 import type {
     PostImageAspect,
@@ -22,9 +21,11 @@ import type {
 
 /** Space reserved for the picture before it loads, from the format it was cropped to. */
 const ASPECT_CLASS: Record<PostImageAspect, string> = {
-    square: 'aspect-square',
     portrait: 'aspect-[4/5]',
-    landscape: 'aspect-video',
+    square: 'aspect-square',
+    landscape: 'aspect-[1.91/1]',
+    // Phone-sized, so a 9:16 story doesn't fill a desktop screen.
+    story: 'mx-auto aspect-[9/16] max-w-[360px]',
 };
 
 export function PostCard({
@@ -120,21 +121,22 @@ export function PostCard({
             )}
 
             {post.image_url && (
-                <div
-                    className={cn(
-                        'bg-muted',
-                        ASPECT_CLASS[post.image_aspect ?? 'portrait'],
-                    )}
-                >
-                    <img
-                        src={post.image_url}
-                        alt={t('social.post_image_alt', {
-                            name: restaurant.name,
-                        })}
-                        loading={eagerImage ? 'eager' : 'lazy'}
-                        decoding="async"
-                        className="h-full w-full object-cover"
-                    />
+                <div className="bg-muted">
+                    <div
+                        className={
+                            ASPECT_CLASS[post.image_aspect ?? 'portrait']
+                        }
+                    >
+                        <img
+                            src={post.image_url}
+                            alt={t('social.post_image_alt', {
+                                name: restaurant.name,
+                            })}
+                            loading={eagerImage ? 'eager' : 'lazy'}
+                            decoding="async"
+                            className="h-full w-full object-cover"
+                        />
+                    </div>
                 </div>
             )}
 

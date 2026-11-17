@@ -76,6 +76,29 @@ class SocialTest extends TestCase
         $this->assertTrue($posts->every(fn (RestaurantPost $p) => $p->user_id === $restaurant->id));
     }
 
+    /** @return array<string, array{string, float}> */
+    public static function socialMediaFormats(): array
+    {
+        return [
+            'instagram feed portrait 4:5' => ['portrait', 4 / 5],
+            'instagram feed square 1:1' => ['square', 1.0],
+            'instagram feed landscape 1.91:1' => ['landscape', 1.91],
+            'stories, reels and status 9:16' => ['story', 9 / 16],
+        ];
+    }
+
+    #[DataProvider('socialMediaFormats')]
+    public function test_posts_use_the_social_media_formats(string $aspect, float $ratio): void
+    {
+        $this->assertEqualsWithDelta($ratio, RestaurantPost::ASPECTS[$aspect], 0.0001);
+
+        $this->actingAs($this->restaurant())
+            ->post(route('restaurant.posts.store'), ['image' => $this->png(), 'image_aspect' => $aspect])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame($aspect, RestaurantPost::sole()->image_aspect);
+    }
+
     /** @return array<string, array{array<string, mixed>, string}> */
     public static function invalidPosts(): array
     {
@@ -84,6 +107,7 @@ class SocialTest extends TestCase
             'too long' => [['body' => str_repeat('a', RestaurantPost::BODY_MAX + 1)], 'body'],
             'picture without format' => [['image' => 'PNG'], 'image_aspect'],
             'unknown format' => [['image' => 'PNG', 'image_aspect' => 'panorama'], 'image_aspect'],
+            'video 16:9 is not an instagram format' => [['image' => 'PNG', 'image_aspect' => '16:9'], 'image_aspect'],
             'not a picture' => [['image' => 'PDF', 'image_aspect' => 'square'], 'image'],
         ];
     }

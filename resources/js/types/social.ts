@@ -5,7 +5,8 @@ export type PostReactions = {
     mine: string | null;
 };
 
-export type PostImageAspect = 'square' | 'portrait' | 'landscape';
+/** Social media formats: feed 4:5, 1:1, 1.91:1 and stories 9:16. */
+export type PostImageAspect = 'portrait' | 'square' | 'landscape' | 'story';
 
 export type RestaurantPost = {
     id: number;
