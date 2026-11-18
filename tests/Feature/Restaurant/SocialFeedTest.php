@@ -11,11 +11,12 @@ use App\Support\Emoji;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\RestaurantFixtures;
 use Tests\TestCase;
 
-/** The consumers' feed at /painel: posts from every public restaurant, newest first. */
+/** The consumers' feed at /feed: posts from every public restaurant, newest first. */
 class SocialFeedTest extends TestCase
 {
     use RefreshDatabase;
@@ -33,21 +34,27 @@ class SocialFeedTest extends TestCase
         return RestaurantPost::create(['user_id' => $restaurant->id, 'body' => $body]);
     }
 
-    public function test_feed_lives_at_a_generic_address_and_old_links_still_reach_it(): void
+    public function test_feed_lives_at_its_own_address_and_old_links_still_reach_it(): void
     {
         $this->restaurant(['name' => 'Bar do Zé']);
         $customer = $this->customer();
 
-        $this->assertSame(url('/painel'), route('social.feed'));
-        $this->actingAs($customer)->get('/painel')
+        $this->assertSame(url('/feed'), route('social.feed'));
+        $this->actingAs($customer)->get('/feed')
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page->component('social/feed'));
-        $this->get('/vempro')->assertStatus(301)->assertRedirect('/painel');
+        // Its former addresses still lead there, search term included.
+        foreach (['/vempro', '/painel'] as $former) {
+            $this->get($former)->assertStatus(301)->assertRedirect('/feed');
+            $this->get($former.'?q=bar')->assertStatus(301)->assertRedirect('/feed?q=bar');
+        }
         // The restaurant's own page keeps its /vempro address.
         $this->actingAs($customer)->get('/vempro/bar-do-ze')
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page->component('profile/show'));
-        $this->get('/painel/bar-do-ze')->assertNotFound();
+        $this->get('/feed/bar-do-ze')->assertNotFound();
+        // The restaurant's own dashboard keeps its address.
+        $this->assertSame(url('/restaurant/painel'), route('restaurant.dashboards.index'));
     }
 
     public function test_feed_mixes_every_public_restaurant_newest_first(): void
@@ -183,6 +190,35 @@ class SocialFeedTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page->has('posts.data', 0));
     }
 
+    public function test_only_restaurants_get_the_post_composer_on_the_feed(): void
+    {
+        $this->actingAs($this->restaurant())->get(route('social.feed'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('canPost', true)
+                ->where('profilePublic', true));
+        $this->actingAs($this->restaurant(['profile_public' => false]))->get(route('social.feed'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('canPost', true)
+                ->where('profilePublic', false));
+        $this->actingAs($this->customer())->get(route('social.feed'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('canPost', false)
+                ->where('profilePublic', null));
+    }
+
+    public function test_a_restaurant_posts_from_the_feed_and_stays_there(): void
+    {
+        $restaurant = $this->restaurant();
+
+        $this->actingAs($restaurant)
+            ->from(route('social.feed'))
+            ->post(route('restaurant.posts.store'), ['body' => 'Chopp em dobro hoje', 'request_key' => (string) Str::uuid()])
+            ->assertRedirect(route('social.feed'));
+
+        $this->actingAs($this->customer())->get(route('social.feed'))
+            ->assertInertia(fn (Assert $page) => $page->where('posts.data.0.body', 'Chopp em dobro hoje'));
+    }
+
     public function test_feed_requires_a_verified_account(): void
     {
         $this->get(route('social.feed'))->assertRedirect(route('login'));
@@ -282,13 +318,41 @@ class SocialFeedTest extends TestCase
         }
     }
 
-    public function test_like_wildcards_in_the_term_are_literal(): void
+    public function test_symbols_in_the_term_separate_words_and_are_not_wildcards(): void
     {
         $this->restaurant(['name' => 'Bar 50% off']);
-        $this->restaurant(['name' => 'Bar 500']);
+        $this->restaurant(['name' => 'Pizzaria Bella']);
 
+        // "%" and "_" are neither LIKE wildcards nor tsquery syntax: just separators.
         $this->assertSame(['Bar 50% off'], $this->search('50%'));
         $this->assertSame([], $this->search('b_r'));
+        $this->assertSame([], $this->search("pizza' | bar"));
+        $this->assertSame(['Pizzaria Bella'], $this->search('pizza & !bella:*'));
+    }
+
+    public function test_search_matches_the_start_of_every_word_in_any_order(): void
+    {
+        $this->restaurant(['name' => 'Grão & Prosa Café'])->update(['handle' => 'graoprosa']);
+        $this->restaurant(['name' => 'Pizzaria Forno a Lenha'])->update(['handle' => 'forno-a-lenha']);
+        $this->restaurant(['name' => 'Boteco do Seu Zé']);
+
+        $this->assertSame(['Grão & Prosa Café'], $this->search('grao prosa'));
+        $this->assertSame(['Grão & Prosa Café'], $this->search('prosa grão'));
+        $this->assertSame(['Pizzaria Forno a Lenha'], $this->search('piz for'));
+        $this->assertSame(['Boteco do Seu Zé'], $this->search('boteco ze'));
+        // Every word must match: one that matches nothing rules the restaurant out.
+        $this->assertSame([], $this->search('boteco pizza'));
+        // The start of a word, not the middle.
+        $this->assertSame([], $this->search('izza'));
+    }
+
+    public function test_search_follows_handle_changes(): void
+    {
+        $restaurant = $this->restaurant(['name' => 'Bar do Zé']);
+        $restaurant->update(['handle' => 'esquina-ze']);
+
+        $this->assertSame(['Bar do Zé'], $this->search('esquina'));
+        $this->assertSame(['Bar do Zé'], $this->search('@esquina-ze'));
     }
 
     public function test_typing_reloads_only_the_search_not_the_posts(): void

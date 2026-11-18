@@ -23,6 +23,7 @@ use App\Http\Controllers\WaiterInvitationController;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureRestaurant;
 use App\Http\Middleware\EnsureRestaurantOrWaiter;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
@@ -44,8 +45,13 @@ Route::get('/vempro/{handle}/p/{post}', [RestaurantProfileController::class, 'sh
     ->whereNumber('post')
     ->name('restaurant-profile.post');
 
-// The feed used to live here; old links and bookmarks still reach it.
-Route::permanentRedirect('/vempro', '/painel');
+// The feed's former addresses; old links and bookmarks still reach it, search term included.
+foreach (['/vempro', '/painel'] as $formerFeedUrl) {
+    Route::get($formerFeedUrl, fn (Request $request) => redirect()->to(
+        '/feed'.($request->getQueryString() ? '?'.$request->getQueryString() : ''),
+        301,
+    ));
+}
 
 Route::get('/mesa', [TableJoinController::class, 'index'])->name('table.join');
 Route::get('/mesa/{code}', [TableJoinController::class, 'show'])->name('table.show');
@@ -61,8 +67,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [SocialFeedController::class, 'home'])->name('dashboard');
 
     // The social network for consumers: posts from every public restaurant, newest first.
-    // A generic address: /vempro is the public face of each restaurant (/vempro/{handle}).
-    Route::get('painel', [SocialFeedController::class, 'index'])->name('social.feed');
+    // Its own address: /vempro is the public face of each restaurant (/vempro/{handle}).
+    Route::get('feed', [SocialFeedController::class, 'index'])->name('social.feed');
 
     Route::prefix('customer')
         ->name('customer.')

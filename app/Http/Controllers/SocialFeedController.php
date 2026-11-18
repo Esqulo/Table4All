@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-/** The social network as consumers see it (/painel): posts from every public restaurant. */
+/** The social network as consumers see it (/feed): posts from every public restaurant. */
 class SocialFeedController extends Controller
 {
     /** Posts per page (infinite scroll). */
@@ -45,6 +45,9 @@ class SocialFeedController extends Controller
                 return $page->setCollection(collect(PostFeed::present($page->getCollection(), $viewer, withRestaurant: true)));
             }),
             'canInteract' => $viewer !== null && $viewer->hasVerifiedEmail(),
+            // Restaurants post from the feed too (PostController::store); a hidden profile's posts stay out of it.
+            'canPost' => $isRestaurant = $viewer?->account_type === AccountType::RESTAURANT,
+            'profilePublic' => $isRestaurant ? (bool) ($viewer->profile_public ?? true) : null, // true is the column default
             'suggestedReactions' => Emoji::SUGGESTED,
             // Search by name or @handle. The page reloads only these two props while typing.
             'q' => $q = trim((string) $request->query('q', '')),

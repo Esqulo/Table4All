@@ -980,6 +980,7 @@
         "msg_post_published": "Posted.",
         "msg_post_deleted": "Post deleted.",
         "msg_comment_deleted": "Comment deleted.",
+        "composer_hidden_profile": "Your profile is hidden: your posts are visible only to you, not in the feed.",
         "feed_title": "Feed",
         "profile_breadcrumb": "Restaurant",
         "post_breadcrumb": "Post",

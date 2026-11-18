@@ -19,42 +19,47 @@ final class RestaurantDirectory
 
     public const MAX_RESULTS = 20;
 
+    /** Words of the term used; the box takes 60 characters, this only bounds the query. */
+    private const MAX_WORDS = 8;
+
     /**
-     * Restaurants whose name or @handle contains $term, exact @handle first.
-     * Ignores case and accents ("cafe" finds "Café", "ze" finds "Zé"), and
-     * "bar do ze" also finds the handle "bar-do-ze".
+     * Full-text search (PostgreSQL, users.search_vector) over the name and @handle:
+     * every word typed must start a word of either, in any order, so "grao prosa"
+     * finds "Grão & Prosa Café" and "piz" finds "Pizzaria". Ignores case, accents
+     * ("cafe" finds "Café") and symbols ("@", "&", "%" are not part of any word).
+     * The exact @handle comes first, then by name.
      *
      * @return list<array<string, mixed>>
      */
     public static function search(string $term): array
     {
         $term = User::searchable(ltrim(trim($term), '@'));
+        $query = self::prefixQuery($term);
 
-        if (mb_strlen($term) < self::MIN_TERM) {
+        if (mb_strlen($term) < self::MIN_TERM || $query === null) {
             return [];
         }
 
-        $like = '%'.self::escapeLike($term).'%';
-        // "bar do ze" → "bar-do-ze", to reach handles. Only for plain words:
-        // slugging "50%" would drop the "%" and turn it into a much looser "50".
-        $slug = preg_match('/^[\p{L}\p{N}\s-]+$/u', $term) ? Str::slug($term) : '';
-
         $rows = self::publicRestaurants()
-            ->where(function (Builder $q) use ($like, $slug): void {
-                // search_name is the name already lowercased and without accents (see User::booted()).
-                $q->whereRaw("search_name LIKE ? ESCAPE '!'", [$like])
-                    ->orWhereRaw("handle LIKE ? ESCAPE '!'", [$like]);
-
-                if (mb_strlen($slug) >= self::MIN_TERM) {
-                    $q->orWhereRaw("handle LIKE ? ESCAPE '!'", ['%'.self::escapeLike($slug).'%']);
-                }
-            })
-            ->orderByRaw('CASE WHEN handle = ? THEN 0 ELSE 1 END', [$slug !== '' ? $slug : $term])
+            ->whereRaw("search_vector @@ to_tsquery('simple', ?)", [$query])
+            ->orderByRaw('CASE WHEN handle = ? THEN 0 ELSE 1 END', [Str::slug($term)])
             ->orderBy('name')
             ->limit(self::MAX_RESULTS)
             ->get();
 
         return self::present($rows);
+    }
+
+    /**
+     * "bar do ze" → "bar:* & do:* & ze:*". The words are only letters and digits
+     * (the term is already ASCII), so nothing in them is tsquery syntax.
+     */
+    private static function prefixQuery(string $term): ?string
+    {
+        $words = preg_split('/[^a-z0-9]+/', $term, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $words = array_slice(array_unique($words), 0, self::MAX_WORDS);
+
+        return $words === [] ? null : implode(' & ', array_map(fn (string $w): string => $w.':*', $words));
     }
 
     /**
@@ -110,11 +115,5 @@ final class RestaurantDirectory
         }
 
         return $result;
-    }
-
-    /** "50%_off" must match literally, not as LIKE wildcards. */
-    private static function escapeLike(string $value): string
-    {
-        return str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $value);
     }
 }

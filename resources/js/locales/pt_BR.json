@@ -980,6 +980,7 @@
         "msg_post_published": "Publicação feita.",
         "msg_post_deleted": "Publicação excluída.",
         "msg_comment_deleted": "Comentário excluído.",
+        "composer_hidden_profile": "Seu perfil está oculto: suas publicações aparecem só para você, não no feed.",
         "feed_title": "Feed",
         "profile_breadcrumb": "Restaurante",
         "post_breadcrumb": "Publicação",

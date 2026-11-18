@@ -1,8 +1,10 @@
 import { Head, InfiniteScroll } from '@inertiajs/react';
+import { EyeOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import SocialFeedController from '@/actions/App/Http/Controllers/SocialFeedController';
 import Heading from '@/components/heading';
 import { PostCard } from '@/components/social/post-card';
+import { PostComposer } from '@/components/social/post-composer';
 import {
     RestaurantSearchBox,
     RestaurantSearchResults,
@@ -16,6 +18,10 @@ type Props = {
     posts: { data: FeedPost[] };
     canInteract: boolean;
     suggestedReactions: string[];
+    /** Restaurants write posts here too. */
+    canPost: boolean;
+    /** The poster's profile visibility (null for other accounts): hidden posts stay out of the feed. */
+    profilePublic: boolean | null;
     /** Current search term (?q=). */
     q: string;
     /** Null while there is no search (term shorter than 2 characters). */
@@ -29,6 +35,8 @@ export default function SocialFeed({
     posts,
     canInteract,
     suggestedReactions,
+    canPost,
+    profilePublic,
     q,
     searchResults,
     restaurants,
@@ -53,6 +61,19 @@ export default function SocialFeed({
                     <RestaurantSearchResults results={searchResults} />
                 ) : (
                     <>
+                        {/* Only while browsing: search results come right under the box. */}
+                        {canPost && (
+                            <div className="space-y-2">
+                                <PostComposer />
+                                {profilePublic === false && (
+                                    <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                                        <EyeOff className="h-3.5 w-3.5 shrink-0" />
+                                        {t('social.composer_hidden_profile')}
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
                         <RestaurantStrip restaurants={restaurants} />
 
                         {posts.data.length === 0 ? (
