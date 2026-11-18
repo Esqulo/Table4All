@@ -992,6 +992,19 @@
         "nav_search": "Search venues",
         "nav_feed": "Go to the feed",
         "nav_home": "Home page",
-        "nav_login": "Sign in"
+        "nav_login": "Sign in",
+        "nav_back": "Back"
+    },
+    "errors": {
+        "breadcrumb": "Error",
+        "back": "Back",
+        "go_start": "Go to the start",
+        "go_home": "Home page",
+        "description_403": "You don't have permission to see this page.",
+        "description_404": "The address may be wrong, or the page was removed or hidden.",
+        "description_429": "Too many attempts in a short time. Wait a moment and try again.",
+        "description_500": "Something went wrong on our side. Try again in a moment.",
+        "description_503": "We're under maintenance. Come back in a little while.",
+        "page_expired": "The page was open for too long. Try again."
     }
 }

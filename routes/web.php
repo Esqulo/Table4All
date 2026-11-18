@@ -172,3 +172,8 @@ Route::middleware(['auth', 'verified', EnsureAdmin::class])
     });
 
 require __DIR__.'/settings.php';
+
+// Any other URL: a 404 that goes through the "web" middleware (session, signed-in
+// user), so the error page shows inside the app with the user's navigation.
+// Must stay the last route.
+Route::fallback(fn () => abort(404));

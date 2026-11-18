@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\ErrorPage;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SetLocale;
@@ -8,6 +9,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -34,5 +36,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // (post reactions). Inertia visits don't send "Accept: application/json".
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->wantsJson(),
+        );
+
+        // Error pages render inside the app (with its navigation), not as a bare page.
+        $exceptions->respond(
+            fn (Response $response, Throwable $e, Request $request) => ErrorPage::respond($response, $request),
         );
     })->create();

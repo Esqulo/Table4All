@@ -128,9 +128,10 @@ class LocalizationTest extends TestCase
 
     public function test_error_pages_are_translated(): void
     {
+        // Rendered by the app's layout now (it adds a class attribute), so only the lang is checked.
         $this->get('/pagina-que-nao-existe')->assertNotFound()
             ->assertSee('Página não encontrada')
-            ->assertSee('<html lang="pt-BR">', false);
+            ->assertSee('<html lang="pt-BR"', false);
         $this->withUnencryptedCookie('locale', 'en')->get('/pagina-que-nao-existe')->assertNotFound()->assertSee('Not Found');
     }
 

@@ -1,4 +1,15 @@
-{{-- Copy of the framework's errors::minimal layout; only change: lang follows the current locale instead of a hardcoded "en". --}}
+{{-- Copy of the framework's errors::minimal layout. Changes: lang follows the current locale instead
+     of a hardcoded "en", and the page offers a way out ("Voltar" and the start page). --}}
+@php
+    // Signed-in users start at /dashboard (customers are sent on to the feed); visitors at the
+    // home page. Some errors render before the session starts: then assume a visitor.
+    try {
+        $signedIn = auth()->check();
+    } catch (\Throwable) {
+        $signedIn = false;
+    }
+    $startUrl = $signedIn ? url('/dashboard') : url('/');
+@endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
@@ -15,6 +26,14 @@
             body {
                 font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
             }
+
+            .error-actions { display: flex; flex-wrap: wrap; gap: .75rem; padding: 1.5rem 1rem 0; }
+            .error-actions a {
+                display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0 1.1rem;
+                border-radius: .6rem; font-size: .95rem; font-weight: 600; border: 1px solid #cbd5e0;
+            }
+            .error-actions a:focus-visible { outline: 3px solid #22b573; outline-offset: 2px; }
+            .error-actions .primary { background: #22b573; border-color: #22b573; color: #fff; }
         </style>
     </head>
     <body class="antialiased bg-white text-black">
@@ -29,6 +48,16 @@
                         @yield('message')
                     </div>
                 </div>
+
+                <nav class="error-actions" aria-label="{{ __('errors.navigation') }}">
+                    {{-- Back to the previous page when it was inside the app; otherwise (opened from a
+                         link elsewhere, or no JavaScript) the href leads to the start page. --}}
+                    <a
+                        href="{{ $startUrl }}"
+                        onclick="if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) { history.back(); return false; }"
+                    >&larr; {{ __('errors.back') }}</a>
+                    <a href="{{ $startUrl }}" class="primary">{{ $signedIn ? __('errors.go_start') : __('errors.go_home') }}</a>
+                </nav>
             </div>
         </div>
     </body>

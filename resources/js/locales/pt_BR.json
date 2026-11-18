@@ -992,6 +992,19 @@
         "nav_search": "Buscar estabelecimentos",
         "nav_feed": "Ir para o feed",
         "nav_home": "Página inicial",
-        "nav_login": "Entrar"
+        "nav_login": "Entrar",
+        "nav_back": "Voltar"
+    },
+    "errors": {
+        "breadcrumb": "Erro",
+        "back": "Voltar",
+        "go_start": "Ir para o início",
+        "go_home": "Página inicial",
+        "description_403": "Você não tem permissão para ver esta página.",
+        "description_404": "O endereço pode estar errado, ou a página foi removida ou ocultada.",
+        "description_429": "Muitas tentativas em pouco tempo. Espere um instante e tente de novo.",
+        "description_500": "Algo deu errado do nosso lado. Tente de novo em instantes.",
+        "description_503": "Estamos em manutenção. Volte daqui a pouco.",
+        "page_expired": "A página ficou aberta por muito tempo. Tente de novo."
     }
 }

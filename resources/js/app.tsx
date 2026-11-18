@@ -7,8 +7,12 @@ import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
 import CustomerLayout from '@/layouts/customer-layout';
 import SettingsLayout from '@/layouts/settings/layout';
+import { trackInAppVisits } from '@/lib/history';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Table4All';
+
+// Before the first page renders, so its own visit is counted (see goBack()).
+trackInAppVisits();
 
 createInertiaApp({
     // Pages without a title (the home page) show the brand name as written in the logo.
@@ -21,6 +25,7 @@ createInertiaApp({
             case name.startsWith('profile/'):
             case name === 'restaurant/menus/print':
             case name.startsWith('waiter/'):
+            case name === 'error': // picks AppLayout (signed in) or the public bar itself
                 return null;
             case name.startsWith('table/'):
                 return CustomerLayout;

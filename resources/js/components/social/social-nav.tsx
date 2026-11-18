@@ -1,9 +1,10 @@
 import { Link, usePage } from '@inertiajs/react';
-import { Newspaper, Search } from 'lucide-react';
+import { ArrowLeft, Newspaper, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import SocialFeedController from '@/actions/App/Http/Controllers/SocialFeedController';
 import AppLogoWordmark from '@/components/app-logo-wordmark';
 import { Button } from '@/components/ui/button';
+import { goBack } from '@/lib/history';
 import { feedSearchUrl } from '@/lib/social';
 import { home, login } from '@/routes';
 
@@ -50,6 +51,7 @@ export function SocialNavActions() {
 export function SocialTopBar() {
     const { t } = useTranslation();
     const signedIn = useSignedIn();
+    const start = signedIn ? SocialFeedController.index.url() : home.url();
 
     return (
         <nav
@@ -57,16 +59,28 @@ export function SocialTopBar() {
             className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur"
         >
             <div className="mx-auto flex h-14 max-w-3xl items-center justify-between gap-3 px-4">
-                <Link
-                    href={
-                        signedIn ? SocialFeedController.index.url() : home.url()
-                    }
-                    aria-label={
-                        signedIn ? t('social.nav_feed') : t('social.nav_home')
-                    }
-                >
-                    <AppLogoWordmark className="h-5" />
-                </Link>
+                <div className="flex items-center gap-1">
+                    {/* Previous page of the app, or the feed/site when the profile was opened directly. */}
+                    <button
+                        type="button"
+                        onClick={() => goBack(start)}
+                        aria-label={t('social.nav_back')}
+                        title={t('social.nav_back')}
+                        className="-ml-2 flex size-9 items-center justify-center rounded-full hover:bg-muted"
+                    >
+                        <ArrowLeft className="h-5 w-5" />
+                    </button>
+                    <Link
+                        href={start}
+                        aria-label={
+                            signedIn
+                                ? t('social.nav_feed')
+                                : t('social.nav_home')
+                        }
+                    >
+                        <AppLogoWordmark className="h-5" />
+                    </Link>
+                </div>
                 <SocialNavActions />
             </div>
         </nav>
