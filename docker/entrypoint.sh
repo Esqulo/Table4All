@@ -20,14 +20,15 @@ until pg_isready -h "$db_host" -p "$db_port" -U "$db_user" >/dev/null 2>&1; do
 done
 echo "Database is up."
 
-# The named volume mounted over storage/app/public starts out root-owned;
-# reclaim it for the php-fpm worker user on every boot.
-chown -R www-data:www-data storage bootstrap/cache
-
 php artisan storage:link || true
 php artisan migrate --force
 
 php artisan optimize:clear
 php artisan optimize
+
+# Last, after the artisan commands above: they run as root and write caches, compiled
+# views and logs. php-fpm runs as www-data and must be able to write there too. This also
+# reclaims the named volume mounted over storage/app/public, which starts out root-owned.
+chown -R www-data:www-data storage bootstrap/cache
 
 exec "$@"

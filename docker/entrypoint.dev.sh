@@ -40,12 +40,22 @@ done
 echo "Database is up."
 
 mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache
-chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || true
 
 [ -e public/storage ] || php artisan storage:link
 php artisan migrate --force
 
 # Dev: never cache config/routes/views - clear anything left from a prior run.
 php artisan optimize:clear
+
+# Last, after every artisan command above (they run as root and leave root-owned
+# files: bootstrap/cache/*.php, compiled views, logs). php-fpm runs as www-data
+# and must write there, or every page fails ("touch(): Utime failed").
+chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || true
+
+# Vite runs as www-data (supervisord.dev.conf) and writes its caches inside the
+# root-owned node_modules volume: hand over just those, not the whole tree (slow).
+mkdir -p node_modules/.vite node_modules/.vite-temp
+chown www-data:www-data node_modules
+chown -R www-data:www-data node_modules/.vite node_modules/.vite-temp
 
 exec "$@"
