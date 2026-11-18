@@ -11,8 +11,8 @@ abstract class TestCase extends BaseTestCase
 {
     /**
      * Tests wipe the database (RefreshDatabase). Before any test touches it, make sure
-     * it is SQLite in memory or a dedicated "*_testing" database: a misconfigured run
-     * once erased the development data.
+     * it is a dedicated PostgreSQL "*_testing" database: a misconfigured run once
+     * erased the development data.
      */
     public function createApplication(): Application
     {
@@ -21,10 +21,10 @@ abstract class TestCase extends BaseTestCase
         $connection = (string) $app['config']->get('database.default');
         $database = (string) $app['config']->get("database.connections.{$connection}.database");
 
-        if (! ($connection === 'sqlite' && $database === ':memory:') && ! str_ends_with($database, '_testing')) {
+        if ($connection !== 'pgsql' || ! str_ends_with($database, '_testing')) {
             throw new RuntimeException(
                 "Refusing to run tests against [{$connection}] database [{$database}]: "
-                .'use SQLite :memory: (phpunit.xml) or a "*_testing" database (phpunit.pgsql.xml).'
+                .'use a PostgreSQL "*_testing" database (phpunit.xml).'
             );
         }
 

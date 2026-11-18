@@ -24,8 +24,7 @@ jobs:
       matrix:
         php-version: ['8.3', '8.4', '8.5']
 
-    # Production runs PostgreSQL: the suite runs on it too (phpunit.pgsql.xml),
-    # so SQL that only works on SQLite fails here instead of in production.
+    # Tests run on PostgreSQL, like production (phpunit.xml -> table4all_testing).
     services:
       postgres:
         image: postgres:16-alpine
@@ -78,12 +77,9 @@ jobs:
         run: composer types:check
 
       - name: Tests
-        run: php artisan test
-
-      - name: Tests (PostgreSQL)
         env:
           DB_HOST: 127.0.0.1
           DB_PORT: 5432
           DB_USERNAME: table4all
           DB_PASSWORD: table4all
-        run: vendor/bin/phpunit --configuration phpunit.pgsql.xml
+        run: php artisan test

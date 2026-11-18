@@ -148,13 +148,15 @@ docker compose -f docker-compose.yml --env-file .env.docker down
 ## Testing & code quality
 
 ```bash
-php artisan test        # PHPUnit
+php artisan test        # PHPUnit, on PostgreSQL (database table4all_testing)
 composer types:check    # PHPStan (Larastan)
 composer lint:check     # Laravel Pint (PHP style)
 npm run lint:check      # ESLint
 npm run format:check    # Prettier
 npm run types:check     # tsc
 ```
+
+Tests need a PostgreSQL database named `table4all_testing`: they wipe it on every run, and any other name is refused. Docker creates it with a new volume; on an existing one run `docker compose exec db createdb -U table4all table4all_testing`. Natively, create it on your PostgreSQL with the credentials from `.env`.
 
 `composer test` runs config clearing, lint check, static analysis, and the test suite together in one go. CI runs the same checks (plus frontend lint/format) on every push and pull request to `main`/`develop`.
 

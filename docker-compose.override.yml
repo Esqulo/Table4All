@@ -36,7 +36,7 @@ services:
       POSTGRES_USER: table4all
       POSTGRES_PASSWORD: table4all
     volumes:
-      # Creates table4all_testing (for `composer test:pgsql`) when the volume is new.
+      # Creates table4all_testing (for `php artisan test`) when the volume is new.
       - ./docker/postgres/create-testing-database.sql:/docker-entrypoint-initdb.d/create-testing-database.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U table4all -d table4all"]

@@ -14,7 +14,7 @@ Development (pick one):
 
 Checks (CI runs these on push/PR to `main`/`develop`, PHP 8.3–8.5, Node 22):
 ```bash
-php artisan test                                  # PHPUnit (sqlite :memory:, see phpunit.xml)
+php artisan test                                  # PHPUnit on PostgreSQL (database table4all_testing, see phpunit.xml)
 php artisan test --filter=ProfileUpdateTest       # single test class / method
 php artisan test tests/Feature/Auth/AuthenticationTest.php
 composer types:check    # PHPStan/Larastan, level 7

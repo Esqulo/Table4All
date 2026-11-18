@@ -122,13 +122,6 @@ class DashboardController extends Controller
      */
     private function localClosedDate(string $tz): array
     {
-        if (DB::connection()->getDriverName() === 'pgsql') {
-            return ["DATE((rt.closed_at AT TIME ZONE 'UTC') AT TIME ZONE ?)", [$tz]];
-        }
-
-        // SQLite (tests): the zone's current offset (Brazil has no DST).
-        $offsetMinutes = now($tz)->utcOffset();
-
-        return ['DATE(rt.closed_at, ?)', [sprintf('%+d minutes', $offsetMinutes)]];
+        return ["DATE((rt.closed_at AT TIME ZONE 'UTC') AT TIME ZONE ?)", [$tz]];
     }
 }
