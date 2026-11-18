@@ -15,6 +15,7 @@ Development (pick one):
 Checks (CI runs these on push/PR to `main`/`develop`, PHP 8.3–8.5, Node 22):
 ```bash
 php artisan test                                  # PHPUnit (sqlite :memory:, see phpunit.xml)
+composer test:pgsql     # same suite on PostgreSQL (phpunit.pgsql.xml, database table4all_testing)
 php artisan test --filter=ProfileUpdateTest       # single test class / method
 php artisan test tests/Feature/Auth/AuthenticationTest.php
 composer types:check    # PHPStan/Larastan, level 7
@@ -25,6 +26,8 @@ npm run types:check     # tsc --noEmit
 composer test           # config:clear + pint check + phpstan + tests
 composer ci:check       # everything above, including the frontend checks
 ```
+
+Production runs PostgreSQL, so SQL that only works on SQLite (e.g. an unaliased `COUNT(*)` read back by name) passes `php artisan test` but breaks the app. `ci:check` and the CI workflow therefore also run the suite on PostgreSQL. Its database must be a dedicated `*_testing` one; `Tests\TestCase` refuses to run against anything else, because tests wipe the database. In Docker it is created with the dev volume (`docker/postgres/create-testing-database.sql`); on an existing volume run `docker compose exec db createdb -U table4all table4all_testing` once.
 
 ## Architecture
 

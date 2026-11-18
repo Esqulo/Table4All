@@ -24,6 +24,23 @@ jobs:
       matrix:
         php-version: ['8.3', '8.4', '8.5']
 
+    # Production runs PostgreSQL: the suite runs on it too (phpunit.pgsql.xml),
+    # so SQL that only works on SQLite fails here instead of in production.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: table4all
+          POSTGRES_PASSWORD: table4all
+          POSTGRES_DB: table4all_testing
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U table4all -d table4all_testing"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -62,3 +79,11 @@ jobs:
 
       - name: Tests
         run: php artisan test
+
+      - name: Tests (PostgreSQL)
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_USERNAME: table4all
+          DB_PASSWORD: table4all
+        run: vendor/bin/phpunit --configuration phpunit.pgsql.xml

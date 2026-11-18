@@ -64,7 +64,8 @@
             "npm run lint:check",
             "npm run format:check",
             "npm run types:check",
-            "@test"
+            "@test",
+            "@test:pgsql"
         ],
         "types:check": [
             "phpstan analyse"
@@ -74,6 +75,11 @@
             "@lint:check",
             "@types:check",
             "@php artisan test"
+        ],
+        "test:pgsql": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php artisan config:clear --ansi",
+            "@php vendor/bin/phpunit --configuration phpunit.pgsql.xml"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

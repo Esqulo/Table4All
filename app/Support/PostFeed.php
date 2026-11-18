@@ -35,9 +35,11 @@ final class PostFeed
 
         $ids = array_values(array_map(fn (RestaurantPost $p): int => $p->id, $posts->all()));
         $reactions = self::reactionsFor($ids, $viewer);
+        // Explicit alias: PostgreSQL names a bare COUNT(*) "count", SQLite "COUNT(*)".
         $comments = PostComment::whereIn('post_id', $ids)
             ->groupBy('post_id')
-            ->pluck(DB::raw('COUNT(*)'), 'post_id');
+            ->selectRaw('post_id, COUNT(*) as total')
+            ->pluck('total', 'post_id');
 
         return array_values($posts->map(function (RestaurantPost $post) use ($reactions, $comments, $viewer, $withRestaurant): array {
             $item = [
