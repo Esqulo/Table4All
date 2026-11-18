@@ -17,12 +17,18 @@ trackInAppVisits();
 createInertiaApp({
     // Pages without a title (the home page) show the brand name as written in the logo.
     title: (title) => (title ? `${title} - ${appName}` : 'Table 4 all'),
-    layout: (name) => {
+    layout: (name, page) => {
         switch (true) {
+            // Restaurant profiles open inside the app for signed-in users (same
+            // sidebar as the feed); visitors get the page's own public top bar.
+            case name.startsWith('profile/'):
+                // auth.user is null for guests on public pages.
+                return (page.props as { auth?: { user?: unknown } }).auth?.user
+                    ? AppLayout
+                    : null;
             case name === 'welcome':
             case name === 'contact':
             case name.startsWith('menu/'):
-            case name.startsWith('profile/'):
             case name === 'restaurant/menus/print':
             case name.startsWith('waiter/'):
             case name === 'error': // picks AppLayout (signed in) or the public bar itself

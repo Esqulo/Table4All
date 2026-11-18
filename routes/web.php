@@ -44,6 +44,9 @@ Route::get('/vempro/{handle}/p/{post}', [RestaurantProfileController::class, 'sh
     ->whereNumber('post')
     ->name('restaurant-profile.post');
 
+// The feed used to live here; old links and bookmarks still reach it.
+Route::permanentRedirect('/vempro', '/painel');
+
 Route::get('/mesa', [TableJoinController::class, 'index'])->name('table.join');
 Route::get('/mesa/{code}', [TableJoinController::class, 'show'])->name('table.show');
 
@@ -57,8 +60,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Customers land on the social feed; other accounts get the dashboard.
     Route::get('dashboard', [SocialFeedController::class, 'home'])->name('dashboard');
 
-    // The social network for consumers: posts from every public restaurant, newest first
-    Route::get('vempro', [SocialFeedController::class, 'index'])->name('social.feed');
+    // The social network for consumers: posts from every public restaurant, newest first.
+    // A generic address: /vempro is the public face of each restaurant (/vempro/{handle}).
+    Route::get('painel', [SocialFeedController::class, 'index'])->name('social.feed');
 
     Route::prefix('customer')
         ->name('customer.')

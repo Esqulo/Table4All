@@ -15,7 +15,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\RestaurantFixtures;
 use Tests\TestCase;
 
-/** The consumers' feed at /vempro: posts from every public restaurant, newest first. */
+/** The consumers' feed at /painel: posts from every public restaurant, newest first. */
 class SocialFeedTest extends TestCase
 {
     use RefreshDatabase;
@@ -31,6 +31,23 @@ class SocialFeedTest extends TestCase
     private function newPost(User $restaurant, string $body = 'Promo!'): RestaurantPost
     {
         return RestaurantPost::create(['user_id' => $restaurant->id, 'body' => $body]);
+    }
+
+    public function test_feed_lives_at_a_generic_address_and_old_links_still_reach_it(): void
+    {
+        $this->restaurant(['name' => 'Bar do Zé']);
+        $customer = $this->customer();
+
+        $this->assertSame(url('/painel'), route('social.feed'));
+        $this->actingAs($customer)->get('/painel')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component('social/feed'));
+        $this->get('/vempro')->assertStatus(301)->assertRedirect('/painel');
+        // The restaurant's own page keeps its /vempro address.
+        $this->actingAs($customer)->get('/vempro/bar-do-ze')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component('profile/show'));
+        $this->get('/painel/bar-do-ze')->assertNotFound();
     }
 
     public function test_feed_mixes_every_public_restaurant_newest_first(): void

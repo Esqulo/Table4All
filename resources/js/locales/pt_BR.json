@@ -981,6 +981,8 @@
         "msg_post_deleted": "Publicação excluída.",
         "msg_comment_deleted": "Comentário excluído.",
         "feed_title": "Feed",
+        "profile_breadcrumb": "Restaurante",
+        "post_breadcrumb": "Publicação",
         "feed_description": "Promoções, eventos e novidades dos estabelecimentos.",
         "feed_empty_all": "Ainda não há publicações. Quando os estabelecimentos publicarem promoções e eventos, elas aparecem aqui.",
         "open_profile": "Abrir o perfil de {{name}}",
@@ -993,6 +995,8 @@
         "nav_feed": "Ir para o feed",
         "nav_home": "Página inicial",
         "nav_login": "Entrar",
+        "strip_prev": "Estabelecimentos anteriores",
+        "strip_next": "Mais estabelecimentos",
         "nav_back": "Voltar"
     },
     "errors": {

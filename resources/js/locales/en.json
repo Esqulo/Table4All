@@ -981,6 +981,8 @@
         "msg_post_deleted": "Post deleted.",
         "msg_comment_deleted": "Comment deleted.",
         "feed_title": "Feed",
+        "profile_breadcrumb": "Restaurant",
+        "post_breadcrumb": "Post",
         "feed_description": "Promotions, events and news from the venues.",
         "feed_empty_all": "No posts yet. When venues post promotions and events, they show up here.",
         "open_profile": "Open {{name}}'s profile",
@@ -993,6 +995,8 @@
         "nav_feed": "Go to the feed",
         "nav_home": "Home page",
         "nav_login": "Sign in",
+        "strip_prev": "Previous restaurants",
+        "strip_next": "More restaurants",
         "nav_back": "Back"
     },
     "errors": {

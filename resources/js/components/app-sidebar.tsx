@@ -159,7 +159,8 @@ export function AppSidebar() {
 
     return (
         <Sidebar collapsible="icon" variant="inset">
-            <SidebarHeader className="border-b border-dashed border-sidebar-border pb-3">
+            {/* Same height as AppSidebarHeader (h-16, h-12 collapsed) so both dashed lines line up. */}
+            <SidebarHeader className="h-16 shrink-0 justify-center border-b border-dashed border-sidebar-border py-0 group-data-[collapsible=icon]:h-12">
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>

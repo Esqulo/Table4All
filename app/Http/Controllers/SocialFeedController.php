@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-/** The social network as consumers see it: posts from every public restaurant. */
+/** The social network as consumers see it (/painel): posts from every public restaurant. */
 class SocialFeedController extends Controller
 {
     /** Posts per page (infinite scroll). */

@@ -1,5 +1,6 @@
 import { Head, InfiniteScroll, Link, router, usePage } from '@inertiajs/react';
 import {
+    ArrowLeft,
     BookOpen,
     ChevronLeft,
     ChevronRight,
@@ -16,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import EstablishmentController from '@/actions/App/Http/Controllers/Restaurant/EstablishmentController';
 import MenuController from '@/actions/App/Http/Controllers/Restaurant/MenuController';
+import SocialFeedController from '@/actions/App/Http/Controllers/SocialFeedController';
 import AppLogoWordmark from '@/components/app-logo-wordmark';
 import { PostCard } from '@/components/social/post-card';
 import { PostComposer } from '@/components/social/post-composer';
@@ -28,6 +30,7 @@ import {
     DialogDescription,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { goBack } from '@/lib/history';
 import { cn } from '@/lib/utils';
 import { home } from '@/routes';
 import type {
@@ -117,8 +120,14 @@ export default function ProfileShow({
         <>
             <Head title={restaurant.name} />
 
-            <div className="min-h-screen bg-background pb-12">
-                <SocialTopBar />
+            {/* Signed in, the page sits inside the app (sidebar + breadcrumbs). */}
+            <div
+                className={cn(
+                    'bg-background pb-12',
+                    !signedIn && 'min-h-screen',
+                )}
+            >
+                {!signedIn && <SocialTopBar />}
 
                 {!isPublic && (
                     <div className="border-b bg-muted px-4 py-3">
@@ -139,8 +148,29 @@ export default function ProfileShow({
                     </div>
                 )}
 
+                {/* Inside the app there is no public top bar: this is the way back. */}
+                {signedIn && (
+                    <div className="mx-auto max-w-3xl px-2 pt-2 sm:px-4">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                                goBack(SocialFeedController.index.url())
+                            }
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                            {t('social.nav_back')}
+                        </Button>
+                    </div>
+                )}
+
                 {/* Banner + identity */}
-                <header className="mx-auto max-w-3xl sm:px-4 sm:pt-4">
+                <header
+                    className={cn(
+                        'mx-auto max-w-3xl sm:px-4',
+                        signedIn ? 'pt-2' : 'sm:pt-4',
+                    )}
+                >
                     <div className="relative aspect-[3/1] overflow-hidden bg-gradient-to-br from-primary/80 via-primary/50 to-primary/20 sm:rounded-2xl">
                         {restaurant.banner_url && (
                             <img
@@ -311,19 +341,29 @@ export default function ProfileShow({
                     )}
                 </main>
 
-                <footer className="mt-12 flex justify-center">
-                    <Link
-                        href={home.url()}
-                        className="flex items-center gap-2 text-xs text-muted-foreground"
-                    >
-                        {t('venue_profile.powered_by')}
-                        <AppLogoWordmark className="h-4" />
-                    </Link>
-                </footer>
+                {!signedIn && (
+                    <footer className="mt-12 flex justify-center">
+                        <Link
+                            href={home.url()}
+                            className="flex items-center gap-2 text-xs text-muted-foreground"
+                        >
+                            {t('venue_profile.powered_by')}
+                            <AppLogoWordmark className="h-4" />
+                        </Link>
+                    </footer>
+                )}
             </div>
         </>
     );
 }
+
+// Used only when signed in (app.tsx gives visitors no layout).
+ProfileShow.layout = () => ({
+    breadcrumbs: [
+        { title: 'social.feed_title', href: SocialFeedController.index.url() },
+        { title: 'social.profile_breadcrumb', href: '#' },
+    ],
+});
 
 function OpenBadge({ open }: { open: boolean }) {
     const { t } = useTranslation();

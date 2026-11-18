@@ -1,9 +1,17 @@
 import { Link, router } from '@inertiajs/react';
-import { Loader2, Search, Store, X } from 'lucide-react';
+import {
+    ChevronLeft,
+    ChevronRight,
+    Loader2,
+    Search,
+    Store,
+    X,
+} from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import SocialFeedController from '@/actions/App/Http/Controllers/SocialFeedController';
 import { StarRating } from '@/components/social/star-rating';
+import { cn } from '@/lib/utils';
 import restaurantProfile from '@/routes/restaurant-profile';
 import type { DirectoryRestaurant } from '@/types';
 
@@ -160,9 +168,58 @@ export function RestaurantStrip({
 }) {
     const { t } = useTranslation();
 
+    const listRef = useRef<HTMLUListElement>(null);
+    const [edges, setEdges] = useState({ start: false, end: false });
+
+    // Arrows and fades only where there is more to see. A scroll listener plus
+    // a ResizeObserver: no polling, nothing runs while the strip sits still.
+    useEffect(() => {
+        const list = listRef.current;
+
+        if (!list) {
+            return;
+        }
+
+        let frame = 0;
+        const update = () => {
+            cancelAnimationFrame(frame);
+            frame = requestAnimationFrame(() => {
+                const max = list.scrollWidth - list.clientWidth;
+                const start = list.scrollLeft > 4;
+                const end = list.scrollLeft < max - 4;
+                setEdges((e) =>
+                    e.start === start && e.end === end ? e : { start, end },
+                );
+            });
+        };
+
+        update();
+        list.addEventListener('scroll', update, { passive: true });
+        const observer =
+            typeof ResizeObserver !== 'undefined'
+                ? new ResizeObserver(update)
+                : null;
+        observer?.observe(list);
+
+        return () => {
+            cancelAnimationFrame(frame);
+            list.removeEventListener('scroll', update);
+            observer?.disconnect();
+        };
+    }, [restaurants.length]);
+
     if (restaurants.length === 0) {
         return null;
     }
+
+    const page = (direction: 1 | -1) => {
+        const list = listRef.current;
+
+        list?.scrollBy({
+            left: direction * list.clientWidth * 0.8,
+            behavior: 'smooth',
+        });
+    };
 
     return (
         <section aria-labelledby="strip-title">
@@ -172,26 +229,87 @@ export function RestaurantStrip({
             >
                 {t('social.strip_title')}
             </h2>
-            <ul className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0">
-                {restaurants.map((r) => (
-                    <li key={r.id} className="w-20 shrink-0">
-                        <Link
-                            href={restaurantProfile.show.url({
-                                handle: r.handle,
-                            })}
-                            className="flex flex-col items-center gap-1.5 text-center"
-                        >
-                            <Logo
-                                restaurant={r}
-                                className="size-16 rounded-2xl shadow-xs"
-                            />
-                            <span className="line-clamp-2 text-xs leading-tight font-medium">
-                                {r.name}
-                            </span>
-                        </Link>
-                    </li>
-                ))}
-            </ul>
+            <div className="relative -mx-4 sm:mx-0">
+                <ul
+                    ref={listRef}
+                    className="flex snap-x snap-mandatory scroll-px-4 [scrollbar-width:none] gap-3 overflow-x-auto overscroll-x-contain px-4 pb-1 sm:scroll-px-0 sm:px-0 [&::-webkit-scrollbar]:hidden"
+                >
+                    {restaurants.map((r) => (
+                        <li key={r.id} className="w-20 shrink-0 snap-start">
+                            <Link
+                                href={restaurantProfile.show.url({
+                                    handle: r.handle,
+                                })}
+                                className="flex flex-col items-center gap-1.5 rounded-xl text-center"
+                            >
+                                <Logo
+                                    restaurant={r}
+                                    className="size-16 rounded-2xl shadow-xs"
+                                />
+                                <span className="line-clamp-2 text-xs leading-tight font-medium">
+                                    {r.name}
+                                </span>
+                            </Link>
+                        </li>
+                    ))}
+                </ul>
+
+                {/* Fades hint that the strip continues; arrows for mouse users (touch swipes). */}
+                <StripEdge
+                    side="start"
+                    visible={edges.start}
+                    label={t('social.strip_prev')}
+                    onClick={() => page(-1)}
+                />
+                <StripEdge
+                    side="end"
+                    visible={edges.end}
+                    label={t('social.strip_next')}
+                    onClick={() => page(1)}
+                />
+            </div>
         </section>
+    );
+}
+
+function StripEdge({
+    side,
+    visible,
+    label,
+    onClick,
+}: {
+    side: 'start' | 'end';
+    visible: boolean;
+    label: string;
+    onClick: () => void;
+}) {
+    const Icon = side === 'start' ? ChevronLeft : ChevronRight;
+
+    return (
+        <div
+            aria-hidden={!visible}
+            className={cn(
+                'pointer-events-none absolute inset-y-0 flex w-12 items-start pt-4 transition-opacity duration-200',
+                side === 'start'
+                    ? 'left-0 justify-start bg-gradient-to-r'
+                    : 'right-0 justify-end bg-gradient-to-l',
+                'from-background via-background/70 to-transparent',
+                visible ? 'opacity-100' : 'opacity-0',
+            )}
+        >
+            <button
+                type="button"
+                onClick={onClick}
+                tabIndex={visible ? 0 : -1}
+                aria-label={label}
+                title={label}
+                className={cn(
+                    'hidden size-8 items-center justify-center rounded-full border bg-card text-foreground shadow-sm hover:bg-muted sm:flex',
+                    visible && 'pointer-events-auto',
+                )}
+            >
+                <Icon className="h-4 w-4" />
+            </button>
+        </div>
     );
 }

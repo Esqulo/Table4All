@@ -3,6 +3,7 @@ import { ArrowLeft, EyeOff, Send, Store, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import PostInteractionController from '@/actions/App/Http/Controllers/PostInteractionController';
+import SocialFeedController from '@/actions/App/Http/Controllers/SocialFeedController';
 import AppLogoWordmark from '@/components/app-logo-wordmark';
 import InputError from '@/components/input-error';
 import { ConfirmDialog } from '@/components/social/confirm-dialog';
@@ -12,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { timeAgo } from '@/lib/relative-time';
 import { newRequestKey } from '@/lib/request-key';
+import { cn } from '@/lib/utils';
 import { home, login } from '@/routes';
 import restaurantProfile from '@/routes/restaurant-profile';
 import { notice as verificationNotice } from '@/routes/verification';
@@ -54,7 +56,12 @@ export default function ProfilePost({
                 title={t('social.post_page_title', { name: restaurant.name })}
             />
 
-            <div className="min-h-screen bg-background pb-12">
+            <div
+                className={cn(
+                    'bg-background pb-12',
+                    !signedIn && 'min-h-screen',
+                )}
+            >
                 {!isPublic && (
                     <p className="flex items-center justify-center gap-2 border-b bg-muted px-4 py-3 text-sm">
                         <EyeOff className="h-4 w-4 shrink-0" />
@@ -95,9 +102,12 @@ export default function ProfilePost({
                                 </span>
                             </span>
                         </Link>
-                        <div className="ml-auto">
-                            <SocialNavActions />
-                        </div>
+                        {/* Signed in, the app sidebar already leads to the feed and search. */}
+                        {!signedIn && (
+                            <div className="ml-auto">
+                                <SocialNavActions />
+                            </div>
+                        )}
                     </div>
                 </header>
 
@@ -170,19 +180,35 @@ export default function ProfilePost({
                     </section>
                 </main>
 
-                <footer className="mt-12 flex justify-center">
-                    <Link
-                        href={home.url()}
-                        className="flex items-center gap-2 text-xs text-muted-foreground"
-                    >
-                        {t('venue_profile.powered_by')}
-                        <AppLogoWordmark className="h-4" />
-                    </Link>
-                </footer>
+                {!signedIn && (
+                    <footer className="mt-12 flex justify-center">
+                        <Link
+                            href={home.url()}
+                            className="flex items-center gap-2 text-xs text-muted-foreground"
+                        >
+                            {t('venue_profile.powered_by')}
+                            <AppLogoWordmark className="h-4" />
+                        </Link>
+                    </footer>
+                )}
             </div>
         </>
     );
 }
+
+// Used only when signed in (app.tsx gives visitors no layout).
+ProfilePost.layout = (props: Props) => ({
+    breadcrumbs: [
+        { title: 'social.feed_title', href: SocialFeedController.index.url() },
+        {
+            title: 'social.profile_breadcrumb',
+            href: restaurantProfile.show.url({
+                handle: props.restaurant.handle,
+            }),
+        },
+        { title: 'social.post_breadcrumb', href: '#' },
+    ],
+});
 
 function Comment({ comment }: { comment: PostComment }) {
     const { t, i18n } = useTranslation();
