@@ -1,8 +1,9 @@
 import { createInertiaApp } from '@inertiajs/react';
+import { SwitchLocaleAfterHydration } from '@/components/switch-locale-after-hydration';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
-import '@/i18n';
+import { adoptServerLocale } from '@/i18n';
 import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
 import CustomerLayout from '@/layouts/customer-layout';
@@ -44,11 +45,15 @@ createInertiaApp({
         }
     },
     strictMode: true,
-    withApp(app) {
+    withApp(app, { page }) {
+        // Same language on the server and in the hydrating browser (see adoptServerLocale).
+        const preferred = adoptServerLocale(page.props.locale);
+
         return (
             <TooltipProvider delayDuration={0}>
                 {app}
                 <Toaster />
+                {preferred && <SwitchLocaleAfterHydration to={preferred} />}
             </TooltipProvider>
         );
     },

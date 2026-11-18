@@ -10,6 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Testing\TestResponse;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\RestaurantFixtures;
 use Tests\TestCase;
 
@@ -63,6 +64,16 @@ class LocalizationTest extends TestCase
     }
 
     // ── what gets translated ─────────────────────────────────────────────────
+
+    /** The server render and the browser's hydration use this, so they produce the same HTML. */
+    public function test_pages_receive_the_language_of_the_response(): void
+    {
+        $this->get(route('login'))->assertInertia(fn (Assert $page) => $page->where('locale', 'pt_BR'));
+        $this->withUnencryptedCookie('locale', 'en')->get(route('login'))
+            ->assertInertia(fn (Assert $page) => $page->where('locale', 'en'));
+        $this->withUnencryptedCookie('locale', 'fr')->get(route('login'))
+            ->assertInertia(fn (Assert $page) => $page->where('locale', 'pt_BR'));
+    }
 
     public function test_validation_messages_use_readable_field_names(): void
     {

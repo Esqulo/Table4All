@@ -23,13 +23,18 @@ class SetLocale
     /** Locales with translations on both sides (lang/ and resources/js/locales/). */
     public const SUPPORTED = ['pt_BR', 'en'];
 
+    /** Without a valid cookie (first visit): the frontend's default too. Not config('app.locale'), which setLocale() overwrites. */
+    public const DEFAULT = 'pt_BR';
+
     public function handle(Request $request, Closure $next): Response
     {
         $locale = $request->cookie(self::COOKIE);
 
-        if (is_string($locale) && in_array($locale, self::SUPPORTED, true)) {
-            App::setLocale($locale);
-        }
+        // Always set, falling back to the configured default: a long-lived process
+        // (queue worker, Octane, the test suite) must not keep the previous request's language.
+        App::setLocale(is_string($locale) && in_array($locale, self::SUPPORTED, true)
+            ? $locale
+            : self::DEFAULT);
 
         return $next($request);
     }

@@ -62,6 +62,26 @@ export function setLocale(lng: Locale): void {
     void i18n.changeLanguage(lng);
 }
 
+/**
+ * Server rendering only knows the `locale` cookie, not localStorage. Render
+ * (on the server) and hydrate (in the browser) in the language of the
+ * response, so both produce the same HTML. Returns the browser's own choice
+ * when it differs (cookie missing or stale), to apply after hydration.
+ */
+export function adoptServerLocale(serverLocale: unknown): Locale | null {
+    if (!SUPPORTED.includes(serverLocale as Locale)) {
+        return null;
+    }
+
+    const preferred = readStoredLocale();
+
+    if (i18n.language !== serverLocale) {
+        void i18n.changeLanguage(serverLocale as Locale);
+    }
+
+    return preferred !== null && preferred !== serverLocale ? preferred : null;
+}
+
 export function getLocale(): Locale {
     return (i18n.language as Locale) ?? 'pt_BR';
 }

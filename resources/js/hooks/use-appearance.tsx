@@ -68,7 +68,14 @@ const mediaQuery = (): MediaQueryList | null => {
     return window.matchMedia('(prefers-color-scheme: dark)');
 };
 
-const handleSystemThemeChange = (): void => applyTheme(currentAppearance);
+const handleSystemThemeChange = (): void => {
+    applyTheme(currentAppearance);
+    // "system" users see the toggle follow the OS switch.
+    notify();
+};
+
+const resolve = (appearance: Appearance): ResolvedAppearance =>
+    isDarkMode(appearance) ? 'dark' : 'light';
 
 export function initializeTheme(): void {
     if (typeof window === 'undefined') {
@@ -94,9 +101,16 @@ export function useAppearance(): UseAppearanceReturn {
         () => 'system',
     );
 
-    const resolvedAppearance: ResolvedAppearance = isDarkMode(appearance)
-        ? 'dark'
-        : 'light';
+    // The server can't know the OS theme (prefers-color-scheme), so it renders
+    // 'light'. Hydration renders with this server snapshot too and React then
+    // switches to the real value: no hydration mismatch in the toggle's icon/label.
+    // (The page colours never wait: the inline script in app.blade.php and
+    // initializeTheme() set them on <html> before React runs.)
+    const resolvedAppearance: ResolvedAppearance = useSyncExternalStore(
+        subscribe,
+        () => resolve(currentAppearance),
+        () => 'light',
+    );
 
     const updateAppearance = (mode: Appearance): void => {
         currentAppearance = mode;
