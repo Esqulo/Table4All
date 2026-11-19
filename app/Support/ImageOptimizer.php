@@ -55,6 +55,31 @@ final class ImageOptimizer
     }
 
     /**
+     * Like storeUpload(), but never keeps the original: returns null when the picture can't be
+     * decoded and re-encoded. Re-encoding drops everything but the pixels (EXIF with the GPS
+     * position, anything appended to the file), which matters for pictures anyone can see.
+     */
+    public static function storeReencoded(UploadedFile $file, string $directory, int $maxSide = self::MAX_SIDE): ?string
+    {
+        $contents = @file_get_contents($file->getRealPath());
+
+        if ($contents === false) {
+            return null;
+        }
+
+        $optimized = self::optimize($contents, self::exifOrientation($file->getRealPath()), $maxSide);
+
+        if ($optimized === null) {
+            return null;
+        }
+
+        $path = $directory.'/'.Str::random(40).'.'.$optimized['extension'];
+        Storage::disk('public')->put($path, $optimized['data']);
+
+        return $path;
+    }
+
+    /**
      * Re-encodes an already stored picture. Returns the new path, or null when
      * the file could not be improved (it is left untouched in that case).
      */

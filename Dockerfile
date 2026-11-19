@@ -39,6 +39,7 @@ RUN php artisan package:discover --ansi \
 # ---- Runtime image ----
 FROM php:8.3-fpm-alpine AS app
 
+# ffmpeg converts "Hoje tem!" videos (App\Support\Video\FfmpegVideoTranscoder).
 RUN apk add --no-cache \
         nginx \
         supervisor \
@@ -46,6 +47,7 @@ RUN apk add --no-cache \
         libpng \
         libjpeg-turbo \
         libwebp \
+        ffmpeg \
     && apk add --no-cache --virtual .build-deps \
         $PHPIZE_DEPS \
         postgresql-dev \

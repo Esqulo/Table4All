@@ -81,5 +81,13 @@
     "Showing": "Mostrando",
     "to": "a",
     "of": "de",
-    "results": "resultados"
+    "results": "resultados",
+
+    "stories.error_type": "Envie uma foto (JPG, PNG ou WebP) ou um vídeo (MP4, MOV ou WebM).",
+    "stories.error_too_big": "O arquivo passa de :mb MB.",
+    "stories.error_image_unreadable": "Não conseguimos ler essa imagem. Tente outra foto.",
+    "stories.error_video_unreadable": "Não conseguimos ler esse vídeo. Grave de novo ou tente outro arquivo.",
+    "stories.error_video_too_long": "O vídeo pode ter no máximo :seconds segundos.",
+    "stories.error_video_unavailable": "Vídeos estão indisponíveis no momento. Publique uma foto.",
+    "stories.error_limit": "Você já tem :max publicações no Hoje tem!. Apague uma ou espere alguma expirar."
 }

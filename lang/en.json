@@ -26,5 +26,13 @@
     "mail.waiter_invitation.cta": "Accept invitation",
     "mail.waiter_invitation.expires": "This invitation expires in **:days days**.",
     "mail.waiter_invitation.ignore": "If you don't recognize this invitation, you can safely ignore this email.",
-    "mail.waiter_invitation.signature": "Best regards,\nThe :app team"
+    "mail.waiter_invitation.signature": "Best regards,\nThe :app team",
+
+    "stories.error_type": "Send a photo (JPG, PNG or WebP) or a video (MP4, MOV or WebM).",
+    "stories.error_too_big": "The file is over :mb MB.",
+    "stories.error_image_unreadable": "We couldn't read this picture. Try another photo.",
+    "stories.error_video_unreadable": "We couldn't read this video. Record it again or try another file.",
+    "stories.error_video_too_long": "The video can be at most :seconds seconds long.",
+    "stories.error_video_unavailable": "Videos are unavailable right now. Post a photo instead.",
+    "stories.error_limit": "You already have :max posts in Hoje tem!. Delete one or wait for one to expire."
 }

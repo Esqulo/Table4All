@@ -200,6 +200,7 @@ return [
         'profile_public' => 'visibilidade do perfil',
         'address' => 'endereço',
         'ifood_url' => 'link do iFood',
+        'media' => 'arquivo',
         'body' => 'texto',
         'image' => 'foto',
         'image_aspect' => 'formato da foto',

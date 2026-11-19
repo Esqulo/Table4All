@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Support\Video\FfmpegVideoTranscoder;
+use App\Support\Video\VideoTranscoder;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +17,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(VideoTranscoder::class, fn (): VideoTranscoder => new FfmpegVideoTranscoder(
+            (string) config('services.ffmpeg.ffmpeg'),
+            (string) config('services.ffmpeg.ffprobe'),
+        ));
     }
 
     /**

@@ -67,6 +67,11 @@ venue (around 40 open tables and 150 products):
 16. nginx gzips text responses and serves `/build/*` (hashed) with a one-year immutable cache and `/storage/*` (random names) with a 30-day cache.
 17. PHP-FPM keeps warm workers (`pm.min_spare_servers`), recycles them (`pm.max_requests`) and kills stuck requests (`request_terminate_timeout = 60s`). Size `pm.max_children` to the host: about `(RAM for PHP) / 50 MB`.
 18. OPcache with `validate_timestamps = 0`, a large realpath cache, and `php artisan optimize` on boot (in `docker/entrypoint.sh`).
+19. **"Hoje tem!" stories (pictures and videos, gone after 24 hours).** Uploads are untrusted and never served as they came:
+    - The type is read from the content (fileinfo), then pictures are re-encoded by GD (`ImageOptimizer::storeReencoded()`, which refuses what it can't decode instead of keeping the original), dropping EXIF/GPS. The browser crops them to 9:16 first, so little is sent.
+    - Videos (at most 30 s and 50 MB, checked in the browser before uploading and again on the server) wait on the **private** disk until `App\Jobs\ProcessStoryVideo` converts them on the queue with ffmpeg: 720p H.264/AAC, metadata stripped, `+faststart` so playback starts before the download ends. ffmpeg only reads local files, only MP4/MOV/WebM with camera codecs, with timeouts (`App\Support\Video\FfmpegVideoTranscoder`).
+    - `stories:prune` (scheduled every 5 minutes) deletes expired stories with their files, gives up on conversions stuck for an hour, and sweeps any story file older than 25 h, so nothing accumulates. Expired stories are hidden by the query right away, before the cleanup runs.
+    - The feed's strip is 3 queries whatever the number of stories, and only the owner's strip polls (`useLiveReload`) while one of its videos converts.
 
 ## How to test under adverse conditions
 
@@ -108,6 +113,10 @@ venue (around 40 open tables and 150 products):
 - Rebuild the images (`docker compose build`): the GD and EXIF extensions were added. Without GD, uploads still work but are stored unoptimized.
 - Migrations run on boot. The index migration is additive and quick on current data volumes.
 - After deploying, run `php artisan products:optimize-images` once to shrink existing pictures.
+
+### Deploy notes for "Hoje tem!" (2026-11-19)
+- Rebuild the images (`docker compose build`): ffmpeg was added, and the upload limit went from 20 MB to 60 MB (nginx and PHP). Without ffmpeg the app keeps working, with pictures only: the strip doesn't offer videos.
+- The queue worker converts the videos and the scheduler runs `stories:prune`; both already run in the production container. The dev container now runs the scheduler too.
 
 ### Known gaps / next steps
 - **Polling vs push.** Polling is simple and robust on bad networks, but with many screens open it costs one request per screen every few seconds. If load grows, move the kitchen and delivery boards to WebSockets (Laravel Reverb) and keep polling as the fallback.
