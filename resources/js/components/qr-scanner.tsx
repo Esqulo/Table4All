@@ -32,6 +32,39 @@ export function extractTableCode(text: string): string | null {
     }
 }
 
+const CUSTOMER_PAYLOAD = /^t4a-customer:([A-Za-z0-9]{40})$/;
+
+/** Pulls the one-time token out of the QR a customer generates for staff. */
+export function extractCustomerToken(text: string): string | null {
+    return text.trim().match(CUSTOMER_PAYLOAD)?.[1] ?? null;
+}
+
+/** What is being scanned: a table's code, or a customer's one-time QR. */
+export type ScanKind = 'table' | 'customer';
+
+const PARSERS: Record<ScanKind, (text: string) => string | null> = {
+    table: extractTableCode,
+    customer: extractCustomerToken,
+};
+
+const TEXTS: Record<
+    ScanKind,
+    { button: string; title: string; description: string; mismatch: string }
+> = {
+    table: {
+        button: 'join_table.scan_button',
+        title: 'join_table.scan_title',
+        description: 'join_table.scan_description',
+        mismatch: 'join_table.scan_not_a_table',
+    },
+    customer: {
+        button: 'tables.customer_scan_button',
+        title: 'tables.customer_scan_title',
+        description: 'tables.customer_scan_description',
+        mismatch: 'tables.customer_scan_mismatch',
+    },
+};
+
 type BarcodeDetectorLike = {
     detect(source: CanvasImageSource): Promise<{ rawValue: string }[]>;
 };
@@ -102,12 +135,18 @@ async function createDecoder(): Promise<Decoder> {
 
 type ScanError = 'permission_denied' | 'unavailable' | null;
 
-function QrScannerView({ onCode }: { onCode: (code: string) => void }) {
+function QrScannerView({
+    kind,
+    onCode,
+}: {
+    kind: ScanKind;
+    onCode: (code: string) => void;
+}) {
     const { t } = useTranslation();
     const videoRef = useRef<HTMLVideoElement>(null);
     const [error, setError] = useState<ScanError>(null);
     const [starting, setStarting] = useState(true);
-    const [notATable, setNotATable] = useState(false);
+    const [mismatch, setMismatch] = useState(false);
     const onCodeRef = useRef(onCode);
 
     useEffect(() => {
@@ -183,7 +222,7 @@ function QrScannerView({ onCode }: { onCode: (code: string) => void }) {
                 }
 
                 if (text !== null) {
-                    const code = extractTableCode(text);
+                    const code = PARSERS[kind](text);
 
                     if (code) {
                         cancelled = true;
@@ -193,7 +232,7 @@ function QrScannerView({ onCode }: { onCode: (code: string) => void }) {
                         return;
                     }
 
-                    setNotATable(true);
+                    setMismatch(true);
                 }
 
                 timer = window.setTimeout(tick, SCAN_INTERVAL_MS);
@@ -209,7 +248,7 @@ function QrScannerView({ onCode }: { onCode: (code: string) => void }) {
             window.clearTimeout(timer);
             stream?.getTracks().forEach((track) => track.stop());
         };
-    }, []);
+    }, [kind]);
 
     if (error) {
         return (
@@ -240,7 +279,7 @@ function QrScannerView({ onCode }: { onCode: (code: string) => void }) {
                 className="min-h-5 text-center text-sm text-muted-foreground"
                 aria-live="polite"
             >
-                {notATable ? t('join_table.scan_not_a_table') : ''}
+                {mismatch ? t(TEXTS[kind].mismatch) : ''}
             </p>
         </div>
     );
@@ -251,7 +290,15 @@ const cameraSupported = () => !!navigator.mediaDevices?.getUserMedia;
 // SSR renders without the button; the client adds it when a camera API exists.
 const cameraSupportedOnServer = () => false;
 
-export function QrScanButton({ onCode }: { onCode: (code: string) => void }) {
+export function QrScanButton({
+    onCode,
+    kind = 'table',
+    size = 'lg',
+}: {
+    onCode: (code: string) => void;
+    kind?: ScanKind;
+    size?: 'default' | 'lg' | 'sm';
+}) {
     const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const supported = useSyncExternalStore(
@@ -269,23 +316,24 @@ export function QrScanButton({ onCode }: { onCode: (code: string) => void }) {
             <Button
                 type="button"
                 variant="outline"
-                size="lg"
+                size={size}
                 onClick={() => setOpen(true)}
             >
                 <ScanLine />
-                {t('join_table.scan_button')}
+                {t(TEXTS[kind].button)}
             </Button>
 
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogContent className="max-w-sm">
                     <DialogHeader>
-                        <DialogTitle>{t('join_table.scan_title')}</DialogTitle>
+                        <DialogTitle>{t(TEXTS[kind].title)}</DialogTitle>
                         <DialogDescription>
-                            {t('join_table.scan_description')}
+                            {t(TEXTS[kind].description)}
                         </DialogDescription>
                     </DialogHeader>
                     {open && (
                         <QrScannerView
+                            kind={kind}
                             onCode={(code) => {
                                 setOpen(false);
                                 onCode(code);

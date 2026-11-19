@@ -34,5 +34,6 @@
     "stories.error_video_unreadable": "We couldn't read this video. Record it again or try another file.",
     "stories.error_video_too_long": "The video can be at most :seconds seconds long.",
     "stories.error_video_unavailable": "Videos are unavailable right now. Post a photo instead.",
-    "stories.error_limit": "You already have :max posts in Hoje tem!. Delete one or wait for one to expire."
+    "stories.error_limit": "You already have :max posts in Hoje tem!. Delete one or wait for one to expire.",
+    "tables.customer_qr_invalid": "The customer's QR code expired or was already used. Ask them to generate a new one and scan again."
 }

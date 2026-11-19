@@ -25,6 +25,8 @@ class TableRequest extends FormRequest
             'queue_additions.*.price' => ['required', 'numeric', 'min:0', 'max:99999.99'],
             'queue_additions.*.quantity' => ['required', 'integer', 'min:1', 'max:999'],
             'order_version' => ['nullable', 'string', 'max:64'],
+            // One-time QR a customer showed; links the new table to them.
+            'customer_token' => ['nullable', 'string', 'max:64'],
         ];
     }
 }

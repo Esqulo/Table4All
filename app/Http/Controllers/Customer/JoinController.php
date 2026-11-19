@@ -10,6 +10,7 @@ use App\Models\QueueItem;
 use App\Models\RestaurantTable;
 use App\Models\Sale;
 use App\Models\User;
+use App\Support\CustomerLink;
 use App\Support\Idempotency;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -40,7 +41,27 @@ class JoinController extends Controller
 
         return Inertia::render('customer/join', [
             'tables' => $tables,
+            'link' => CustomerLink::latestFor($request->user()->id),
         ]);
+    }
+
+    /**
+     * A one-time QR (valid one minute) the customer shows to staff opening a
+     * table, so the new table is linked to them.
+     */
+    public function createLink(Request $request): RedirectResponse
+    {
+        CustomerLink::issue($request->user()->id);
+
+        return redirect()->route('customer.join');
+    }
+
+    /** The customer withdraws their QR before anyone uses it. */
+    public function cancelLink(Request $request): RedirectResponse
+    {
+        CustomerLink::cancel($request->user()->id);
+
+        return redirect()->route('customer.join');
     }
 
     public function show(Request $request, string $code): Response|RedirectResponse

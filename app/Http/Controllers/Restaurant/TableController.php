@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\QueueItem;
 use App\Models\RestaurantTable;
 use App\Models\Sale;
+use App\Support\CustomerLink;
 use App\Support\Idempotency;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -64,14 +65,26 @@ class TableController extends Controller
     public function store(TableRequest $request): RedirectResponse
     {
         $restaurantId = $request->user()->effectiveRestaurantId();
+        $customerToken = $request->validated('customer_token');
 
-        RestaurantTable::create([
-            'user_id' => $restaurantId,
-            'title' => $request->validated('title'),
-            'access_code' => RestaurantTable::generateUniqueCode(),
+        // With a customer's QR the table is born linked to them; a bad or expired
+        // code rolls the table back so staff can scan again.
+        DB::transaction(function () use ($request, $restaurantId, $customerToken) {
+            $table = RestaurantTable::create([
+                'user_id' => $restaurantId,
+                'title' => $request->validated('title'),
+                'access_code' => RestaurantTable::generateUniqueCode(),
+            ]);
+
+            if (is_string($customerToken) && $customerToken !== '') {
+                CustomerLink::consume($customerToken, $table);
+            }
+        });
+
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => $customerToken ? 'tables.msg_created_linked' : 'tables.msg_created',
         ]);
-
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'tables.msg_created']);
 
         return to_route('restaurant.tables.index');
     }

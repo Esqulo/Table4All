@@ -362,6 +362,15 @@
         "view_kitchen": "Cozinha"
     },
     "tables": {
+        "customer_label": "Cliente (opcional)",
+        "customer_hint": "Leia o QR code gerado pelo cliente no app para vincular a mesa a ele. O código vale por 1 minuto.",
+        "customer_scanned": "QR code do cliente lido",
+        "customer_remove": "Remover cliente",
+        "customer_scan_button": "Ler QR do cliente",
+        "customer_scan_title": "Ler QR code do cliente",
+        "customer_scan_description": "Aponte a câmera para o QR code que o cliente gerou no app.",
+        "customer_scan_mismatch": "Este não é o QR code de um cliente.",
+        "msg_created_linked": "Mesa criada e vinculada ao cliente.",
         "close_table_confirm_undelivered_other": "Há {{count}} itens ainda não entregues. Ao fechar a mesa eles serão registrados como \"cliente foi embora sem receber\" e não serão cobrados. Fechar mesmo assim?",
         "close_table_confirm_undelivered_one": "Há {{count}} item ainda não entregue. Ao fechar a mesa ele será registrado como \"cliente foi embora sem receber\" e não será cobrado. Fechar mesmo assim?",
         "title": "Mesas",
@@ -478,6 +487,13 @@
         "ends_at_label": "Data e hora de término"
     },
     "join_table": {
+        "link_title": "Abrir mesa com o garçom",
+        "link_description": "Gere um QR code e mostre ao garçom ao abrir sua mesa: ela fica vinculada a você. Vale por 1 minuto e só pode ser usado uma vez.",
+        "link_generate": "Gerar QR code",
+        "link_generate_new": "Gerar novo QR code",
+        "link_cancel": "Cancelar",
+        "link_expires_in_one": "Expira em {{count}} segundo",
+        "link_expires_in_other": "Expira em {{count}} segundos",
         "title": "Entrar na Mesa",
         "heading": "Escaneie ou digite o código da mesa",
         "description": "Digite o código de 6 dígitos exibido na sua mesa",

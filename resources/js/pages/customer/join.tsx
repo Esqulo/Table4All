@@ -3,6 +3,8 @@ import { REGEXP_ONLY_DIGITS } from 'input-otp';
 import { ChevronRight, Utensils } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import JoinController from '@/actions/App/Http/Controllers/Customer/JoinController';
+import { CustomerLinkQr } from '@/components/customer-link-qr';
+import type { CustomerLink } from '@/components/customer-link-qr';
 import { QrScanButton } from '@/components/qr-scanner';
 import {
     InputOTP,
@@ -17,7 +19,13 @@ type JoinedTable = {
     status: 'pending' | 'approved';
 };
 
-export default function CustomerJoin({ tables }: { tables: JoinedTable[] }) {
+export default function CustomerJoin({
+    tables,
+    link,
+}: {
+    tables: JoinedTable[];
+    link: CustomerLink;
+}) {
     const { t } = useTranslation();
     const hasTables = tables.length > 0;
 
@@ -114,6 +122,8 @@ export default function CustomerJoin({ tables }: { tables: JoinedTable[] }) {
 
                     <QrScanButton onCode={visitTable} />
                 </section>
+
+                <CustomerLinkQr link={link} />
             </div>
         </>
     );

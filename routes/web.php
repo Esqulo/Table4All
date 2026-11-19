@@ -77,6 +77,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware(EnsureNotStaff::class)
         ->group(function () {
             Route::get('mesa', [CustomerJoinController::class, 'index'])->name('join');
+            Route::post('mesa/qr', [CustomerJoinController::class, 'createLink'])
+                ->middleware('throttle:10,1')->name('link.create');
+            Route::post('mesa/qr/cancelar', [CustomerJoinController::class, 'cancelLink'])->name('link.cancel');
             Route::get('mesa/{code}', [CustomerJoinController::class, 'show'])->name('table');
             Route::post('mesa/{code}/pedido', [CustomerJoinController::class, 'order'])->name('order');
             Route::post('mesa/{code}/participantes/{customer}/aprovar', [CustomerJoinController::class, 'approve'])

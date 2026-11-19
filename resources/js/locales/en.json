@@ -362,6 +362,15 @@
         "view_kitchen": "Kitchen"
     },
     "tables": {
+        "customer_label": "Customer (optional)",
+        "customer_hint": "Scan the QR code the customer generated in the app to link the table to them. The code lasts 1 minute.",
+        "customer_scanned": "Customer's QR code scanned",
+        "customer_remove": "Remove customer",
+        "customer_scan_button": "Scan customer's QR",
+        "customer_scan_title": "Scan the customer's QR code",
+        "customer_scan_description": "Point the camera at the QR code the customer generated in the app.",
+        "customer_scan_mismatch": "This isn't a customer's QR code.",
+        "msg_created_linked": "Table created and linked to the customer.",
         "close_table_confirm_undelivered_other": "{{count}} items have not been delivered yet. Closing the table records them as \"customer left without receiving them\" and they will not be charged. Close anyway?",
         "close_table_confirm_undelivered_one": "{{count}} item has not been delivered yet. Closing the table records it as \"customer left without receiving it\" and it will not be charged. Close anyway?",
         "title": "Tables",
@@ -478,6 +487,13 @@
         "ends_at_label": "End date & time"
     },
     "join_table": {
+        "link_title": "Open a table with the waiter",
+        "link_description": "Generate a QR code and show it to the waiter opening your table: it gets linked to you. It lasts 1 minute and works once.",
+        "link_generate": "Generate QR code",
+        "link_generate_new": "Generate a new QR code",
+        "link_cancel": "Cancel",
+        "link_expires_in_one": "Expires in {{count}} second",
+        "link_expires_in_other": "Expires in {{count}} seconds",
         "title": "Join Table",
         "heading": "Scan or enter the table code",
         "description": "Type the 6-digit code shown on your table",

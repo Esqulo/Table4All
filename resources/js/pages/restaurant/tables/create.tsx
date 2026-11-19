@@ -1,13 +1,18 @@
 import { Form, Head, Link } from '@inertiajs/react';
+import { CheckCircle2, X } from 'lucide-react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import TableController from '@/actions/App/Http/Controllers/Restaurant/TableController';
 import InputError from '@/components/input-error';
+import { QrScanButton } from '@/components/qr-scanner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export default function CreateTable() {
     const { t } = useTranslation();
+    // The customer's one-time QR (optional): the table opens linked to them.
+    const [customerToken, setCustomerToken] = useState<string | null>(null);
 
     return (
         <>
@@ -33,6 +38,49 @@ export default function CreateTable() {
                                     placeholder={t('tables.title_placeholder')}
                                 />
                                 <InputError message={errors.title} />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label>{t('tables.customer_label')}</Label>
+                                {customerToken ? (
+                                    <div className="flex items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-2 text-sm">
+                                        <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600" />
+                                        <span className="flex-1">
+                                            {t('tables.customer_scanned')}
+                                        </span>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-7 w-7"
+                                            aria-label={t(
+                                                'tables.customer_remove',
+                                            )}
+                                            onClick={() =>
+                                                setCustomerToken(null)
+                                            }
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </Button>
+                                        <input
+                                            type="hidden"
+                                            name="customer_token"
+                                            value={customerToken}
+                                        />
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <QrScanButton
+                                            kind="customer"
+                                            size="default"
+                                            onCode={setCustomerToken}
+                                        />
+                                    </div>
+                                )}
+                                <p className="text-xs text-muted-foreground">
+                                    {t('tables.customer_hint')}
+                                </p>
+                                <InputError message={errors.customer_token} />
                             </div>
 
                             <div className="flex gap-3 pt-2">
