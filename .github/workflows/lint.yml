@@ -55,6 +55,14 @@ jobs:
           composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
           npm ci --no-audit --no-fund
 
+      # resources/js/{actions,routes,wayfinder} are generated (gitignored) and imported everywhere;
+      # without them ESLint's import/order can't classify those imports. Same options as vite.config.ts.
+      - name: Generate Wayfinder Routes
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          php artisan wayfinder:generate --with-form
+
       # Check, don't fix: a fix in CI is thrown away, so badly formatted code would pass.
       - name: Check PHP Style (Pint)
         run: composer lint:check
