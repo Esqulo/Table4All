@@ -897,7 +897,12 @@
         "profile_public_off": "O perfil está oculto: só você o vê. Visitantes recebem “página não encontrada”.",
         "profile_save": "Salvar perfil",
         "profile_copy_link": "Copiar link",
-        "msg_profile_saved": "Perfil público atualizado."
+        "msg_profile_saved": "Perfil público atualizado.",
+        "address_label": "Endereço",
+        "address_placeholder": "Rua das Flores, 123 – Centro, São Paulo – SP",
+        "address_hint": "Aparece no perfil com um link para abrir no mapa. Deixe em branco se não atende no local.",
+        "ifood_label": "Link do iFood",
+        "ifood_hint": "Cole o endereço da sua loja no iFood. O perfil mostra um botão “Pedir no iFood”."
     },
     "venue_profile": {
         "edit": "Editar perfil",
@@ -918,13 +923,16 @@
         "owner_empty_hint": "Seu perfil ainda está vazio. Adicione banner, fotos e horários em Editar perfil para atrair clientes.",
         "powered_by": "Perfil no",
         "hidden_notice": "Seu perfil está oculto. Só você está vendo esta página; para os outros ela não existe.",
-        "hidden_action": "Tornar público"
+        "hidden_action": "Tornar público",
+        "address": "Endereço",
+        "open_map": "Ver no mapa",
+        "order_on_ifood": "Pedir no iFood"
     },
     "social": {
         "tabs_label": "Seções do perfil",
         "tab_posts": "Publicações",
         "tab_about": "Sobre",
-        "about_empty": "Este estabelecimento ainda não adicionou fotos nem horários.",
+        "about_empty": "Este estabelecimento ainda não adicionou endereço, fotos nem horários.",
         "feed_empty": "Nenhuma publicação ainda.",
         "feed_empty_owner": "Publique promoções, eventos e novidades para atrair clientes. Sua primeira publicação aparece aqui.",
         "feed_loading": "Carregando publicações…",

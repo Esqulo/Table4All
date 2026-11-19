@@ -6,7 +6,9 @@ import {
     ChevronRight,
     Clock,
     Eye,
+    ExternalLink,
     EyeOff,
+    MapPin,
     Moon,
     Pencil,
     Share2,
@@ -50,6 +52,9 @@ type Props = {
     today: number;
     photos: VenuePhoto[];
     menus: { id: number; name: string }[];
+    address: string | null;
+    /** The restaurant's store on iFood (always an https ifood.com.br address). */
+    ifoodUrl: string | null;
     isOwner: boolean;
     /** False only when the owner hid the profile; then only the owner reaches this page. */
     isPublic: boolean;
@@ -72,6 +77,8 @@ export default function ProfileShow({
     today,
     photos,
     menus,
+    address,
+    ifoodUrl,
     isOwner,
     isPublic,
     canInteract,
@@ -237,7 +244,7 @@ export default function ProfileShow({
                             <StarRating rating={rating} />
                         </div>
 
-                        {menus.length > 0 && (
+                        {(menus.length > 0 || ifoodUrl) && (
                             <div className="mt-5 flex flex-wrap gap-2">
                                 {menus.map((menu, i) => (
                                     <Button
@@ -259,6 +266,25 @@ export default function ProfileShow({
                                         </Link>
                                     </Button>
                                 ))}
+                                {ifoodUrl && (
+                                    <Button
+                                        variant={
+                                            menus.length === 0
+                                                ? 'default'
+                                                : 'outline'
+                                        }
+                                        asChild
+                                    >
+                                        <a
+                                            href={ifoodUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer nofollow"
+                                        >
+                                            <ExternalLink className="h-4 w-4" />
+                                            {t('venue_profile.order_on_ifood')}
+                                        </a>
+                                    </Button>
+                                )}
                             </div>
                         )}
                     </div>
@@ -328,15 +354,20 @@ export default function ProfileShow({
                         </div>
                     ) : (
                         <div className="space-y-8">
+                            {address && <Address address={address} />}
                             {photos.length > 0 && <Gallery photos={photos} />}
                             <Hours hours={hours} today={today} />
-                            {photos.length === 0 && hours.length === 0 && (
-                                <p className="rounded-xl border border-dashed p-5 text-sm text-muted-foreground">
-                                    {isOwner
-                                        ? t('venue_profile.owner_empty_hint')
-                                        : t('social.about_empty')}
-                                </p>
-                            )}
+                            {!address &&
+                                photos.length === 0 &&
+                                hours.length === 0 && (
+                                    <p className="rounded-xl border border-dashed p-5 text-sm text-muted-foreground">
+                                        {isOwner
+                                            ? t(
+                                                  'venue_profile.owner_empty_hint',
+                                              )
+                                            : t('social.about_empty')}
+                                    </p>
+                                )}
                         </div>
                     )}
                 </main>
@@ -489,6 +520,33 @@ function Gallery({ photos }: { photos: VenuePhoto[] }) {
                     )}
                 </DialogContent>
             </Dialog>
+        </section>
+    );
+}
+
+// ─── Address ──────────────────────────────────────────────────────────────────
+
+function Address({ address }: { address: string }) {
+    const { t } = useTranslation();
+    const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+
+    return (
+        <section>
+            <SectionTitle>
+                <span className="inline-flex items-center gap-2">
+                    <MapPin className="h-5 w-5" />
+                    {t('venue_profile.address')}
+                </span>
+            </SectionTitle>
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card px-4 py-3">
+                <p className="text-sm break-words">{address}</p>
+                <Button variant="outline" size="sm" asChild>
+                    <a href={mapUrl} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-4 w-4" />
+                        {t('venue_profile.open_map')}
+                    </a>
+                </Button>
+            </div>
         </section>
     );
 }

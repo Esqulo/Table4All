@@ -897,7 +897,12 @@
         "profile_public_off": "The profile is hidden: only you can see it. Visitors get \"page not found\".",
         "profile_save": "Save profile",
         "profile_copy_link": "Copy link",
-        "msg_profile_saved": "Public profile updated."
+        "msg_profile_saved": "Public profile updated.",
+        "address_label": "Address",
+        "address_placeholder": "123 Flower St – Downtown, São Paulo – SP",
+        "address_hint": "Shown on the profile with a link to open it on a map. Leave it blank if you don't serve on site.",
+        "ifood_label": "iFood link",
+        "ifood_hint": "Paste the address of your iFood store. The profile shows an “Order on iFood” button."
     },
     "venue_profile": {
         "edit": "Edit profile",
@@ -918,13 +923,16 @@
         "owner_empty_hint": "Your profile is still empty. Add a banner, photos and hours in Edit profile to attract customers.",
         "powered_by": "Profile on",
         "hidden_notice": "Your profile is hidden. Only you can see this page; for everyone else it does not exist.",
-        "hidden_action": "Make it public"
+        "hidden_action": "Make it public",
+        "address": "Address",
+        "open_map": "Open map",
+        "order_on_ifood": "Order on iFood"
     },
     "social": {
         "tabs_label": "Profile sections",
         "tab_posts": "Posts",
         "tab_about": "About",
-        "about_empty": "This venue hasn't added photos or opening hours yet.",
+        "about_empty": "This venue hasn't added an address, photos or hours yet.",
         "feed_empty": "No posts yet.",
         "feed_empty_owner": "Post promotions, events and news to attract customers. Your first post shows up here.",
         "feed_loading": "Loading posts…",

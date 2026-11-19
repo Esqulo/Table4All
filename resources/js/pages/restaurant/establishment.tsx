@@ -41,6 +41,8 @@ type Props = {
     profilePublic: boolean;
     /** Absolute "/vempro" address; the profile lives at `${profileBaseUrl}/${handle}`. */
     profileBaseUrl: string;
+    address: string | null;
+    ifoodUrl: string | null;
     hours: OpeningHourInterval[];
     photos: VenuePhoto[];
     maxPhotos: number;
@@ -67,6 +69,8 @@ export default function Establishment({
     handle,
     profilePublic,
     profileBaseUrl,
+    address,
+    ifoodUrl,
     hours,
     photos,
     maxPhotos,
@@ -98,6 +102,8 @@ export default function Establishment({
                     handle={handle}
                     profilePublic={profilePublic}
                     profileBaseUrl={profileBaseUrl}
+                    address={address}
+                    ifoodUrl={ifoodUrl}
                 />
                 <BannerSection bannerUrl={bannerUrl} logoUrl={logoUrl} />
                 <LogoSection logoUrl={logoUrl} />
@@ -148,19 +154,29 @@ function ProfileSection({
     handle,
     profilePublic,
     profileBaseUrl,
+    address,
+    ifoodUrl,
 }: {
     handle: string | null;
     profilePublic: boolean;
     profileBaseUrl: string;
+    address: string | null;
+    ifoodUrl: string | null;
 }) {
     const { t } = useTranslation();
     const [value, setValue] = useState(handle ?? '');
     const [isPublic, setIsPublic] = useState(profilePublic);
+    const [addressValue, setAddressValue] = useState(address ?? '');
+    const [ifoodValue, setIfoodValue] = useState(ifoodUrl ?? '');
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
 
     const normalized = normalizeHandle(value);
-    const dirty = normalized !== (handle ?? '') || isPublic !== profilePublic;
+    const dirty =
+        normalized !== (handle ?? '') ||
+        isPublic !== profilePublic ||
+        addressValue.trim() !== (address ?? '') ||
+        ifoodValue.trim() !== (ifoodUrl ?? '');
     const savedUrl = handle ? `${profileBaseUrl}/${handle}` : null;
 
     const save = (e: React.FormEvent) => {
@@ -168,14 +184,24 @@ function ProfileSection({
 
         router.put(
             EstablishmentController.updateProfile.url(),
-            { handle: normalized, profile_public: isPublic },
+            {
+                handle: normalized,
+                profile_public: isPublic,
+                address: addressValue.trim() || null,
+                ifood_url: ifoodValue.trim() || null,
+            },
             {
                 preserveScroll: true,
                 onStart: () => {
                     setProcessing(true);
                     setErrors({});
                 },
-                onSuccess: () => setValue(normalized),
+                onSuccess: (page) => {
+                    const saved = page.props as unknown as Props;
+                    setValue(normalized);
+                    setAddressValue(saved.address ?? '');
+                    setIfoodValue(saved.ifoodUrl ?? '');
+                },
                 onError: setErrors,
                 onFinish: () => setProcessing(false),
             },
@@ -239,6 +265,47 @@ function ProfileSection({
                         {t('establishment.handle_hint')}
                     </p>
                     <InputError message={errors.handle} />
+                </div>
+
+                <div className="max-w-xl space-y-2">
+                    <Label htmlFor="address">
+                        {t('establishment.address_label')}
+                    </Label>
+                    <Input
+                        id="address"
+                        value={addressValue}
+                        onChange={(e) => setAddressValue(e.target.value)}
+                        maxLength={255}
+                        autoComplete="street-address"
+                        placeholder={t('establishment.address_placeholder')}
+                        aria-invalid={!!errors.address}
+                    />
+                    <p className="text-sm text-muted-foreground">
+                        {t('establishment.address_hint')}
+                    </p>
+                    <InputError message={errors.address} />
+                </div>
+
+                <div className="max-w-xl space-y-2">
+                    <Label htmlFor="ifood_url">
+                        {t('establishment.ifood_label')}
+                    </Label>
+                    <Input
+                        id="ifood_url"
+                        inputMode="url"
+                        value={ifoodValue}
+                        onChange={(e) => setIfoodValue(e.target.value)}
+                        maxLength={255}
+                        autoComplete="off"
+                        autoCapitalize="none"
+                        spellCheck={false}
+                        placeholder="https://www.ifood.com.br/delivery/…"
+                        aria-invalid={!!errors.ifood_url}
+                    />
+                    <p className="text-sm text-muted-foreground">
+                        {t('establishment.ifood_hint')}
+                    </p>
+                    <InputError message={errors.ifood_url} />
                 </div>
 
                 <label className="flex max-w-xl items-start gap-3">
