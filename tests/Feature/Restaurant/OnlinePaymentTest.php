@@ -70,6 +70,12 @@ class OnlinePaymentTest extends TestCase
         return route('customer.table', $this->code());
     }
 
+    /** Back from Stripe the customer lands on the bill tab. */
+    private function billUrl(): string
+    {
+        return route('customer.table', ['code' => $this->code(), 'aba' => 'conta']);
+    }
+
     /** @param  array<string, mixed>  $data */
     private function pay(User $user, float $amount, array $data = []): TestResponse
     {
@@ -133,7 +139,7 @@ class OnlinePaymentTest extends TestCase
     public function test_a_confirmed_payment_comes_off_the_bill_and_everyone_sees_who_paid(): void
     {
         $this->pay($this->member, 20);
-        $this->completeOnStripe($this->member)->assertRedirect($this->tableUrl());
+        $this->completeOnStripe($this->member)->assertRedirect($this->billUrl());
 
         $this->assertSame(20.0, $this->paidOnTable());
         $this->assertSame(OnlinePaymentStatus::PAID, $this->lastPayment()->status);
@@ -323,7 +329,7 @@ class OnlinePaymentTest extends TestCase
 
         $this->actingAs($this->member)
             ->get(route('customer.payments.return', $payment).'?result=cancel')
-            ->assertRedirect($this->tableUrl());
+            ->assertRedirect($this->billUrl());
 
         $this->assertSame(OnlinePaymentStatus::CANCELED, $payment->refresh()->status);
         $this->pay($this->owner, 50)->assertRedirect();
@@ -342,7 +348,7 @@ class OnlinePaymentTest extends TestCase
         // Nobody else can drop it.
         $this->actingAs($this->owner)->post(route('customer.payments.cancel', $payment))->assertForbidden();
 
-        $this->actingAs($this->member)->post(route('customer.payments.cancel', $payment))->assertRedirect($this->tableUrl());
+        $this->actingAs($this->member)->post(route('customer.payments.cancel', $payment))->assertRedirect($this->billUrl());
         $this->assertSame(OnlinePaymentStatus::CANCELED, $payment->refresh()->status);
     }
 
@@ -392,7 +398,7 @@ class OnlinePaymentTest extends TestCase
 
         // While the customer is on Stripe, the waiter takes R$ 30,00 in cash.
         $this->waiterRegisters(30);
-        $this->completeOnStripe($this->member, $payment)->assertRedirect($this->tableUrl());
+        $this->completeOnStripe($this->member, $payment)->assertRedirect($this->billUrl());
 
         $payment->refresh();
         $this->assertSame(OnlinePaymentStatus::PAID, $payment->status);

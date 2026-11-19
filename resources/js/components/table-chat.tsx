@@ -57,11 +57,14 @@ export function TableChat({
     chat,
     reactions,
     maxLength,
+    hidden = false,
 }: {
     code: string;
     chat: ChatFeed;
     reactions: string[];
     maxLength: number;
+    /** Hides the card but keeps it polling, so reactions still float up from any tab. */
+    hidden?: boolean;
 }) {
     const { t, i18n } = useTranslation();
     const [body, setBody] = useState('');
@@ -162,94 +165,100 @@ export function TableChat({
     );
 
     return (
-        <div className="space-y-3 rounded-xl border border-border bg-card p-4">
+        <>
             <div
                 ref={layerRef}
                 className="pointer-events-none fixed inset-0 z-50 overflow-hidden"
                 aria-hidden="true"
             />
-
-            <p className="flex items-center gap-2 text-sm font-semibold">
-                <MessageCircle className="h-4 w-4 text-muted-foreground" />
-                {t('join_table.chat_title')}
-            </p>
-
             <div
-                ref={listRef}
-                className="max-h-64 space-y-2 overflow-y-auto pr-1"
-                aria-live="polite"
+                className={cn(
+                    'space-y-3 rounded-xl border border-border bg-card p-4',
+                    hidden && 'hidden',
+                )}
             >
-                {chat.messages.length === 0 ? (
-                    <p className="py-4 text-center text-sm text-muted-foreground">
-                        {t('join_table.chat_empty')}
-                    </p>
-                ) : (
-                    chat.messages.map((message) => (
-                        <div
-                            key={message.id}
-                            className={cn(
-                                'flex flex-col',
-                                message.mine ? 'items-end' : 'items-start',
-                            )}
-                        >
+                <p className="flex items-center gap-2 text-sm font-semibold">
+                    <MessageCircle className="h-4 w-4 text-muted-foreground" />
+                    {t('join_table.chat_title')}
+                </p>
+
+                <div
+                    ref={listRef}
+                    className="max-h-64 space-y-2 overflow-y-auto pr-1"
+                    aria-live="polite"
+                >
+                    {chat.messages.length === 0 ? (
+                        <p className="py-4 text-center text-sm text-muted-foreground">
+                            {t('join_table.chat_empty')}
+                        </p>
+                    ) : (
+                        chat.messages.map((message) => (
                             <div
+                                key={message.id}
                                 className={cn(
-                                    'max-w-[85%] rounded-2xl px-3 py-1.5 text-sm break-words',
-                                    message.mine
-                                        ? 'rounded-br-sm bg-primary text-primary-foreground'
-                                        : 'rounded-bl-sm bg-muted',
+                                    'flex flex-col',
+                                    message.mine ? 'items-end' : 'items-start',
                                 )}
                             >
-                                {!message.mine && (
-                                    <span className="block text-xs font-semibold opacity-70">
-                                        {message.name}
-                                    </span>
-                                )}
-                                {message.body}
+                                <div
+                                    className={cn(
+                                        'max-w-[85%] rounded-2xl px-3 py-1.5 text-sm break-words',
+                                        message.mine
+                                            ? 'rounded-br-sm bg-primary text-primary-foreground'
+                                            : 'rounded-bl-sm bg-muted',
+                                    )}
+                                >
+                                    {!message.mine && (
+                                        <span className="block text-xs font-semibold opacity-70">
+                                            {message.name}
+                                        </span>
+                                    )}
+                                    {message.body}
+                                </div>
+                                <span className="mt-0.5 text-[0.65rem] text-muted-foreground tabular-nums">
+                                    {time.format(new Date(message.at))}
+                                </span>
                             </div>
-                            <span className="mt-0.5 text-[0.65rem] text-muted-foreground tabular-nums">
-                                {time.format(new Date(message.at))}
-                            </span>
-                        </div>
-                    ))
-                )}
-            </div>
+                        ))
+                    )}
+                </div>
 
-            <div className="flex flex-wrap justify-between gap-1">
-                {reactions.map((emoji) => (
-                    <button
-                        key={emoji}
-                        type="button"
-                        onClick={() => react(emoji)}
-                        className="flex h-10 w-10 items-center justify-center rounded-full text-xl transition-transform hover:bg-muted active:scale-90"
-                        aria-label={t('join_table.chat_react', { emoji })}
+                <div className="flex flex-wrap justify-between gap-1">
+                    {reactions.map((emoji) => (
+                        <button
+                            key={emoji}
+                            type="button"
+                            onClick={() => react(emoji)}
+                            className="flex h-10 w-10 items-center justify-center rounded-full text-xl transition-transform hover:bg-muted active:scale-90"
+                            aria-label={t('join_table.chat_react', { emoji })}
+                        >
+                            {emoji}
+                        </button>
+                    ))}
+                </div>
+
+                <form onSubmit={send} className="flex gap-2">
+                    <Input
+                        value={body}
+                        onChange={(e) => {
+                            setBody(e.target.value);
+                            setRequestKey(newRequestKey());
+                        }}
+                        maxLength={maxLength}
+                        placeholder={t('join_table.chat_placeholder')}
+                        aria-label={t('join_table.chat_placeholder')}
+                        enterKeyHint="send"
+                    />
+                    <Button
+                        type="submit"
+                        size="icon"
+                        disabled={sending || body.trim() === ''}
+                        aria-label={t('join_table.chat_send')}
                     >
-                        {emoji}
-                    </button>
-                ))}
+                        <Send className="h-4 w-4" />
+                    </Button>
+                </form>
             </div>
-
-            <form onSubmit={send} className="flex gap-2">
-                <Input
-                    value={body}
-                    onChange={(e) => {
-                        setBody(e.target.value);
-                        setRequestKey(newRequestKey());
-                    }}
-                    maxLength={maxLength}
-                    placeholder={t('join_table.chat_placeholder')}
-                    aria-label={t('join_table.chat_placeholder')}
-                    enterKeyHint="send"
-                />
-                <Button
-                    type="submit"
-                    size="icon"
-                    disabled={sending || body.trim() === ''}
-                    aria-label={t('join_table.chat_send')}
-                >
-                    <Send className="h-4 w-4" />
-                </Button>
-            </form>
-        </div>
+        </>
     );
 }

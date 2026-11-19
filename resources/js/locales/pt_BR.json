@@ -559,20 +559,25 @@
         "qr_dialog_title": "QR Code da Mesa",
         "qr_dialog_description": "Imprima ou exiba para os clientes entrarem na mesa.",
         "access_code_label": "Código",
-        "summary_title": "Resumo da Conta",
         "total": "Total",
-        "paid": "Pago",
-        "remaining": "Restante",
-        "split_title": "Dividir Conta",
-        "people": "Pessoas",
-        "each_pays": "Cada um paga",
-        "products_title": "Itens na mesa",
         "preparing_title": "Preparando",
-        "my_order": "Meu Pedido",
         "search_placeholder": "Buscar produtos...",
-        "order_button": "Pedir",
         "order_invalid": "Nenhum dos itens está disponível no cardápio. Atualize a página e tente de novo.",
-        "order_success": "Item adicionado ao seu pedido"
+        "order_success": "Item adicionado ao seu pedido",
+        "tab_orders": "Pedidos",
+        "tab_bill": "Conta",
+        "tab_table": "Mesa",
+        "left_to_pay": "Falta pagar",
+        "bill_paid": "Conta paga",
+        "paid_of": "{{paid}} de {{total}} pago",
+        "nothing_on_bill": "Nada na conta ainda.",
+        "delivered_title": "Na mesa",
+        "table_total": "Total da mesa",
+        "no_orders_title": "Nenhum pedido ainda",
+        "no_orders_description": "Abra o cardápio e peça direto pelo celular.",
+        "see_menu": "Ver cardápio",
+        "order_cta": "Fazer pedido",
+        "pay_cta": "Pagar"
     },
     "two_factor": {
         "title": "Autenticação de dois fatores",
@@ -1160,7 +1165,11 @@
             "founder": "Fundador"
         },
         "msg_paid_partly_refunded": "Pagamento confirmado. Parte da conta já tinha sido paga enquanto você pagava, então estornamos a diferença.",
-        "msg_refunded": "A conta já estava paga quando seu pagamento foi confirmado. Estornamos o valor integral."
+        "msg_refunded": "A conta já estava paga quando seu pagamento foi confirmado. Estornamos o valor integral.",
+        "split_label": "Dividir em",
+        "people": "pessoas",
+        "split_people_one": "Dividir entre {{count}} pessoa",
+        "split_people_other": "Dividir entre {{count}} pessoas"
     },
     "coupons": {
         "title": "Cupons",

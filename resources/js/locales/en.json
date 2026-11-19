@@ -559,20 +559,25 @@
         "qr_dialog_title": "Table QR Code",
         "qr_dialog_description": "Print or display this for customers to join the table.",
         "access_code_label": "Code",
-        "summary_title": "Account Summary",
         "total": "Total",
-        "paid": "Paid",
-        "remaining": "Remaining",
-        "split_title": "Split Bill",
-        "people": "People",
-        "each_pays": "Each pays",
-        "products_title": "Items on the table",
         "preparing_title": "Preparing",
-        "my_order": "My Order",
         "search_placeholder": "Search products...",
-        "order_button": "Order",
         "order_invalid": "None of these items are available on the menu. Refresh the page and try again.",
-        "order_success": "Item added to your order"
+        "order_success": "Item added to your order",
+        "tab_orders": "Orders",
+        "tab_bill": "Bill",
+        "tab_table": "Table",
+        "left_to_pay": "Left to pay",
+        "bill_paid": "Bill paid",
+        "paid_of": "{{paid}} of {{total}} paid",
+        "nothing_on_bill": "Nothing on the bill yet.",
+        "delivered_title": "On the table",
+        "table_total": "Table total",
+        "no_orders_title": "No orders yet",
+        "no_orders_description": "Open the menu and order right from your phone.",
+        "see_menu": "See menu",
+        "order_cta": "Order",
+        "pay_cta": "Pay"
     },
     "two_factor": {
         "title": "Two-factor authentication",
@@ -1160,7 +1165,11 @@
             "founder": "Founder"
         },
         "msg_paid_partly_refunded": "Payment confirmed. Part of the bill was paid while you were paying, so we refunded the difference.",
-        "msg_refunded": "The bill was already paid when your payment was confirmed. We refunded the full amount."
+        "msg_refunded": "The bill was already paid when your payment was confirmed. We refunded the full amount.",
+        "split_label": "Split between",
+        "people": "people",
+        "split_people_one": "Split between {{count}} person",
+        "split_people_other": "Split between {{count}} people"
     },
     "coupons": {
         "title": "Coupons",

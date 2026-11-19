@@ -187,6 +187,9 @@ class JoinController extends Controller
 
         return Inertia::render('customer/show', [
             'code' => $code,
+            // Where the customer is: shown at the top of the screen.
+            'tableTitle' => $table->title,
+            'restaurant' => User::whereKey($table->user_id)->value('name'),
             'menu' => $menu,
             'products' => $products,
             'preparing' => $preparing,

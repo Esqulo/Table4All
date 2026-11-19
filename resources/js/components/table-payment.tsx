@@ -55,6 +55,8 @@ const METHOD_ICONS: Record<PaymentMethod, React.ReactNode> = {
 
 const toCents = (value: number) => Math.round(value * 100);
 
+const SPLIT_OPTIONS = [2, 3, 4, 5];
+
 /**
  * Paying (part of) the bill in the app: the customer picks an amount (or the
  * whole balance), may apply a coupon, and is sent to Stripe's checkout.
@@ -286,6 +288,37 @@ export function PayPanel({
                     >
                         {t('payments.pay_all')}
                     </Button>
+                </div>
+                {/* Splitting what's left fills in each person's share (rounded up, so it adds up). */}
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    <span className="text-xs text-muted-foreground">
+                        {t('payments.split_label')}
+                    </span>
+                    {SPLIT_OPTIONS.map((people) => {
+                        const share = Math.ceil(remainingCents / people);
+
+                        return (
+                            <button
+                                key={people}
+                                type="button"
+                                onClick={() => changeAmount(share)}
+                                aria-label={t('payments.split_people', {
+                                    count: people,
+                                })}
+                                className={cn(
+                                    'h-8 min-w-8 rounded-full border px-2.5 text-xs font-semibold tabular-nums transition-colors',
+                                    cents === share
+                                        ? 'border-primary bg-primary text-primary-foreground'
+                                        : 'border-border hover:bg-muted',
+                                )}
+                            >
+                                {people}
+                            </button>
+                        );
+                    })}
+                    <span className="text-xs text-muted-foreground">
+                        {t('payments.people')}
+                    </span>
                 </div>
                 {errors.amount ? (
                     <p className="text-xs text-destructive">{errors.amount}</p>

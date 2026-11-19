@@ -123,8 +123,9 @@ class PaymentController extends Controller
             ->whereNull('closed_at')
             ->value('access_code');
 
+        // Back on the bill tab, where the payment now shows.
         return $code !== null
-            ? redirect()->route('customer.table', $code)
+            ? redirect()->route('customer.table', ['code' => $code, 'aba' => 'conta'])
             : redirect()->route('customer.join');
     }
 }

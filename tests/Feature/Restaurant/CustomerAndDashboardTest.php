@@ -130,6 +130,9 @@ class CustomerAndDashboardTest extends TestCase
         $this->actingAs($owner)->get(route('customer.table', $table->access_code))
             ->assertInertia(fn (Assert $page) => $page
                 ->component('customer/show')
+                // Where the customer is, shown at the top of the screen.
+                ->where('tableTitle', 'Mesa 7')
+                ->where('restaurant', $restaurant->name)
                 ->where('isResponsible', true)
                 ->where('joinRequests', []));
         $this->assertSame($owner->id, $table->fresh()?->responsible_user_id);
