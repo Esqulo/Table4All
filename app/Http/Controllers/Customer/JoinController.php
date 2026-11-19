@@ -12,9 +12,11 @@ use App\Models\Sale;
 use App\Models\User;
 use App\Support\CustomerLink;
 use App\Support\Idempotency;
+use App\Support\TableChat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -100,25 +102,30 @@ class JoinController extends Controller
 
         $isResponsible = $table->responsible_user_id === $user->id;
 
-        $activeSales = Sale::activePriceMap($table->user_id);
+        // Every prop is lazy: a partial reload (the chat polls every few seconds)
+        // runs only the queries for what it asks for.
+        $menu = function () use ($table) {
+            $activeSales = Sale::activePriceMap($table->user_id);
 
-        $menu = Product::where('user_id', $table->user_id)
-            ->with('category:id,name')
-            ->orderBy('name')
-            ->get(['id', 'category_id', 'name', 'description', 'picture', 'price', 'price_type', 'queue_id'])
-            ->map(fn ($p) => [
-                'id' => $p->id,
-                'category_id' => $p->category_id,
-                'category_name' => $p->category?->name,
-                'name' => $p->name,
-                'description' => $p->description,
-                'price' => (float) ($activeSales[$p->id] ?? $p->price),
-                'price_type' => $p->price_type,
-                'has_queue' => $p->queue_id !== null,
-                'picture_url' => $p->picture ? Storage::disk('public')->url($p->picture) : null,
-            ]);
+            return Product::where('user_id', $table->user_id)
+                ->with('category:id,name')
+                ->orderBy('name')
+                ->get(['id', 'category_id', 'name', 'description', 'picture', 'price', 'price_type', 'queue_id'])
+                ->map(fn ($p) => [
+                    'id' => $p->id,
+                    'category_id' => $p->category_id,
+                    'category_name' => $p->category?->name,
+                    'name' => $p->name,
+                    'description' => $p->description,
+                    'price' => (float) ($activeSales[$p->id] ?? $p->price),
+                    'price_type' => $p->price_type,
+                    'has_queue' => $p->queue_id !== null,
+                    'picture_url' => $p->picture ? Storage::disk('public')->url($p->picture) : null,
+                ])
+                ->all();
+        };
 
-        $products = DB::table('restaurant_table_product')
+        $products = fn () => DB::table('restaurant_table_product')
             ->where('restaurant_table_id', $table->id)
             ->join('products', 'products.id', '=', 'restaurant_table_product.product_id')
             ->leftJoin('users', 'users.id', '=', 'restaurant_table_product.ordered_by_user_id')
@@ -143,9 +150,10 @@ class JoinController extends Controller
                 'quantity' => (int) $row->quantity,
                 'picture_url' => $row->picture ? Storage::disk('public')->url($row->picture) : null,
                 'ordered_by' => $row->ordered_by_name ?? $row->ordered_by_email ?? null,
-            ]);
+            ])
+            ->all();
 
-        $preparing = QueueItem::where('restaurant_table_id', $table->id)
+        $preparing = fn () => QueueItem::where('restaurant_table_id', $table->id)
             ->whereIn('status', QueueItemStatus::open())
             ->with(['product:id,name', 'orderedBy:id,name,email'])
             ->orderBy('created_at')
@@ -158,23 +166,30 @@ class JoinController extends Controller
                 'ordered_by' => $item->orderedBy !== null ? ($item->orderedBy->name ?? $item->orderedBy->email) : null,
             ]);
 
-        $total = (float) DB::table('restaurant_table_product')
-            ->where('restaurant_table_id', $table->id)
-            ->sum(DB::raw('price * quantity'));
-
-        $paid = (float) $table->payments()->sum('amount');
+        $money = null;
+        $totals = function () use ($table, &$money): array {
+            return $money ??= [
+                'total' => (float) DB::table('restaurant_table_product')
+                    ->where('restaurant_table_id', $table->id)
+                    ->sum(DB::raw('price * quantity')),
+                'paid' => (float) $table->payments()->sum('amount'),
+            ];
+        };
 
         return Inertia::render('customer/show', [
             'code' => $code,
             'menu' => $menu,
             'products' => $products,
             'preparing' => $preparing,
-            'total' => $total,
-            'paid' => $paid,
-            'remaining' => max(0.0, $total - $paid),
+            'total' => fn () => $totals()['total'],
+            'paid' => fn () => $totals()['paid'],
+            'remaining' => fn () => max(0.0, $totals()['total'] - $totals()['paid']),
             'isResponsible' => $isResponsible,
-            'members' => $this->members($table->id, $table->responsible_user_id, $user->id),
-            'joinRequests' => $isResponsible ? $this->pendingRequests($table->id) : [],
+            'members' => fn () => $this->members($table->id, $table->responsible_user_id, $user->id),
+            'joinRequests' => fn () => $isResponsible ? $this->pendingRequests($table->id) : [],
+            'chat' => fn () => TableChat::feed($table->id, $user->id),
+            'chatReactions' => TableChat::REACTIONS,
+            'chatMaxLength' => TableChat::MAX_LENGTH,
         ]);
     }
 
@@ -248,6 +263,60 @@ class JoinController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => 'join_table.order_success']);
 
         return redirect()->route('customer.table', $code);
+    }
+
+    /** A short message to everyone at the table. */
+    public function sendMessage(Request $request, string $code): RedirectResponse
+    {
+        $table = $this->tableForMember($request, $code);
+
+        $validated = $request->validate([
+            'body' => ['required', 'string', 'max:'.TableChat::MAX_LENGTH],
+            'request_key' => ['nullable', 'string', 'max:64'],
+        ]);
+
+        // A resent message (slow network, double tap) is posted once.
+        Idempotency::once(
+            $request,
+            'table-chat:'.$table->id,
+            fn () => TableChat::send($table->id, $request->user()->id, $validated['body']),
+        );
+
+        return redirect()->route('customer.table', $code);
+    }
+
+    /** An emoji that floats up on the screens of everyone at the table. */
+    public function react(Request $request, string $code): RedirectResponse
+    {
+        $table = $this->tableForMember($request, $code);
+
+        $validated = $request->validate([
+            'emoji' => ['required', 'string', Rule::in(TableChat::REACTIONS)],
+        ]);
+
+        TableChat::react($table->id, $request->user()->id, $validated['emoji']);
+
+        return redirect()->route('customer.table', $code);
+    }
+
+    /** The open table behind $code, for a customer the responsible let in. */
+    private function tableForMember(Request $request, string $code): RestaurantTable
+    {
+        $table = RestaurantTable::where('access_code', $code)
+            ->whereNull('closed_at')
+            ->whereNull('deleted_at')
+            ->firstOrFail(['id', 'responsible_user_id']);
+
+        $isMember = $table->responsible_user_id === $request->user()->id
+            || DB::table('restaurant_table_customers')
+                ->where('restaurant_table_id', $table->id)
+                ->where('user_id', $request->user()->id)
+                ->where('status', TableCustomerStatus::APPROVED->value)
+                ->exists();
+
+        abort_unless($isMember, 403);
+
+        return $table;
     }
 
     /** The responsible lets a customer who asked into the table. */

@@ -487,6 +487,11 @@
         "ends_at_label": "End date & time"
     },
     "join_table": {
+        "chat_title": "Table chat",
+        "chat_empty": "No messages yet. Say hi!",
+        "chat_placeholder": "Message",
+        "chat_send": "Send",
+        "chat_react": "React with {{emoji}}",
         "link_title": "Open a table with the waiter",
         "link_description": "Generate a QR code and show it to the waiter opening your table: it gets linked to you.",
         "link_generate": "Generate QR code",

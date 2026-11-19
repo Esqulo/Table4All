@@ -15,6 +15,8 @@ import {
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import JoinController from '@/actions/App/Http/Controllers/Customer/JoinController';
+import { TableChat } from '@/components/table-chat';
+import type { ChatFeed } from '@/components/table-chat';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -72,6 +74,9 @@ type Props = {
     isResponsible: boolean;
     members: Member[];
     joinRequests: JoinRequest[];
+    chat: ChatFeed;
+    chatReactions: string[];
+    chatMaxLength: number;
 };
 
 type Member = {
@@ -97,6 +102,9 @@ export default function CustomerShow({
     isResponsible,
     members,
     joinRequests,
+    chat,
+    chatReactions,
+    chatMaxLength,
 }: Props) {
     const { t, i18n } = useTranslation();
     const locale = i18n.language === 'pt_BR' ? 'pt-BR' : 'en-US';
@@ -271,6 +279,13 @@ export default function CustomerShow({
                             code={code}
                             members={members}
                             isResponsible={isResponsible}
+                        />
+
+                        <TableChat
+                            code={code}
+                            chat={chat}
+                            reactions={chatReactions}
+                            maxLength={chatMaxLength}
                         />
 
                         <div className="flex items-center justify-between">

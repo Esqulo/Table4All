@@ -90,6 +90,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->whereNumber('customer')->name('responsible.transfer');
             Route::post('mesa/{code}/pedir-novamente', [CustomerJoinController::class, 'requestAgain'])->name('join-requests.retry');
             Route::post('mesa/{code}/sair', [CustomerJoinController::class, 'leave'])->name('leave');
+            Route::post('mesa/{code}/chat', [CustomerJoinController::class, 'sendMessage'])
+                ->middleware('throttle:30,1')->name('chat.send');
+            Route::post('mesa/{code}/reacoes', [CustomerJoinController::class, 'react'])
+                ->middleware('throttle:60,1')->name('chat.react');
         });
 
     // Social: anyone signed in reacts to and comments on restaurant posts

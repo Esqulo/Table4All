@@ -364,6 +364,18 @@ class RushResilienceTest extends TestCase
         $this->assertSame($first->id, $this->table->fresh()?->responsible_user_id);
     }
 
+    public function test_chat_message_resent_with_the_same_key_is_posted_once(): void
+    {
+        $customer = User::factory()->create();
+        $this->actingAs($customer)->get(route('customer.table', '123456'))->assertOk();
+        $payload = ['body' => 'Mais uma rodada?', 'request_key' => 'chat-1'];
+
+        $this->actingAs($customer)->post(route('customer.chat.send', '123456'), $payload)->assertRedirect();
+        $this->actingAs($customer)->post(route('customer.chat.send', '123456'), $payload)->assertRedirect();
+
+        $this->assertSame(1, DB::table('table_messages')->count());
+    }
+
     public function test_payment_resent_with_the_same_key_is_recorded_once(): void
     {
         $payload = ['method' => 'pix', 'amount' => '25.00', 'request_key' => 'pay-1'];

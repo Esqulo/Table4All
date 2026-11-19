@@ -487,6 +487,11 @@
         "ends_at_label": "Data e hora de término"
     },
     "join_table": {
+        "chat_title": "Chat da mesa",
+        "chat_empty": "Nenhuma mensagem ainda. Diga oi!",
+        "chat_placeholder": "Mensagem",
+        "chat_send": "Enviar",
+        "chat_react": "Reagir com {{emoji}}",
         "link_title": "Abrir mesa com o garçom",
         "link_description": "Gere um QR code e mostre ao garçom ao abrir sua mesa: ela fica vinculada a você.",
         "link_generate": "Gerar QR code",
