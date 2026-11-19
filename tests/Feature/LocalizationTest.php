@@ -140,10 +140,12 @@ class LocalizationTest extends TestCase
     public function test_error_pages_are_translated(): void
     {
         // Rendered by the app's layout now (it adds a class attribute), so only the lang is checked.
+        // The title is checked as a prop: it only reaches the HTML as text when server rendering runs.
         $this->get('/pagina-que-nao-existe')->assertNotFound()
-            ->assertSee('Página não encontrada')
+            ->assertInertia(fn (Assert $page) => $page->component('error')->where('title', 'Página não encontrada'))
             ->assertSee('<html lang="pt-BR"', false);
-        $this->withUnencryptedCookie('locale', 'en')->get('/pagina-que-nao-existe')->assertNotFound()->assertSee('Not Found');
+        $this->withUnencryptedCookie('locale', 'en')->get('/pagina-que-nao-existe')->assertNotFound()
+            ->assertInertia(fn (Assert $page) => $page->component('error')->where('title', 'Not Found'));
     }
 
     public function test_closing_a_closed_table_explains_why_in_portuguese(): void
