@@ -22,6 +22,7 @@ use App\Http\Controllers\SocialFeedController;
 use App\Http\Controllers\TableJoinController;
 use App\Http\Controllers\WaiterInvitationController;
 use App\Http\Middleware\EnsureAdmin;
+use App\Http\Middleware\EnsureNotStaff;
 use App\Http\Middleware\EnsureRestaurant;
 use App\Http\Middleware\EnsureRestaurantOrWaiter;
 use Illuminate\Http\Request;
@@ -73,10 +74,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('customer')
         ->name('customer.')
+        ->middleware(EnsureNotStaff::class)
         ->group(function () {
             Route::get('mesa', [CustomerJoinController::class, 'index'])->name('join');
             Route::get('mesa/{code}', [CustomerJoinController::class, 'show'])->name('table');
             Route::post('mesa/{code}/pedido', [CustomerJoinController::class, 'order'])->name('order');
+            Route::post('mesa/{code}/participantes/{customer}/aprovar', [CustomerJoinController::class, 'approve'])
+                ->whereNumber('customer')->name('join-requests.approve');
+            Route::post('mesa/{code}/participantes/{customer}/recusar', [CustomerJoinController::class, 'reject'])
+                ->whereNumber('customer')->name('join-requests.reject');
+            Route::post('mesa/{code}/participantes/{customer}/titular', [CustomerJoinController::class, 'transfer'])
+                ->whereNumber('customer')->name('responsible.transfer');
+            Route::post('mesa/{code}/pedir-novamente', [CustomerJoinController::class, 'requestAgain'])->name('join-requests.retry');
+            Route::post('mesa/{code}/sair', [CustomerJoinController::class, 'leave'])->name('leave');
         });
 
     // Social: anyone signed in reacts to and comments on restaurant posts

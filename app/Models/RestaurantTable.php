@@ -15,6 +15,7 @@ use Illuminate\Support\Carbon;
  *
  * @property int $id
  * @property int $user_id
+ * @property int|null $responsible_user_id
  * @property string $title
  * @property string|null $access_code
  * @property Carbon|string|null $closed_at

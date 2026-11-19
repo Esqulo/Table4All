@@ -300,6 +300,70 @@ class RushResilienceTest extends TestCase
         $this->assertSame(2, (int) QueueItem::where('product_id', $burger->id)->sole()->quantity);
     }
 
+    public function test_a_retried_or_late_join_answer_does_not_flip_the_decision(): void
+    {
+        $owner = User::factory()->create();
+        $guest = User::factory()->create();
+        $this->actingAs($owner)->get(route('customer.table', '123456'))->assertOk();
+        $this->actingAs($guest)->get(route('customer.table', '123456'))->assertOk();
+
+        $approve = route('customer.join-requests.approve', ['123456', $guest->id]);
+        $this->actingAs($owner)->post($approve)->assertRedirect();
+        $this->actingAs($owner)->post($approve)->assertRedirect();
+        // A reject tapped on a stale screen after approving changes nothing.
+        $this->actingAs($owner)->post(route('customer.join-requests.reject', ['123456', $guest->id]))->assertRedirect();
+
+        $this->assertSame(['approved'], DB::table('restaurant_table_customers')
+            ->where('user_id', $guest->id)->pluck('status')->all());
+    }
+
+    public function test_a_customer_arriving_later_never_replaces_the_responsible(): void
+    {
+        $owner = User::factory()->create();
+        $late = User::factory()->create();
+        // As if the late customer lost the race: the table already has its responsible.
+        $this->actingAs($owner)->get(route('customer.table', '123456'))->assertOk();
+
+        $this->actingAs($late)->get(route('customer.table', '123456'))
+            ->assertInertia(fn (Assert $page) => $page->component('customer/waiting'));
+        $this->actingAs($late)->get(route('customer.table', '123456'))->assertOk();
+
+        $this->assertSame($owner->id, $this->table->fresh()?->responsible_user_id);
+        $this->assertSame(1, DB::table('restaurant_table_customers')->where('user_id', $late->id)->count());
+    }
+
+    public function test_a_retried_rejection_counts_once(): void
+    {
+        $owner = User::factory()->create();
+        $guest = User::factory()->create();
+        $this->actingAs($owner)->get(route('customer.table', '123456'))->assertOk();
+        $this->actingAs($guest)->get(route('customer.table', '123456'))->assertOk();
+
+        $reject = route('customer.join-requests.reject', ['123456', $guest->id]);
+        $this->actingAs($owner)->post($reject);
+        $this->actingAs($owner)->post($reject);
+
+        $this->assertSame(1, (int) DB::table('restaurant_table_customers')->where('user_id', $guest->id)->value('rejections'));
+    }
+
+    public function test_a_retried_leave_by_the_responsible_passes_the_role_on_once(): void
+    {
+        $owner = User::factory()->create();
+        $first = User::factory()->create();
+        $second = User::factory()->create();
+        foreach ([$owner, $first, $second] as $customer) {
+            $this->actingAs($customer)->get(route('customer.table', '123456'))->assertOk();
+        }
+        foreach ([$first, $second] as $customer) {
+            $this->actingAs($owner)->post(route('customer.join-requests.approve', ['123456', $customer->id]));
+        }
+
+        $this->actingAs($owner)->post(route('customer.leave', '123456'));
+        $this->actingAs($owner)->post(route('customer.leave', '123456'));
+
+        $this->assertSame($first->id, $this->table->fresh()?->responsible_user_id);
+    }
+
     public function test_payment_resent_with_the_same_key_is_recorded_once(): void
     {
         $payload = ['method' => 'pix', 'amount' => '25.00', 'request_key' => 'pay-1'];

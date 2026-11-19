@@ -1,6 +1,8 @@
 import { Head, router } from '@inertiajs/react';
 import { REGEXP_ONLY_DIGITS } from 'input-otp';
 import { useTranslation } from 'react-i18next';
+import TableJoinController from '@/actions/App/Http/Controllers/TableJoinController';
+import { QrScanButton } from '@/components/qr-scanner';
 import {
     InputOTP,
     InputOTPGroup,
@@ -12,8 +14,12 @@ export default function JoinTable() {
 
     function handleChange(value: string) {
         if (value.length === 6) {
-            router.visit(`/mesa/${value}`);
+            visitTable(value);
         }
+    }
+
+    function visitTable(code: string) {
+        router.visit(TableJoinController.show.url(code));
     }
 
     return (
@@ -49,6 +55,8 @@ export default function JoinTable() {
                             </InputOTPGroup>
                         </InputOTP>
                     </div>
+
+                    <QrScanButton onCode={visitTable} />
                 </div>
             </div>
         </>

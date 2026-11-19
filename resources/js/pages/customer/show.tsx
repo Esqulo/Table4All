@@ -1,5 +1,17 @@
 import { Head, router } from '@inertiajs/react';
-import { ImageOff, Minus, Plus, Search, ShoppingBag } from 'lucide-react';
+import {
+    Check,
+    Crown,
+    ImageOff,
+    LogOut,
+    Minus,
+    Plus,
+    Search,
+    ShoppingBag,
+    UserPlus,
+    Users,
+    X,
+} from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import JoinController from '@/actions/App/Http/Controllers/Customer/JoinController';
@@ -7,6 +19,8 @@ import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
@@ -55,6 +69,21 @@ type Props = {
     total: number;
     paid: number;
     remaining: number;
+    isResponsible: boolean;
+    members: Member[];
+    joinRequests: JoinRequest[];
+};
+
+type Member = {
+    id: number;
+    name: string;
+    is_responsible: boolean;
+    is_me: boolean;
+};
+
+type JoinRequest = {
+    id: number;
+    name: string;
 };
 
 export default function CustomerShow({
@@ -65,6 +94,9 @@ export default function CustomerShow({
     total,
     paid,
     remaining,
+    isResponsible,
+    members,
+    joinRequests,
 }: Props) {
     const { t, i18n } = useTranslation();
     const locale = i18n.language === 'pt_BR' ? 'pt-BR' : 'en-US';
@@ -82,7 +114,15 @@ export default function CustomerShow({
     // Show kitchen progress, deliveries and payments without the customer reloading.
     // Paused while the menu is open so the list doesn't shift under their finger.
     useLiveReload({
-        only: ['products', 'preparing', 'total', 'paid', 'remaining'],
+        only: [
+            'products',
+            'preparing',
+            'total',
+            'paid',
+            'remaining',
+            'members',
+            'joinRequests',
+        ],
         intervalMs: 20_000,
         enabled: !menuOpen,
     });
@@ -213,6 +253,26 @@ export default function CustomerShow({
                 <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
                     {/* Left — preparing + items on table */}
                     <div className="flex-1 space-y-6">
+                        {isResponsible && (
+                            <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                                <Crown className="h-3.5 w-3.5 text-amber-500" />
+                                {t('join_table.you_are_responsible')}
+                            </p>
+                        )}
+
+                        {joinRequests.length > 0 && (
+                            <JoinRequestsPanel
+                                code={code}
+                                requests={joinRequests}
+                            />
+                        )}
+
+                        <MembersPanel
+                            code={code}
+                            members={members}
+                            isResponsible={isResponsible}
+                        />
+
                         <div className="flex items-center justify-between">
                             <p className="text-sm font-semibold">
                                 {t('join_table.my_order')}
@@ -827,6 +887,231 @@ function MenuRow({
                     </button>
                 </div>
             )}
+        </div>
+    );
+}
+
+function JoinRequestsPanel({
+    code,
+    requests,
+}: {
+    code: string;
+    requests: JoinRequest[];
+}) {
+    const { t } = useTranslation();
+    const [busy, setBusy] = useState<number | null>(null);
+
+    function decide(customer: number, approve: boolean) {
+        if (busy !== null) {
+            return;
+        }
+
+        const action = approve ? JoinController.approve : JoinController.reject;
+
+        setBusy(customer);
+        router.post(
+            action.url({ code, customer }),
+            {},
+            {
+                preserveScroll: true,
+                onFinish: () => setBusy(null),
+            },
+        );
+    }
+
+    return (
+        <div className="space-y-2 rounded-xl border border-primary/40 bg-primary/5 p-4">
+            <p className="flex items-center gap-2 text-sm font-semibold">
+                <UserPlus className="h-4 w-4 text-primary" />
+                {t('join_table.join_requests_title')}
+            </p>
+            <ul className="divide-y divide-border">
+                {requests.map((request) => (
+                    <li
+                        key={request.id}
+                        className="flex items-center gap-2 py-2"
+                    >
+                        <span className="min-w-0 flex-1 truncate text-sm">
+                            {request.name}
+                        </span>
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={busy !== null}
+                            onClick={() => decide(request.id, false)}
+                            aria-label={t('join_table.reject')}
+                        >
+                            <X className="h-3.5 w-3.5" />
+                            <span className="hidden sm:inline">
+                                {t('join_table.reject')}
+                            </span>
+                        </Button>
+                        <Button
+                            size="sm"
+                            disabled={busy !== null}
+                            onClick={() => decide(request.id, true)}
+                        >
+                            <Check className="h-3.5 w-3.5" />
+                            {t('join_table.approve')}
+                        </Button>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+}
+
+type PendingAction =
+    | { kind: 'transfer'; member: Member }
+    | { kind: 'leave' }
+    | null;
+
+/** Who is at the table; the responsible hands the role over, anyone can leave. */
+function MembersPanel({
+    code,
+    members,
+    isResponsible,
+}: {
+    code: string;
+    members: Member[];
+    isResponsible: boolean;
+}) {
+    const { t } = useTranslation();
+    const [pending, setPending] = useState<PendingAction>(null);
+    const [busy, setBusy] = useState(false);
+    // The role passes on in the order people joined.
+    const successor = members.find((member) => !member.is_me);
+
+    function confirm() {
+        if (pending === null || busy) {
+            return;
+        }
+
+        const url =
+            pending.kind === 'transfer'
+                ? JoinController.transfer.url({
+                      code,
+                      customer: pending.member.id,
+                  })
+                : JoinController.leave.url(code);
+
+        setBusy(true);
+        router.post(
+            url,
+            {},
+            {
+                preserveScroll: true,
+                onFinish: () => {
+                    setBusy(false);
+                    setPending(null);
+                },
+            },
+        );
+    }
+
+    let description = '';
+
+    if (pending?.kind === 'transfer') {
+        description = t('join_table.transfer_confirm', {
+            name: pending.member.name,
+        });
+    } else if (pending?.kind === 'leave') {
+        description =
+            isResponsible && successor
+                ? t('join_table.leave_confirm_responsible', {
+                      name: successor.name,
+                  })
+                : t('join_table.leave_confirm');
+    }
+
+    return (
+        <div className="space-y-2 rounded-xl border border-border bg-card p-4">
+            <p className="flex items-center gap-2 text-sm font-semibold">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                {t('join_table.members_title', { count: members.length })}
+            </p>
+            <ul className="divide-y divide-border">
+                {members.map((member) => (
+                    <li
+                        key={member.id}
+                        className="flex min-h-11 items-center gap-2 py-1.5"
+                    >
+                        <span className="min-w-0 flex-1 truncate text-sm">
+                            {member.name}
+                            {member.is_me && (
+                                <span className="text-muted-foreground">
+                                    {' '}
+                                    ({t('join_table.you')})
+                                </span>
+                            )}
+                        </span>
+                        {member.is_responsible ? (
+                            <span className="flex items-center gap-1 text-xs font-medium text-amber-600">
+                                <Crown className="h-3.5 w-3.5" />
+                                {t('join_table.responsible')}
+                            </span>
+                        ) : (
+                            isResponsible && (
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() =>
+                                        setPending({ kind: 'transfer', member })
+                                    }
+                                >
+                                    <Crown className="h-3.5 w-3.5" />
+                                    {t('join_table.make_responsible')}
+                                </Button>
+                            )
+                        )}
+                    </li>
+                ))}
+            </ul>
+            <Button
+                size="sm"
+                variant="ghost"
+                className="w-full text-destructive hover:text-destructive"
+                onClick={() => setPending({ kind: 'leave' })}
+            >
+                <LogOut className="h-3.5 w-3.5" />
+                {t('join_table.leave')}
+            </Button>
+
+            <Dialog
+                open={pending !== null}
+                onOpenChange={(open) => !open && !busy && setPending(null)}
+            >
+                <DialogContent className="max-w-sm">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {pending?.kind === 'transfer'
+                                ? t('join_table.make_responsible')
+                                : t('join_table.leave')}
+                        </DialogTitle>
+                        <DialogDescription>{description}</DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            disabled={busy}
+                            onClick={() => setPending(null)}
+                        >
+                            {t('join_table.cancel')}
+                        </Button>
+                        <Button
+                            variant={
+                                pending?.kind === 'leave'
+                                    ? 'destructive'
+                                    : 'default'
+                            }
+                            disabled={busy}
+                            onClick={confirm}
+                        >
+                            {t('join_table.confirm')}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

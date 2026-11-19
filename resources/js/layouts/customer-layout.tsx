@@ -51,7 +51,7 @@ export default function CustomerLayout({ children }: PropsWithChildren) {
                         onClick={() => setOpen(false)}
                     >
                         <QrCode className="h-4 w-4 shrink-0" />
-                        {t('join_table.title')}
+                        {t('nav.table')}
                     </Link>
                 </nav>
             </aside>

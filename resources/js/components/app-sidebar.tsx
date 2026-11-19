@@ -144,7 +144,7 @@ export function AppSidebar() {
                         icon: Newspaper,
                     },
                     {
-                        title: t('nav.join_table'),
+                        title: t('nav.table'),
                         href: CustomerJoinController.index.url(),
                         icon: QrCode,
                     },

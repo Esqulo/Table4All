@@ -58,6 +58,401 @@ class CustomerAndDashboardTest extends TestCase
         }
     }
 
+    public function test_joined_tables_stay_in_the_customers_account_until_closed(): void
+    {
+        $restaurant = $this->restaurant(['name' => 'Bar do Zé']);
+        $customer = $this->customer();
+        $first = $this->openTable($restaurant, ['title' => 'Mesa 1']);
+        $second = $this->openTable($restaurant, ['title' => 'Mesa 2']);
+        $elsewhere = $this->openTable($this->restaurant(), ['title' => 'Mesa 9']);
+
+        // Joining one table never blocks joining others, at the same restaurant or not.
+        foreach ([$first, $second, $elsewhere] as $table) {
+            $this->actingAs($customer)->get(route('customer.table', $table->access_code))->assertOk();
+        }
+
+        $this->actingAs($customer)->get(route('customer.join'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('customer/join')
+                ->has('tables', 3)
+                ->where('tables.2', ['code' => $first->access_code, 'title' => 'Mesa 1', 'restaurant' => 'Bar do Zé', 'status' => 'approved']));
+
+        $first->forceFill(['closed_at' => now(), 'access_code' => null])->save();
+        $elsewhere->delete();
+
+        $this->actingAs($customer)->get(route('customer.join'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('tables', 1)
+                ->where('tables.0.code', $second->access_code));
+    }
+
+    public function test_joined_tables_are_listed_only_to_who_joined_them(): void
+    {
+        $table = $this->openTable($this->restaurant());
+        $first = $this->customer();
+        $second = $this->customer();
+
+        $this->actingAs($first)->get(route('customer.table', $table->access_code))->assertOk();
+        $this->actingAs($first)->get(route('customer.table', $table->access_code))->assertOk();
+        $this->actingAs($second)->get(route('customer.table', $table->access_code))->assertOk();
+
+        $this->assertDatabaseCount('restaurant_table_customers', 2);
+        $this->actingAs($this->customer())->get(route('customer.join'))
+            ->assertInertia(fn (Assert $page) => $page->has('tables', 0));
+    }
+
+    public function test_ordering_at_a_table_keeps_it_in_the_customers_account(): void
+    {
+        $restaurant = $this->restaurant();
+        $table = $this->openTable($restaurant);
+        $customer = $this->customer();
+
+        $this->actingAs($customer)->post(route('customer.order', $table->access_code), [
+            'items' => [['product_id' => $this->product($restaurant)->id, 'quantity' => 1]],
+        ])->assertRedirect(route('customer.table', $table->access_code));
+
+        $this->assertDatabaseHas('restaurant_table_customers', [
+            'restaurant_table_id' => $table->id,
+            'user_id' => $customer->id,
+        ]);
+    }
+
+    // ── responsible and join approval ────────────────────────────────────────
+
+    public function test_first_customer_becomes_responsible_and_others_must_be_approved(): void
+    {
+        $restaurant = $this->restaurant();
+        $table = $this->openTable($restaurant, ['title' => 'Mesa 7']);
+        $owner = $this->customer();
+        $guest = $this->customer();
+        $this->queueItem($table, $this->product($restaurant));
+
+        $this->actingAs($owner)->get(route('customer.table', $table->access_code))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('customer/show')
+                ->where('isResponsible', true)
+                ->where('joinRequests', []));
+        $this->assertSame($owner->id, $table->fresh()?->responsible_user_id);
+
+        // The guest waits and sees nothing of the table's bill.
+        $this->actingAs($guest)->get(route('customer.table', $table->access_code))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('customer/waiting')
+                ->where('status', 'pending')
+                ->where('table', 'Mesa 7')
+                ->missing('preparing')
+                ->missing('total'));
+        $this->actingAs($guest)->get(route('customer.join'))
+            ->assertInertia(fn (Assert $page) => $page->where('tables.0.status', 'pending'));
+
+        $this->actingAs($owner)->get(route('customer.table', $table->access_code))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('joinRequests', [['id' => $guest->id, 'name' => $guest->name]]));
+
+        $this->actingAs($owner)
+            ->post(route('customer.join-requests.approve', [$table->access_code, $guest->id]))
+            ->assertRedirect(route('customer.table', $table->access_code));
+
+        $this->actingAs($guest)->get(route('customer.table', $table->access_code))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('customer/show')
+                ->where('isResponsible', false)
+                ->has('preparing', 1));
+        $this->assertSame($owner->id, $table->fresh()?->responsible_user_id);
+    }
+
+    public function test_customer_waiting_for_approval_cannot_order(): void
+    {
+        $restaurant = $this->restaurant();
+        $table = $this->openTable($restaurant);
+        $guest = $this->customer();
+        $this->actingAs($this->customer())->get(route('customer.table', $table->access_code))->assertOk();
+
+        $this->actingAs($guest)->post(route('customer.order', $table->access_code), [
+            'items' => [['product_id' => $this->product($restaurant)->id, 'quantity' => 1]],
+        ])->assertRedirect(route('customer.table', $table->access_code));
+
+        $this->assertSame(0, QueueItem::where('restaurant_table_id', $table->id)->count());
+        $this->assertDatabaseHas('restaurant_table_customers', [
+            'restaurant_table_id' => $table->id,
+            'user_id' => $guest->id,
+            'status' => 'pending',
+        ]);
+    }
+
+    public function test_rejected_customer_stays_out_and_the_table_leaves_their_list(): void
+    {
+        $restaurant = $this->restaurant();
+        $table = $this->openTable($restaurant);
+        $owner = $this->customer();
+        $guest = $this->customer();
+        $this->actingAs($owner)->get(route('customer.table', $table->access_code))->assertOk();
+        $this->actingAs($guest)->get(route('customer.table', $table->access_code))->assertOk();
+
+        $this->actingAs($owner)->post(route('customer.join-requests.reject', [$table->access_code, $guest->id]));
+
+        // Coming back doesn't ask again: the answer stands.
+        $this->actingAs($guest)->get(route('customer.table', $table->access_code))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('customer/waiting')
+                ->where('status', 'rejected')
+                ->where('attemptsLeft', 2));
+        $this->actingAs($owner)->get(route('customer.table', $table->access_code))
+            ->assertInertia(fn (Assert $page) => $page->where('joinRequests', []));
+        $this->actingAs($guest)->get(route('customer.join'))
+            ->assertInertia(fn (Assert $page) => $page->has('tables', 0));
+        $this->actingAs($guest)->post(route('customer.order', $table->access_code), [
+            'items' => [['product_id' => $this->product($restaurant)->id, 'quantity' => 1]],
+        ]);
+        $this->assertSame(0, QueueItem::where('restaurant_table_id', $table->id)->count());
+    }
+
+    public function test_only_the_responsible_answers_join_requests(): void
+    {
+        $table = $this->openTable($this->restaurant());
+        $owner = $this->customer();
+        $member = $this->customer();
+        $guest = $this->customer();
+        $this->actingAs($owner)->get(route('customer.table', $table->access_code))->assertOk();
+        $this->actingAs($member)->get(route('customer.table', $table->access_code))->assertOk();
+        $this->actingAs($owner)->post(route('customer.join-requests.approve', [$table->access_code, $member->id]));
+        $this->actingAs($guest)->get(route('customer.table', $table->access_code))->assertOk();
+
+        // Approved members and the guest themself can't let anyone in.
+        foreach ([$member, $guest] as $someone) {
+            $this->actingAs($someone)
+                ->post(route('customer.join-requests.approve', [$table->access_code, $guest->id]))
+                ->assertForbidden();
+        }
+
+        // The responsible of another table can't answer for this one.
+        $otherOwner = $this->customer();
+        $other = $this->openTable($this->restaurant());
+        $this->actingAs($otherOwner)->get(route('customer.table', $other->access_code))->assertOk();
+        $this->actingAs($otherOwner)
+            ->post(route('customer.join-requests.approve', [$table->access_code, $guest->id]))
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('restaurant_table_customers', ['user_id' => $guest->id, 'status' => 'pending']);
+    }
+
+    public function test_join_requests_of_a_closed_table_cannot_be_answered(): void
+    {
+        $table = $this->openTable($this->restaurant());
+        $code = $table->access_code;
+        $owner = $this->customer();
+        $guest = $this->customer();
+        $this->actingAs($owner)->get(route('customer.table', $code))->assertOk();
+        $this->actingAs($guest)->get(route('customer.table', $code))->assertOk();
+        $table->forceFill(['closed_at' => now()])->save();
+
+        $this->actingAs($owner)->post(route('customer.join-requests.approve', [$code, $guest->id]))->assertNotFound();
+    }
+
+    public function test_a_table_opened_by_staff_gets_its_responsible_from_the_first_customer(): void
+    {
+        $restaurant = $this->restaurant();
+        $table = $this->openTable($restaurant);
+        $waiter = $this->waiterOf($restaurant);
+        $this->actingAs($waiter)->get(route('restaurant.tables.show', $table))->assertOk();
+
+        $customer = $this->customer();
+        $this->actingAs($customer)->get(route('customer.table', $table->access_code))
+            ->assertInertia(fn (Assert $page) => $page->where('isResponsible', true));
+    }
+
+    public function test_restaurant_and_waiter_accounts_never_join_a_table_as_customers(): void
+    {
+        $restaurant = $this->restaurant();
+        $table = $this->openTable($restaurant);
+        $product = $this->product($restaurant);
+
+        foreach ([$restaurant, $this->waiterOf($restaurant), $this->restaurant()] as $staff) {
+            $this->actingAs($staff)->get(route('customer.table', $table->access_code))
+                ->assertRedirect(route('dashboard'));
+            $this->actingAs($staff)->get(route('customer.join'))->assertRedirect(route('dashboard'));
+            $this->actingAs($staff)->post(route('customer.order', $table->access_code), [
+                'items' => [['product_id' => $product->id, 'quantity' => 1]],
+            ])->assertRedirect(route('dashboard'));
+        }
+
+        $this->assertNull($table->fresh()?->responsible_user_id);
+        $this->assertDatabaseCount('restaurant_table_customers', 0);
+        $this->assertSame(0, QueueItem::where('restaurant_table_id', $table->id)->count());
+    }
+
+    public function test_a_rejected_customer_can_ask_again_until_rejected_three_times(): void
+    {
+        $table = $this->openTable($this->restaurant());
+        $code = $table->access_code;
+        $owner = $this->customer();
+        $guest = $this->customer();
+        $this->actingAs($owner)->get(route('customer.table', $code))->assertOk();
+        $this->actingAs($guest)->get(route('customer.table', $code))->assertOk();
+
+        foreach ([2, 1, 0] as $attemptsLeft) {
+            $this->actingAs($owner)->post(route('customer.join-requests.reject', [$code, $guest->id]));
+            $this->actingAs($guest)->get(route('customer.table', $code))
+                ->assertInertia(fn (Assert $page) => $page
+                    ->where('status', 'rejected')
+                    ->where('attemptsLeft', $attemptsLeft));
+
+            $this->actingAs($guest)->post(route('customer.join-requests.retry', $code))
+                ->assertRedirect(route('customer.table', $code));
+        }
+
+        // The third rejection is final: asking again changes nothing, and neither does leaving.
+        $this->actingAs($guest)->post(route('customer.leave', $code));
+        $this->actingAs($guest)->get(route('customer.table', $code))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('status', 'rejected')
+                ->where('attemptsLeft', 0));
+        $this->assertDatabaseHas('restaurant_table_customers', ['user_id' => $guest->id, 'rejections' => 3]);
+    }
+
+    public function test_asking_again_after_a_rejection_reaches_the_responsible(): void
+    {
+        $table = $this->openTable($this->restaurant());
+        $code = $table->access_code;
+        $owner = $this->customer();
+        $guest = $this->customer();
+        $this->actingAs($owner)->get(route('customer.table', $code))->assertOk();
+        $this->actingAs($guest)->get(route('customer.table', $code))->assertOk();
+        $this->actingAs($owner)->post(route('customer.join-requests.reject', [$code, $guest->id]));
+
+        $this->actingAs($guest)->post(route('customer.join-requests.retry', $code));
+
+        $this->actingAs($owner)->get(route('customer.table', $code))
+            ->assertInertia(fn (Assert $page) => $page->has('joinRequests', 1));
+        $this->actingAs($owner)->post(route('customer.join-requests.approve', [$code, $guest->id]));
+        $this->actingAs($guest)->get(route('customer.table', $code))
+            ->assertInertia(fn (Assert $page) => $page->component('customer/show'));
+    }
+
+    public function test_everyone_at_the_table_sees_who_is_there_in_the_order_they_joined(): void
+    {
+        $table = $this->openTable($this->restaurant());
+        $code = $table->access_code;
+        $owner = $this->customer();
+        $first = $this->customer();
+        $second = $this->customer();
+        $waiting = $this->customer();
+        foreach ([$owner, $first, $second, $waiting] as $customer) {
+            $this->actingAs($customer)->get(route('customer.table', $code))->assertOk();
+        }
+        // Approval order doesn't matter: arrival order does.
+        $this->actingAs($owner)->post(route('customer.join-requests.approve', [$code, $second->id]));
+        $this->actingAs($owner)->post(route('customer.join-requests.approve', [$code, $first->id]));
+
+        $this->actingAs($second)->get(route('customer.table', $code))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('members', [
+                    ['id' => $owner->id, 'name' => $owner->name, 'is_responsible' => true, 'is_me' => false],
+                    ['id' => $first->id, 'name' => $first->name, 'is_responsible' => false, 'is_me' => false],
+                    ['id' => $second->id, 'name' => $second->name, 'is_responsible' => false, 'is_me' => true],
+                ])
+                ->where('joinRequests', []));
+    }
+
+    public function test_when_the_responsible_leaves_the_next_to_have_joined_takes_over(): void
+    {
+        $table = $this->openTable($this->restaurant());
+        $code = $table->access_code;
+        $owner = $this->customer();
+        $first = $this->customer();
+        $second = $this->customer();
+        foreach ([$owner, $first, $second] as $customer) {
+            $this->actingAs($customer)->get(route('customer.table', $code))->assertOk();
+        }
+        $this->actingAs($owner)->post(route('customer.join-requests.approve', [$code, $second->id]));
+        $this->actingAs($owner)->post(route('customer.join-requests.approve', [$code, $first->id]));
+
+        $this->actingAs($owner)->post(route('customer.leave', $code))->assertRedirect(route('customer.join'));
+
+        $this->assertSame($first->id, $table->fresh()?->responsible_user_id);
+        $this->actingAs($owner)->get(route('customer.join'))
+            ->assertInertia(fn (Assert $page) => $page->has('tables', 0));
+
+        // Coming back, the former responsible asks the new one like anybody else.
+        $this->actingAs($owner)->get(route('customer.table', $code))
+            ->assertInertia(fn (Assert $page) => $page->component('customer/waiting'));
+        $this->actingAs($first)->get(route('customer.table', $code))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('isResponsible', true)
+                ->where('joinRequests', [['id' => $owner->id, 'name' => $owner->name]]));
+
+        $this->actingAs($first)->post(route('customer.leave', $code));
+        $this->assertSame($second->id, $table->fresh()?->responsible_user_id);
+    }
+
+    public function test_when_the_last_customer_leaves_the_next_to_arrive_becomes_responsible(): void
+    {
+        $table = $this->openTable($this->restaurant());
+        $code = $table->access_code;
+        $owner = $this->customer();
+        $waiting = $this->customer();
+        $this->actingAs($owner)->get(route('customer.table', $code))->assertOk();
+        $this->actingAs($waiting)->get(route('customer.table', $code))->assertOk();
+
+        $this->actingAs($owner)->post(route('customer.leave', $code));
+        $this->assertNull($table->fresh()?->responsible_user_id);
+
+        // The waiting screen's next refresh lets them in as the new responsible.
+        $this->actingAs($waiting)->get(route('customer.table', $code))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('customer/show')
+                ->where('isResponsible', true));
+    }
+
+    public function test_a_customer_waiting_for_approval_can_cancel_the_request(): void
+    {
+        $table = $this->openTable($this->restaurant());
+        $code = $table->access_code;
+        $owner = $this->customer();
+        $waiting = $this->customer();
+        $this->actingAs($owner)->get(route('customer.table', $code))->assertOk();
+        $this->actingAs($waiting)->get(route('customer.table', $code))->assertOk();
+
+        $this->actingAs($waiting)->post(route('customer.leave', $code));
+
+        $this->assertSame($owner->id, $table->fresh()?->responsible_user_id);
+        $this->actingAs($owner)->get(route('customer.table', $code))
+            ->assertInertia(fn (Assert $page) => $page->where('joinRequests', []));
+    }
+
+    public function test_the_responsible_hands_the_table_over_to_someone_at_it(): void
+    {
+        $table = $this->openTable($this->restaurant());
+        $code = $table->access_code;
+        $owner = $this->customer();
+        $member = $this->customer();
+        $waiting = $this->customer();
+        foreach ([$owner, $member, $waiting] as $customer) {
+            $this->actingAs($customer)->get(route('customer.table', $code))->assertOk();
+        }
+        $this->actingAs($owner)->post(route('customer.join-requests.approve', [$code, $member->id]));
+
+        // Only to someone already at the table, and only by the responsible.
+        $this->actingAs($owner)->post(route('customer.responsible.transfer', [$code, $waiting->id]))->assertNotFound();
+        $this->actingAs($owner)->post(route('customer.responsible.transfer', [$code, $this->customer()->id]))->assertNotFound();
+        $this->actingAs($member)->post(route('customer.responsible.transfer', [$code, $member->id]))->assertForbidden();
+        $this->assertSame($owner->id, $table->fresh()?->responsible_user_id);
+
+        $this->actingAs($owner)->post(route('customer.responsible.transfer', [$code, $member->id]))
+            ->assertRedirect(route('customer.table', $code));
+
+        $this->assertSame($member->id, $table->fresh()?->responsible_user_id);
+        $this->actingAs($owner)->post(route('customer.join-requests.approve', [$code, $waiting->id]))->assertForbidden();
+        $this->actingAs($member)->post(route('customer.join-requests.approve', [$code, $waiting->id]));
+        $this->actingAs($waiting)->get(route('customer.table', $code))
+            ->assertInertia(fn (Assert $page) => $page->component('customer/show'));
+        // The former responsible stays at the table as a regular member.
+        $this->actingAs($owner)->get(route('customer.table', $code))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('customer/show')
+                ->where('isResponsible', false));
+    }
+
     public function test_customer_routes_require_login(): void
     {
         $table = $this->openTable($this->restaurant());
