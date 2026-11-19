@@ -2,12 +2,18 @@
 
 use App\Http\Controllers\Admin\AdmissionRequestController as AdminAdmissionRequestController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\CouponController as AdminCouponController;
+use App\Http\Controllers\Admin\PayoutController as AdminPayoutController;
+use App\Http\Controllers\Admin\RestaurantController as AdminRestaurantController;
 use App\Http\Controllers\AdmissionRequestController;
 use App\Http\Controllers\Customer\JoinController as CustomerJoinController;
+use App\Http\Controllers\Customer\PaymentController as CustomerPaymentController;
 use App\Http\Controllers\PostInteractionController;
+use App\Http\Controllers\Restaurant\CouponController;
 use App\Http\Controllers\Restaurant\DashboardController;
 use App\Http\Controllers\Restaurant\DeliveryController;
 use App\Http\Controllers\Restaurant\EstablishmentController;
+use App\Http\Controllers\Restaurant\FinanceController;
 use App\Http\Controllers\Restaurant\MenuController;
 use App\Http\Controllers\Restaurant\PostController;
 use App\Http\Controllers\Restaurant\ProductController;
@@ -19,6 +25,7 @@ use App\Http\Controllers\Restaurant\TableController;
 use App\Http\Controllers\Restaurant\WaiterController;
 use App\Http\Controllers\RestaurantProfileController;
 use App\Http\Controllers\SocialFeedController;
+use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\TableJoinController;
 use App\Http\Controllers\WaiterInvitationController;
 use App\Http\Middleware\EnsureAdmin;
@@ -54,6 +61,9 @@ foreach (['/vempro', '/painel'] as $formerFeedUrl) {
         301,
     ));
 }
+
+// Stripe's notifications (signed; CSRF-exempt in bootstrap/app.php).
+Route::post('/stripe/webhook', StripeWebhookController::class)->name('stripe.webhook');
 
 Route::get('/mesa', [TableJoinController::class, 'index'])->name('table.join');
 Route::get('/mesa/{code}', [TableJoinController::class, 'show'])->name('table.show');
@@ -94,6 +104,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->middleware('throttle:30,1')->name('chat.send');
             Route::post('mesa/{code}/reacoes', [CustomerJoinController::class, 'react'])
                 ->middleware('throttle:60,1')->name('chat.react');
+            // Paying the table in the app (Stripe Checkout).
+            Route::post('mesa/{code}/pagamentos', [CustomerPaymentController::class, 'store'])
+                ->middleware('throttle:10,1')->name('payments.store');
+            Route::get('pagamentos/{payment}/retorno', [CustomerPaymentController::class, 'back'])
+                ->whereNumber('payment')->name('payments.return');
+            Route::post('pagamentos/{payment}/cancelar', [CustomerPaymentController::class, 'cancel'])
+                ->whereNumber('payment')->name('payments.cancel');
         });
 
     // Social: anyone signed in reacts to and comments on restaurant posts
@@ -137,6 +154,18 @@ Route::middleware(['auth', 'verified', EnsureRestaurant::class])
     ->name('restaurant.')
     ->group(function () {
         Route::get('painel', [DashboardController::class, 'index'])->name('dashboards.index');
+
+        // Financial profile: the Stripe account customers' payments go to.
+        Route::get('financeiro', [FinanceController::class, 'show'])->name('finance.show');
+        Route::post('financeiro/stripe', [FinanceController::class, 'connect'])
+            ->middleware('throttle:10,1')
+            ->name('finance.connect');
+        Route::get('financeiro/stripe/atualizar', [FinanceController::class, 'refresh'])->name('finance.refresh');
+        Route::get('financeiro/stripe/retorno', [FinanceController::class, 'back'])->name('finance.return');
+        Route::resource('cupons', CouponController::class)
+            ->only(['index', 'store', 'update', 'destroy'])
+            ->names('coupons')
+            ->parameters(['cupons' => 'coupon']);
 
         // Venue settings: opening hours, photos, logo and banner
         Route::get('estabelecimento', [EstablishmentController::class, 'edit'])->name('establishment.edit');
@@ -198,6 +227,16 @@ Route::middleware(['auth', 'verified', EnsureAdmin::class])
             ->only(['index', 'store', 'destroy'])
             ->names('categories')
             ->parameters(['categorias' => 'category']);
+        Route::resource('restaurantes', AdminRestaurantController::class)
+            ->only(['index', 'update'])
+            ->names('restaurants')
+            ->parameters(['restaurantes' => 'restaurant']);
+        Route::get('repasses', [AdminPayoutController::class, 'index'])->name('payouts.index');
+        Route::post('repasses', [AdminPayoutController::class, 'store'])->name('payouts.store');
+        Route::resource('cupons', AdminCouponController::class)
+            ->only(['index', 'store', 'update', 'destroy'])
+            ->names('coupons')
+            ->parameters(['cupons' => 'coupon']);
         Route::resource('solicitacoes', AdminAdmissionRequestController::class)
             ->only(['index', 'update'])
             ->names('admission-requests')

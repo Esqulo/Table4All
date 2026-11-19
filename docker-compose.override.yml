@@ -17,6 +17,9 @@ services:
       dockerfile: Dockerfile.dev
     env_file:
       - .env.docker.dev
+      # Your own secrets (Stripe keys, ...): gitignored, optional.
+      - path: .env.docker.local
+        required: false
     ports:
       - "5173:5173"   # Vite dev server (HMR)
     volumes:

@@ -36,6 +36,11 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property string|null $ifood_url
  * @property AccountType $account_type
  * @property int|null $restaurant_id
+ * @property string|null $stripe_account_id
+ * @property bool $stripe_charges_enabled
+ * @property bool $stripe_details_submitted
+ * @property string|null $fee_tier
+ * @property bool $platform_pays_stripe_fees
  * @property Carbon|null $email_verified_at
  * @property string $password
  * @property string|null $two_factor_secret
@@ -46,7 +51,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'email', 'phone', 'avatar', 'logo', 'banner', 'handle', 'profile_public', 'address', 'ifood_url', 'account_type', 'password', 'restaurant_id'])]
-#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token', 'search_name', 'search_vector'])]
+#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token', 'search_name', 'search_vector', 'stripe_account_id'])]
 class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
@@ -89,6 +94,29 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
         return $this->account_type === AccountType::WAITER
             ? (int) $this->restaurant_id
             : $this->id;
+    }
+
+    /** Whether customers can pay this restaurant's tables in the app. */
+    public function acceptsOnlinePayments(): bool
+    {
+        return $this->stripe_account_id !== null && $this->stripe_charges_enabled;
+    }
+
+    /** The restaurant's tier, falling back to the default when unset or no longer configured. */
+    public function feeTier(): string
+    {
+        /** @var array<string, mixed> $tiers */
+        $tiers = config('payments.tiers');
+
+        return $this->fee_tier !== null && array_key_exists($this->fee_tier, $tiers)
+            ? $this->fee_tier
+            : (string) config('payments.default_tier');
+    }
+
+    /** The platform's share of this restaurant's online payments, in basis points (4.5% = 450). */
+    public function feeRateBps(): int
+    {
+        return (int) round(((float) config('payments.tiers.'.$this->feeTier().'.fee_percent', 0)) * 100);
     }
 
     /** @return HasMany<User, $this> */
@@ -173,6 +201,9 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             'two_factor_confirmed_at' => 'datetime',
             'account_type' => AccountType::class,
             'profile_public' => 'boolean',
+            'stripe_charges_enabled' => 'boolean',
+            'stripe_details_submitted' => 'boolean',
+            'platform_pays_stripe_fees' => 'boolean',
         ];
     }
 }

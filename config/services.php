@@ -35,6 +35,14 @@ return [
         ],
     ],
 
+    // Online payments (see config/payments.php). The webhook secret may list
+    // several comma-separated secrets: the platform and the Connect endpoints
+    // each have their own.
+    'stripe' => [
+        'secret' => env('STRIPE_SECRET'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+    ],
+
     // Converts "Hoje tem!" videos. Names on the PATH or absolute paths.
     'ffmpeg' => [
         'ffmpeg' => env('FFMPEG_BINARY', 'ffmpeg'),

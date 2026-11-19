@@ -18,7 +18,6 @@
     "social.error_emoji": "Pick a single emoji.",
     "social.error_post_empty": "Write some text or add a photo.",
     "venue_profile.meta_description": "Menu, photos and opening hours of :name.",
-
     "mail.waiter_invitation.subject": "Invitation to join as a waiter — :restaurant",
     "mail.waiter_invitation.heading": "You're invited!",
     "mail.waiter_invitation.intro": "**:restaurant** invited you to work as a waiter on **:app**.",
@@ -27,7 +26,6 @@
     "mail.waiter_invitation.expires": "This invitation expires in **:days days**.",
     "mail.waiter_invitation.ignore": "If you don't recognize this invitation, you can safely ignore this email.",
     "mail.waiter_invitation.signature": "Best regards,\nThe :app team",
-
     "stories.error_type": "Send a photo (JPG, PNG or WebP) or a video (MP4, MOV or WebM).",
     "stories.error_too_big": "The file is over :mb MB.",
     "stories.error_image_unreadable": "We couldn't read this picture. Try another photo.",
@@ -35,5 +33,20 @@
     "stories.error_video_too_long": "The video can be at most :seconds seconds long.",
     "stories.error_video_unavailable": "Videos are unavailable right now. Post a photo instead.",
     "stories.error_limit": "You already have :max posts in Hoje tem!. Delete one or wait for one to expire.",
-    "tables.customer_qr_invalid": "The customer's QR code expired or was already used. Ask them to generate a new one and scan again."
+    "tables.customer_qr_invalid": "The customer's QR code expired or was already used. Ask them to generate a new one and scan again.",
+    "payments.unavailable": "This restaurant doesn't take payments in the app yet. Please pay your waiter.",
+    "payments.table_closed": "This table is already closed.",
+    "payments.amount_too_low": "The minimum amount to pay in the app is :min.",
+    "payments.amount_too_high": "The amount is more than what's left to pay. The most you can pay now is :max.",
+    "payments.nothing_to_pay": "There's nothing to pay at this table right now.",
+    "payments.gateway_error": "The payment couldn't be opened right now. Please try again in a moment.",
+    "payments.checkout_closed": "This payment was closed. Please start a new one.",
+    "payments.coupon_invalid": "Coupon not found.",
+    "payments.coupon_expired": "This coupon has expired.",
+    "payments.coupon_no_discount": "This coupon gives no discount on this amount.",
+    "payments.coupon_table_locked": "A coupon that can't be combined with others was already used at this table.",
+    "payments.coupon_not_combinable": "This coupon can't be combined with others, and this table already used a coupon.",
+    "payments.coupon_already_used": "You already used a coupon at this table.",
+    "payments.checkout_description": ":table · :restaurant",
+    "coupons.code_taken": "A coupon with this code already exists."
 }

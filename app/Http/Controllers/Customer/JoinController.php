@@ -2,9 +2,14 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Enums\AccountType;
+use App\Enums\OnlinePaymentStatus;
+use App\Enums\PaymentMethod;
 use App\Enums\QueueItemStatus;
 use App\Enums\TableCustomerStatus;
 use App\Http\Controllers\Controller;
+use App\Models\Coupon;
+use App\Models\OnlinePayment;
 use App\Models\Product;
 use App\Models\QueueItem;
 use App\Models\RestaurantTable;
@@ -12,8 +17,12 @@ use App\Models\Sale;
 use App\Models\User;
 use App\Support\CustomerLink;
 use App\Support\Idempotency;
+use App\Support\Payments\CheckoutRefused;
+use App\Support\Payments\TableCheckout;
 use App\Support\TableChat;
+use App\Support\TableMembership;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -190,7 +199,119 @@ class JoinController extends Controller
             'chat' => fn () => TableChat::feed($table->id, $user->id),
             'chatReactions' => TableChat::REACTIONS,
             'chatMaxLength' => TableChat::MAX_LENGTH,
+            // Paying in the app: only once the restaurant's Stripe account is active.
+            'onlinePayments' => fn () => [
+                'enabled' => User::whereKey($table->user_id)
+                    ->whereNotNull('stripe_account_id')
+                    ->where('stripe_charges_enabled', true)
+                    ->exists(),
+                'min' => ((int) config('payments.min_charge_cents')) / 100,
+            ],
+            'payments' => fn () => $this->payments($table->id),
+            'myCheckout' => fn () => $this->openCheckout($table->id, $user->id),
+            // Asked for by the payment form (partial reload with ?coupon=&amount=).
+            'couponQuote' => Inertia::optional(fn () => $this->couponQuote($request, $table)),
         ]);
+    }
+
+    /**
+     * Every payment on the bill, and who made it, plus in-app payments still
+     * being confirmed: everyone at the table sees who paid what.
+     *
+     * @return array<int, array{method: string, amount: float, payer: string|null, by_staff: bool, status: string, created_at: string|null}>
+     */
+    private function payments(int $tableId): array
+    {
+        $recorded = DB::table('table_payments')
+            ->where('table_payments.restaurant_table_id', $tableId)
+            ->leftJoin('users', 'users.id', '=', 'table_payments.registered_by_id')
+            ->orderBy('table_payments.id')
+            ->get([
+                'table_payments.method',
+                'table_payments.amount',
+                'table_payments.registered_by_type',
+                'table_payments.created_at',
+                'users.name',
+                'users.email',
+            ])
+            ->map(function ($row) {
+                $byCustomer = $row->registered_by_type === AccountType::CUSTOMER->value;
+
+                return [
+                    'method' => (string) $row->method,
+                    'amount' => (float) $row->amount,
+                    // Staff are not named to customers: "paid at the counter".
+                    'payer' => $byCustomer ? ($row->name ?: $row->email) : null,
+                    'by_staff' => ! $byCustomer,
+                    'status' => OnlinePaymentStatus::PAID->value,
+                    'created_at' => $row->created_at !== null ? Carbon::parse($row->created_at)->toIso8601String() : null,
+                ];
+            });
+
+        $confirming = DB::table('online_payments')
+            ->where('online_payments.restaurant_table_id', $tableId)
+            ->where('online_payments.status', OnlinePaymentStatus::PROCESSING->value)
+            ->leftJoin('users', 'users.id', '=', 'online_payments.user_id')
+            ->orderBy('online_payments.id')
+            ->get(['online_payments.amount_cents', 'online_payments.created_at', 'users.name', 'users.email'])
+            ->map(fn ($row) => [
+                'method' => PaymentMethod::ONLINE->value,
+                'amount' => $row->amount_cents / 100,
+                'payer' => $row->name ?: $row->email,
+                'by_staff' => false,
+                'status' => OnlinePaymentStatus::PROCESSING->value,
+                'created_at' => $row->created_at !== null ? Carbon::parse($row->created_at)->toIso8601String() : null,
+            ]);
+
+        return $recorded->concat($confirming)->values()->all();
+    }
+
+    /**
+     * The checkout this customer left open on Stripe, to resume or drop it.
+     *
+     * @return array{id: int, amount: float, charge: float, url: string}|null
+     */
+    private function openCheckout(int $tableId, int $userId): ?array
+    {
+        $payment = OnlinePayment::where('restaurant_table_id', $tableId)
+            ->where('user_id', $userId)
+            ->where('status', OnlinePaymentStatus::PENDING->value)
+            ->whereNotNull('checkout_url')
+            ->where('expires_at', '>', now())
+            ->latest('id')
+            ->first(['id', 'amount_cents', 'charge_cents', 'checkout_url']);
+
+        return $payment === null ? null : [
+            'id' => $payment->id,
+            'amount' => $payment->amount_cents / 100,
+            'charge' => $payment->charge_cents / 100,
+            'url' => (string) $payment->checkout_url,
+        ];
+    }
+
+    /**
+     * What the coupon typed in the payment form takes off the amount, or why it doesn't apply.
+     *
+     * @return array{code: string, valid: bool, error: string|null, discount: float, charge: float}
+     */
+    private function couponQuote(Request $request, RestaurantTable $table): array
+    {
+        $code = Coupon::normalizeCode((string) $request->query('coupon', ''));
+        $amountCents = (int) round(100 * (float) $request->query('amount', '0'));
+
+        try {
+            $quote = app(TableCheckout::class)->quote($request->user(), $table, $amountCents, $code);
+        } catch (CheckoutRefused $refused) {
+            return ['code' => $code, 'valid' => false, 'error' => $refused->translated(), 'discount' => 0.0, 'charge' => $amountCents / 100];
+        }
+
+        return [
+            'code' => $code,
+            'valid' => true,
+            'error' => null,
+            'discount' => $quote['discount_cents'] / 100,
+            'charge' => $quote['charge_cents'] / 100,
+        ];
     }
 
     public function order(Request $request, string $code): RedirectResponse
@@ -307,14 +428,7 @@ class JoinController extends Controller
             ->whereNull('deleted_at')
             ->firstOrFail(['id', 'responsible_user_id']);
 
-        $isMember = $table->responsible_user_id === $request->user()->id
-            || DB::table('restaurant_table_customers')
-                ->where('restaurant_table_id', $table->id)
-                ->where('user_id', $request->user()->id)
-                ->where('status', TableCustomerStatus::APPROVED->value)
-                ->exists();
-
-        abort_unless($isMember, 403);
+        abort_unless(TableMembership::isMember($table, $request->user()->id), 403);
 
         return $table;
     }

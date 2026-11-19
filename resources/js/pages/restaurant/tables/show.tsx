@@ -10,6 +10,7 @@ import {
     QrCode,
     Search,
     ShoppingCart,
+    Smartphone,
     Tag,
     X,
 } from 'lucide-react';
@@ -76,6 +77,7 @@ const PAYMENT_ICONS: Record<PaymentMethod, React.ReactNode> = {
     pix: <QrCode className="h-4 w-4" />,
     card: <CreditCard className="h-4 w-4" />,
     coupon: <Tag className="h-4 w-4" />,
+    online: <Smartphone className="h-4 w-4" />,
 };
 
 const PAYMENT_METHODS: PaymentMethod[] = ['cash', 'pix', 'card', 'coupon'];

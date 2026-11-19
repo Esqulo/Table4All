@@ -1,6 +1,9 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
+    BadgePercent,
     BarChart3,
+    HandCoins,
+    Landmark,
     Inbox,
     ConciergeBell,
     LayoutGrid,
@@ -18,10 +21,15 @@ import {
 import { useTranslation } from 'react-i18next';
 import AdminAdmissionRequestController from '@/actions/App/Http/Controllers/Admin/AdmissionRequestController';
 import CategoryController from '@/actions/App/Http/Controllers/Admin/CategoryController';
+import AdminCouponController from '@/actions/App/Http/Controllers/Admin/CouponController';
+import AdminPayoutController from '@/actions/App/Http/Controllers/Admin/PayoutController';
+import AdminRestaurantController from '@/actions/App/Http/Controllers/Admin/RestaurantController';
 import CustomerJoinController from '@/actions/App/Http/Controllers/Customer/JoinController';
+import CouponController from '@/actions/App/Http/Controllers/Restaurant/CouponController';
 import DashboardController from '@/actions/App/Http/Controllers/Restaurant/DashboardController';
 import DeliveryController from '@/actions/App/Http/Controllers/Restaurant/DeliveryController';
 import EstablishmentController from '@/actions/App/Http/Controllers/Restaurant/EstablishmentController';
+import FinanceController from '@/actions/App/Http/Controllers/Restaurant/FinanceController';
 import MenuController from '@/actions/App/Http/Controllers/Restaurant/MenuController';
 import ProductController from '@/actions/App/Http/Controllers/Restaurant/ProductController';
 import QueueController from '@/actions/App/Http/Controllers/Restaurant/QueueController';
@@ -64,6 +72,21 @@ export function AppSidebar() {
                   href: AdminAdmissionRequestController.index.url(),
                   icon: Inbox,
               },
+              {
+                  title: t('nav.restaurants'),
+                  href: AdminRestaurantController.index.url(),
+                  icon: Store,
+              },
+              {
+                  title: t('nav.coupons'),
+                  href: AdminCouponController.index.url(),
+                  icon: BadgePercent,
+              },
+              {
+                  title: t('nav.payouts'),
+                  href: AdminPayoutController.index.url(),
+                  icon: HandCoins,
+              },
           ]
         : isRestaurant
           ? [
@@ -103,6 +126,11 @@ export function AppSidebar() {
                     icon: Percent,
                 },
                 {
+                    title: t('nav.coupons'),
+                    href: CouponController.index.url(),
+                    icon: BadgePercent,
+                },
+                {
                     title: t('nav.delivery'),
                     href: DeliveryController.index.url(),
                     icon: ConciergeBell,
@@ -111,6 +139,11 @@ export function AppSidebar() {
                     title: t('nav.establishment'),
                     href: EstablishmentController.edit.url(),
                     icon: Store,
+                },
+                {
+                    title: t('nav.finance'),
+                    href: FinanceController.show.url(),
+                    icon: Landmark,
                 },
                 {
                     title: t('nav.feed'),

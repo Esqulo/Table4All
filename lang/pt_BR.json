@@ -21,7 +21,6 @@
     "social.error_emoji": "Escolha um único emoji.",
     "social.error_post_empty": "Escreva um texto ou adicione uma foto.",
     "venue_profile.meta_description": "Cardápio, fotos e horários de :name.",
-
     "mail.waiter_invitation.subject": "Convite para ser garçom — :restaurant",
     "mail.waiter_invitation.heading": "Você foi convidado!",
     "mail.waiter_invitation.intro": "**:restaurant** convidou você para trabalhar como garçom no **:app**.",
@@ -30,7 +29,6 @@
     "mail.waiter_invitation.expires": "Este convite expira em **:days dias**.",
     "mail.waiter_invitation.ignore": "Caso você não reconheça este convite, ignore este e-mail com segurança.",
     "mail.waiter_invitation.signature": "Atenciosamente,\nEquipe :app",
-
     "Verify your email address": "Confirme seu endereço de e-mail",
     "Please click the button below to verify your email address.": "Clique no botão abaixo para confirmar seu endereço de e-mail.",
     "Verify Email Address": "Confirmar e-mail",
@@ -45,7 +43,6 @@
     "Regards,": "Atenciosamente,",
     "If you're having trouble clicking the \":actionText\" button, copy and paste the URL below\ninto your web browser:": "Se você tiver problemas para clicar no botão \":actionText\", copie e cole o endereço abaixo\nno seu navegador:",
     "All rights reserved.": "Todos os direitos reservados.",
-
     "The provided password was incorrect.": "A senha informada está incorreta.",
     "The provided two factor authentication code was invalid.": "O código de autenticação em dois fatores é inválido.",
     "The provided two factor recovery code was invalid.": "O código de recuperação é inválido.",
@@ -57,7 +54,6 @@
     "The :attribute must be at least :length characters and contain at least one uppercase character and one special character.": "O campo :attribute deve ter pelo menos :length caracteres e conter pelo menos uma letra maiúscula e um caractere especial.",
     "The :attribute must be at least :length characters and contain at least one uppercase character, one number, and one special character.": "O campo :attribute deve ter pelo menos :length caracteres e conter pelo menos uma letra maiúscula, um número e um caractere especial.",
     "The :attribute must be at least :length characters and contain at least one special character and one number.": "O campo :attribute deve ter pelo menos :length caracteres e conter pelo menos um caractere especial e um número.",
-
     "Invalid credential format.": "Formato de credencial inválido.",
     "Passkey registration session expired. Please try again.": "A sessão de cadastro da chave de acesso expirou. Tente novamente.",
     "Passkey verification session expired. Please try again.": "A sessão de verificação da chave de acesso expirou. Tente novamente.",
@@ -66,7 +62,6 @@
     "Unable to register this passkey.": "Não foi possível cadastrar esta chave de acesso.",
     "Unable to sign in with this account.": "Não foi possível entrar com esta conta.",
     "Unable to verify passkey. Please try again.": "Não foi possível verificar a chave de acesso. Tente novamente.",
-
     "Unauthorized": "Não autorizado",
     "Payment Required": "Pagamento necessário",
     "Forbidden": "Acesso negado",
@@ -75,14 +70,12 @@
     "Too Many Requests": "Muitas solicitações",
     "Server Error": "Erro no servidor",
     "Service Unavailable": "Serviço indisponível",
-
     "Pagination Navigation": "Navegação da paginação",
     "Go to page :page": "Ir para a página :page",
     "Showing": "Mostrando",
     "to": "a",
     "of": "de",
     "results": "resultados",
-
     "stories.error_type": "Envie uma foto (JPG, PNG ou WebP) ou um vídeo (MP4, MOV ou WebM).",
     "stories.error_too_big": "O arquivo passa de :mb MB.",
     "stories.error_image_unreadable": "Não conseguimos ler essa imagem. Tente outra foto.",
@@ -90,5 +83,20 @@
     "stories.error_video_too_long": "O vídeo pode ter no máximo :seconds segundos.",
     "stories.error_video_unavailable": "Vídeos estão indisponíveis no momento. Publique uma foto.",
     "stories.error_limit": "Você já tem :max publicações no Hoje tem!. Apague uma ou espere alguma expirar.",
-    "tables.customer_qr_invalid": "O QR code do cliente expirou ou já foi usado. Peça para ele gerar outro e leia novamente."
+    "tables.customer_qr_invalid": "O QR code do cliente expirou ou já foi usado. Peça para ele gerar outro e leia novamente.",
+    "payments.unavailable": "Este restaurante ainda não aceita pagamentos pelo app. Pague com o garçom.",
+    "payments.table_closed": "Esta mesa já foi fechada.",
+    "payments.amount_too_low": "O valor mínimo para pagar pelo app é :min.",
+    "payments.amount_too_high": "O valor passa do que falta pagar. O máximo agora é :max.",
+    "payments.nothing_to_pay": "Não há nada a pagar nesta mesa agora.",
+    "payments.gateway_error": "Não foi possível abrir o pagamento agora. Tente novamente em instantes.",
+    "payments.checkout_closed": "Este pagamento foi encerrado. Comece um novo.",
+    "payments.coupon_invalid": "Cupom não encontrado.",
+    "payments.coupon_expired": "Este cupom expirou.",
+    "payments.coupon_no_discount": "Este cupom não dá desconto neste valor.",
+    "payments.coupon_table_locked": "Já foi usado nesta mesa um cupom que não pode ser combinado com outros.",
+    "payments.coupon_not_combinable": "Este cupom não pode ser usado junto com outros, e esta mesa já usou um cupom.",
+    "payments.coupon_already_used": "Você já usou um cupom nesta mesa.",
+    "payments.checkout_description": ":table · :restaurant",
+    "coupons.code_taken": "Já existe um cupom com este código."
 }

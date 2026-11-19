@@ -37,3 +37,7 @@ Artisan::command('products:optimize-images', function () {
 
 // "Hoje tem!" stories last 24 hours: delete them and their files once they expire.
 Schedule::command('stories:prune')->everyFiveMinutes()->withoutOverlapping();
+
+// Online payments: catch up on checkouts whose webhook never arrived and on
+// transfers to restaurants that failed (see App\Console\Commands\ReconcilePayments).
+Schedule::command('payments:reconcile')->everyMinute()->withoutOverlapping();

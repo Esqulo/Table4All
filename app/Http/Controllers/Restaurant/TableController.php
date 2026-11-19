@@ -200,7 +200,8 @@ class TableController extends Controller
         abort_if($table->closed_at !== null, 422, __('tables.error_already_closed'));
 
         $validated = $request->validate([
-            'method' => ['required', Rule::enum(PaymentMethod::class)],
+            // "online" is recorded only by the app, when Stripe confirms a customer's payment.
+            'method' => ['required', Rule::enum(PaymentMethod::class)->only(PaymentMethod::manual())],
             'amount' => ['required', 'numeric', 'min:0.01', 'max:99999.99'],
             'request_key' => ['nullable', 'string', 'max:64'],
         ]);

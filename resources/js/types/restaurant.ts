@@ -94,9 +94,9 @@ export type QueueItem = {
     updated_at: string;
 };
 
-export type PaymentMethod = 'cash' | 'pix' | 'card' | 'coupon';
+export type PaymentMethod = 'cash' | 'pix' | 'card' | 'coupon' | 'online';
 
-export type PaymentRegistrar = 'waiter' | 'restaurant' | 'app';
+export type PaymentRegistrar = 'waiter' | 'restaurant' | 'customer' | 'app';
 
 export type TablePayment = {
     id: number;

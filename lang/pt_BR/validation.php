@@ -166,6 +166,12 @@ return [
     'attributes' => [
         'name' => 'nome',
         'email' => 'e-mail',
+        'coupon' => 'cupom',
+        'discount_type' => 'tipo de desconto',
+        'discount_value' => 'valor do desconto',
+        'max_discount' => 'desconto máximo',
+        'expires_on' => 'validade',
+        'fee_tier' => 'tier',
         'password' => 'senha',
         'password_confirmation' => 'confirmação de senha',
         'current_password' => 'senha atual',

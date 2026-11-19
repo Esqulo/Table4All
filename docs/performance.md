@@ -118,6 +118,12 @@ venue (around 40 open tables and 150 products):
 - Rebuild the images (`docker compose build`): ffmpeg was added, and the upload limit went from 20 MB to 60 MB (nginx and PHP). Without ffmpeg the app keeps working, with pictures only: the strip doesn't offer videos.
 - The queue worker converts the videos and the scheduler runs `stories:prune`; both already run in the production container. The dev container now runs the scheduler too.
 
+### 2026-11-20: online payments (Stripe Connect)
+- Customers pay on Stripe's **hosted** checkout: no Stripe JS on the customer page, and the app makes no Stripe call on any polling request. The customer page adds two small queries (`payments`, `myCheckout`) to its 20 s refresh; the coupon preview (`couponQuote`) is an optional prop, computed only when the form asks for it.
+- Starting a checkout locks the `restaurant_tables` row while it checks the balance and the coupons in use, then **holds** the amount (an `online_payments` row) before calling Stripe outside the lock. Two customers can't pay the same balance or stack coupons that don't combine.
+- A payment is confirmed by whichever arrives first (the return URL, the webhook, or `payments:reconcile` every minute) and is recorded once: the `online_payments` row is locked and only a non-paid row is turned into `table_payments`. `request_key` makes a double-tapped "Pay" reopen the same checkout.
+- Transfers the platform owes a restaurant (a platform coupon, Stripe's fee for sponsored restaurants) use a Stripe idempotency key per payment, so retrying them is safe.
+
 ### Known gaps / next steps
 - **Polling vs push.** Polling is simple and robust on bad networks, but with many screens open it costs one request per screen every few seconds. If load grows, move the kitchen and delivery boards to WebSockets (Laravel Reverb) and keep polling as the fallback.
 - **Sessions and cache on the database.** Every request writes the session row. Fine for one venue; for multi-venue hosting, move sessions and cache to Redis.

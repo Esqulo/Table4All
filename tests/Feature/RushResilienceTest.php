@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\QueueItemStatus;
+use App\Models\OnlinePayment;
 use App\Models\PostComment;
 use App\Models\PostReaction;
 use App\Models\Product;
@@ -13,11 +14,13 @@ use App\Models\RestaurantStory;
 use App\Models\RestaurantTable;
 use App\Models\Sale;
 use App\Models\User;
+use App\Support\Payments\PaymentGateway;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
+use Tests\Support\FakePaymentGateway;
 use Tests\TestCase;
 
 /**
@@ -458,6 +461,36 @@ class RushResilienceTest extends TestCase
                 ->where('tables.0.paid_total', 5)
                 ->where('tables.0.products_count', 1)
             );
+    }
+
+    public function test_online_payment_resent_with_the_same_key_opens_one_checkout_and_is_recorded_once(): void
+    {
+        $gateway = new FakePaymentGateway;
+        $this->app->instance(PaymentGateway::class, $gateway);
+        $this->restaurant->forceFill(['stripe_account_id' => 'acct_r', 'stripe_charges_enabled' => true])->save();
+        $this->insertLine(null, 10, 3);
+        $customer = User::factory()->create();
+        $this->actingAs($customer)->get(route('customer.table', '123456'));
+
+        // Double tap on "Pay" over a slow connection.
+        for ($attempt = 0; $attempt < 2; $attempt++) {
+            $this->actingAs($customer)->post(route('customer.payments.store', '123456'), [
+                'amount' => 30,
+                'request_key' => 'pay-1',
+            ])->assertRedirect();
+        }
+
+        $this->assertCount(1, $gateway->checkouts);
+        $payment = OnlinePayment::sole();
+        $gateway->pay((string) $payment->checkout_session_id);
+
+        // The return, a resent return and the reconcile command all confirm it.
+        $this->actingAs($customer)->get(route('customer.payments.return', $payment).'?result=success');
+        $this->actingAs($customer)->get(route('customer.payments.return', $payment).'?result=success');
+        $this->artisan('payments:reconcile');
+
+        $this->assertSame(30.0, (float) $this->table->payments()->sum('amount'));
+        $this->assertSame(1, $this->table->payments()->count());
     }
 
     private function insertLine(?int $orderedBy, float $price, int $quantity): void

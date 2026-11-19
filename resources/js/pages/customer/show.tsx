@@ -17,6 +17,12 @@ import { useTranslation } from 'react-i18next';
 import JoinController from '@/actions/App/Http/Controllers/Customer/JoinController';
 import { TableChat } from '@/components/table-chat';
 import type { ChatFeed } from '@/components/table-chat';
+import { PayPanel, PaymentsList } from '@/components/table-payment';
+import type {
+    CouponQuote,
+    OpenCheckout,
+    TablePaymentEntry,
+} from '@/components/table-payment';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -77,6 +83,10 @@ type Props = {
     chat: ChatFeed;
     chatReactions: string[];
     chatMaxLength: number;
+    onlinePayments: { enabled: boolean; min: number };
+    payments: TablePaymentEntry[];
+    myCheckout: OpenCheckout | null;
+    couponQuote?: CouponQuote;
 };
 
 type Member = {
@@ -105,6 +115,10 @@ export default function CustomerShow({
     chat,
     chatReactions,
     chatMaxLength,
+    onlinePayments,
+    payments,
+    myCheckout,
+    couponQuote,
 }: Props) {
     const { t, i18n } = useTranslation();
     const locale = i18n.language === 'pt_BR' ? 'pt-BR' : 'en-US';
@@ -130,6 +144,9 @@ export default function CustomerShow({
             'remaining',
             'members',
             'joinRequests',
+            'payments',
+            'myCheckout',
+            'onlinePayments',
         ],
         intervalMs: 20_000,
         enabled: !menuOpen,
@@ -380,6 +397,17 @@ export default function CustomerShow({
                                 </div>
                             </div>
                         </div>
+
+                        <PayPanel
+                            code={code}
+                            remaining={remaining}
+                            enabled={onlinePayments.enabled}
+                            minimum={onlinePayments.min}
+                            myCheckout={myCheckout}
+                            couponQuote={couponQuote}
+                        />
+
+                        <PaymentsList payments={payments} />
 
                         {remaining > 0 && (
                             <div className="space-y-3 rounded-xl border border-border bg-card p-4">

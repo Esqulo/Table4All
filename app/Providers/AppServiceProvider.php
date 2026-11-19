@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Support\Payments\PaymentGateway;
+use App\Support\Payments\StripePaymentGateway;
 use App\Support\Video\FfmpegVideoTranscoder;
 use App\Support\Video\VideoTranscoder;
 use Carbon\CarbonImmutable;
@@ -20,6 +22,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(VideoTranscoder::class, fn (): VideoTranscoder => new FfmpegVideoTranscoder(
             (string) config('services.ffmpeg.ffmpeg'),
             (string) config('services.ffmpeg.ffprobe'),
+        ));
+
+        $this->app->singleton(PaymentGateway::class, fn (): PaymentGateway => new StripePaymentGateway(
+            config('services.stripe.secret'),
+            array_values(array_filter(array_map('trim', explode(',', (string) config('services.stripe.webhook_secret'))))),
+            (string) config('payments.currency'),
         ));
     }
 
