@@ -242,6 +242,25 @@ export default function ProfileShow({
                                 {isOpen !== null && <OpenBadge open={isOpen} />}
                             </div>
                             <StarRating rating={rating} />
+                            {address && (
+                                <a
+                                    href={mapUrl(address)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label={t(
+                                        'venue_profile.address_map_label',
+                                        {
+                                            address,
+                                        },
+                                    )}
+                                    className="flex w-fit max-w-full items-start gap-1.5 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                >
+                                    <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
+                                    <span className="break-words">
+                                        {address}
+                                    </span>
+                                </a>
+                            )}
                         </div>
 
                         {(menus.length > 0 || ifoodUrl) && (
@@ -526,9 +545,13 @@ function Gallery({ photos }: { photos: VenuePhoto[] }) {
 
 // ─── Address ──────────────────────────────────────────────────────────────────
 
+/** Google Maps search for the address: opens the Maps app on phones that have it. */
+function mapUrl(address: string): string {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+}
+
 function Address({ address }: { address: string }) {
     const { t } = useTranslation();
-    const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 
     return (
         <section>
@@ -538,15 +561,18 @@ function Address({ address }: { address: string }) {
                     {t('venue_profile.address')}
                 </span>
             </SectionTitle>
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card px-4 py-3">
-                <p className="text-sm break-words">{address}</p>
-                <Button variant="outline" size="sm" asChild>
-                    <a href={mapUrl} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-4 w-4" />
-                        {t('venue_profile.open_map')}
-                    </a>
-                </Button>
-            </div>
+            <a
+                href={mapUrl(address)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card px-4 py-3 transition-colors hover:bg-muted"
+            >
+                <span className="min-w-0 text-sm break-words">{address}</span>
+                <span className="inline-flex shrink-0 items-center gap-1.5 text-sm font-medium text-primary">
+                    <ExternalLink className="h-4 w-4" />
+                    {t('venue_profile.open_map')}
+                </span>
+            </a>
         </section>
     );
 }

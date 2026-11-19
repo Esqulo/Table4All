@@ -926,7 +926,8 @@
         "hidden_action": "Make it public",
         "address": "Address",
         "open_map": "Open map",
-        "order_on_ifood": "Order on iFood"
+        "order_on_ifood": "Order on iFood",
+        "address_map_label": "Open {{address}} in Google Maps"
     },
     "social": {
         "tabs_label": "Profile sections",
