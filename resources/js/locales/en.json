@@ -1004,7 +1004,12 @@
         "nav_feed": "Go to the feed",
         "nav_home": "Home page",
         "nav_login": "Sign in",
-        "nav_back": "Back"
+        "nav_back": "Back",
+        "search_cancel": "Cancel",
+        "discover_title": "Discover restaurants",
+        "discover_description": "The best rated and most active first. Type to search by name.",
+        "discover_empty": "There are no restaurants with a public profile yet.",
+        "discover_loading": "Loading more restaurants…"
     },
     "errors": {
         "breadcrumb": "Error",

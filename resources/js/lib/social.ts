@@ -3,7 +3,9 @@ import SocialFeedController from '@/actions/App/Http/Controllers/SocialFeedContr
 /** Hash that opens the feed with the search box focused. */
 export const SEARCH_HASH = '#buscar';
 
-/** Feed address with the search box focused (from the profile's search button). */
+/** Feed address listing restaurants to browse, with the search box focused (the nav's search button). */
 export function feedSearchUrl(): string {
-    return SocialFeedController.index.url() + SEARCH_HASH;
+    return (
+        SocialFeedController.index.url({ query: { explorar: 1 } }) + SEARCH_HASH
+    );
 }

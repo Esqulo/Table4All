@@ -6,21 +6,26 @@ import Heading from '@/components/heading';
 import { PostCard } from '@/components/social/post-card';
 import { PostComposer } from '@/components/social/post-composer';
 import {
+    DiscoverList,
     RestaurantSearchBox,
     RestaurantSearchResults,
 } from '@/components/social/restaurant-search';
 import { StoriesStrip } from '@/components/social/stories';
-import { SEARCH_HASH } from '@/lib/social';
 import type {
     DirectoryRestaurant,
+    DiscoverRestaurant,
     FeedPost,
     StoryGroup,
     StoryLimits,
 } from '@/types';
 
 type Props = {
-    /** One page of the feed; InfiniteScroll merges the next ones in. */
-    posts: { data: FeedPost[] };
+    /** The search box was focused (?explorar=1): restaurants to browse replace the posts. */
+    exploring: boolean;
+    /** Restaurants to browse, only while exploring; InfiniteScroll merges the next pages in. */
+    discover?: { data: DiscoverRestaurant[] };
+    /** One page of the feed, only outside exploring; InfiniteScroll merges the next ones in. */
+    posts?: { data: FeedPost[] };
     canInteract: boolean;
     suggestedReactions: string[];
     /** Restaurants write posts here too. */
@@ -31,14 +36,16 @@ type Props = {
     q: string;
     /** Null while there is no search (term shorter than 2 characters). */
     searchResults: DirectoryRestaurant[] | null;
-    /** "Hoje tem!": restaurants with stories from the last 24 hours. */
-    stories: StoryGroup[];
+    /** "Hoje tem!": restaurants with stories from the last 24 hours (outside exploring). */
+    stories?: StoryGroup[];
     /** Null for accounts that can't post stories. */
     storyLimits: StoryLimits | null;
 };
 
 /** Posts from every public restaurant, newest first (a ranking algorithm comes later). */
 export default function SocialFeed({
+    exploring,
+    discover,
     posts,
     canInteract,
     suggestedReactions,
@@ -50,8 +57,6 @@ export default function SocialFeed({
     storyLimits,
 }: Props) {
     const { t } = useTranslation();
-    const focusSearch =
-        typeof window !== 'undefined' && window.location.hash === SEARCH_HASH;
 
     return (
         <>
@@ -63,14 +68,19 @@ export default function SocialFeed({
                     description={t('social.feed_description')}
                 />
 
-                <RestaurantSearchBox initial={q} autoFocus={focusSearch} />
+                <RestaurantSearchBox initial={q} exploring={exploring} />
 
                 {searchResults !== null ? (
                     <RestaurantSearchResults results={searchResults} />
+                ) : exploring ? (
+                    <DiscoverList restaurants={discover?.data ?? []} />
                 ) : (
                     <>
                         {/* Only while browsing: search results come right under the box. */}
-                        <StoriesStrip groups={stories} limits={storyLimits} />
+                        <StoriesStrip
+                            groups={stories ?? []}
+                            limits={storyLimits}
+                        />
 
                         {canPost && (
                             <div className="space-y-2">
@@ -84,7 +94,7 @@ export default function SocialFeed({
                             </div>
                         )}
 
-                        {posts.data.length === 0 ? (
+                        {!posts || posts.data.length === 0 ? (
                             <p className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
                                 {t('social.feed_empty_all')}
                             </p>

@@ -88,3 +88,13 @@ export type StoryLimits = {
     /** False when the server can't convert videos (no ffmpeg): pictures only. */
     videoEnabled: boolean;
 };
+
+/** A restaurant in the list to browse before searching (feed, ?explorar=1). */
+export type DiscoverRestaurant = DirectoryRestaurant & {
+    banner_url: string | null;
+    address: string | null;
+    /** Null when the restaurant hasn't set its hours. */
+    is_open: boolean | null;
+    /** Has a "Hoje tem!" story on air. */
+    has_stories: boolean;
+};
