@@ -1004,7 +1004,12 @@
         "nav_feed": "Ir para o feed",
         "nav_home": "Página inicial",
         "nav_login": "Entrar",
-        "nav_back": "Voltar"
+        "nav_back": "Voltar",
+        "search_cancel": "Cancelar",
+        "discover_title": "Descubra restaurantes",
+        "discover_description": "Os mais bem avaliados e movimentados primeiro. Digite para buscar pelo nome.",
+        "discover_empty": "Ainda não há restaurantes com perfil público.",
+        "discover_loading": "Carregando mais restaurantes…"
     },
     "errors": {
         "breadcrumb": "Erro",
