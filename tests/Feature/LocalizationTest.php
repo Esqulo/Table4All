@@ -92,11 +92,11 @@ class LocalizationTest extends TestCase
         $waiter = $this->waiterOf($restaurant);
 
         $this->actingAs($restaurant)->post(route('restaurant.waiters.store'), ['email' => $waiter->email])
-            ->assertSessionHasErrors(['email' => 'Este e-mail já é um garçom ativo neste restaurante.']);
+            ->assertSessionHasErrors(['email' => 'Este e-mail já faz parte da equipe deste restaurante.']);
 
         $this->actingAs($restaurant)->withUnencryptedCookie('locale', 'en')
             ->post(route('restaurant.waiters.store'), ['email' => $waiter->email])
-            ->assertSessionHasErrors(['email' => 'This email already belongs to an active waiter at this restaurant.']);
+            ->assertSessionHasErrors(['email' => "This email is already on this restaurant's team."]);
     }
 
     public function test_account_emails_are_translated(): void

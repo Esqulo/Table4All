@@ -2,7 +2,7 @@
     "products.created": "Product created successfully.",
     "products.updated": "Product updated successfully.",
     "products.deleted": "Product deleted successfully.",
-    "waiters.error_already_waiter": "This email already belongs to an active waiter at this restaurant.",
+    "waiters.error_already_waiter": "This email is already on this restaurant's team.",
     "waiters.error_email_taken": "An account with this email already exists.",
     "tables.error_already_closed": "This table is already closed.",
     "errors.navigation": "Navigation",

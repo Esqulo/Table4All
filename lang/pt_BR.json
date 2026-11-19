@@ -5,7 +5,7 @@
     "products.created": "Produto criado com sucesso.",
     "products.updated": "Produto atualizado com sucesso.",
     "products.deleted": "Produto excluído com sucesso.",
-    "waiters.error_already_waiter": "Este e-mail já é um garçom ativo neste restaurante.",
+    "waiters.error_already_waiter": "Este e-mail já faz parte da equipe deste restaurante.",
     "waiters.error_email_taken": "Já existe uma conta com este e-mail.",
     "tables.error_already_closed": "Esta mesa já foi fechada.",
     "errors.navigation": "Navegação",
