@@ -14,6 +14,7 @@
     "establishment.error_photos_limit": "You can keep at most :max photos of the venue.",
     "establishment.error_handle_format": "Use only lowercase letters, digits, hyphens (-) or underscores (_), starting and ending with a letter or digit.",
     "establishment.error_handle_taken": "This @ is already taken by another venue.",
+    "establishment.error_ifood_url": "Paste the link to your iFood store (https://www.ifood.com.br/…).",
     "social.error_emoji": "Pick a single emoji.",
     "social.error_post_empty": "Write some text or add a photo.",
     "venue_profile.meta_description": "Menu, photos and opening hours of :name.",

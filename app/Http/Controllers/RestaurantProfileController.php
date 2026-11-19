@@ -68,6 +68,8 @@ class RestaurantProfileController extends Controller
             'menus' => Menu::where('user_id', $restaurant->id)
                 ->orderBy('name')
                 ->get(['id', 'name']),
+            'address' => $restaurant->address,
+            'ifoodUrl' => $restaurant->ifood_url,
             'rating' => RestaurantReview::summaryFor($restaurant->id),
             'posts' => Inertia::scroll(function () use ($restaurant, $viewer) {
                 $page = RestaurantPost::where('user_id', $restaurant->id)
@@ -148,7 +150,7 @@ class RestaurantProfileController extends Controller
     {
         $restaurant = User::where('handle', $handle)
             ->where('account_type', AccountType::RESTAURANT)
-            ->first(['id', 'name', 'logo', 'banner', 'handle', 'profile_public', 'account_type']);
+            ->first(['id', 'name', 'logo', 'banner', 'handle', 'profile_public', 'address', 'ifood_url', 'account_type']);
 
         // A hidden profile doesn't exist for anyone but its owner, who sees what visitors would.
         abort_unless($restaurant?->publicProfileVisibleTo($viewer), 404);

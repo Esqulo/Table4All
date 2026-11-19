@@ -198,6 +198,8 @@ return [
         'banner' => 'banner',
         'handle' => '@ do perfil',
         'profile_public' => 'visibilidade do perfil',
+        'address' => 'endereço',
+        'ifood_url' => 'link do iFood',
         'body' => 'texto',
         'image' => 'foto',
         'image_aspect' => 'formato da foto',

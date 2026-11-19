@@ -147,12 +147,14 @@ class RestaurantProfileTest extends TestCase
     {
         $this->restaurant(['name' => 'Bar do Zé', 'banner' => 'banners/b.jpg', 'logo' => 'logos/l.webp']);
 
-        $this->get('/vempro/bar-do-ze')
+        $response = $this->get('/vempro/bar-do-ze')
             ->assertSee('<meta property="og:title" content="Bar do Zé">', false)
             ->assertSee('<meta property="og:image" content="'.Storage::disk('public')->url('banners/b.jpg').'">', false)
             ->assertSee('<meta property="og:url" content="'.url('/vempro/bar-do-ze').'">', false)
-            ->assertSee('<meta name="twitter:card" content="summary_large_image">', false)
-            ->assertSee('<title data-inertia="">Bar do Zé - ', false);
+            ->assertSee('<meta name="twitter:card" content="summary_large_image">', false);
+
+        // Server rendering (when the SSR server or Vite is up) marks the title with data-inertia; without it, plain.
+        $this->assertMatchesRegularExpression('#<title( data-inertia="")?>Bar do Zé - #', (string) $response->getContent());
     }
 
     public function test_link_preview_falls_back_to_the_logo_and_escapes_the_name(): void
@@ -304,6 +306,129 @@ class RestaurantProfileTest extends TestCase
 
         $this->saveProfile($restaurant, ['profile_public' => null])->assertSessionHasErrors('profile_public');
         $this->saveProfile($restaurant, ['profile_public' => 'talvez'])->assertSessionHasErrors('profile_public');
+    }
+
+    // ── address and iFood ────────────────────────────────────────────────────
+
+    public function test_owner_saves_address_and_ifood_link_shown_on_the_profile(): void
+    {
+        $restaurant = $this->restaurant(['name' => 'Bar do Zé']);
+
+        $this->saveProfile($restaurant, [
+            'address' => '  Rua das Flores, 123 - Centro  ',
+            'ifood_url' => 'https://www.ifood.com.br/delivery/sao-paulo-sp/bar-do-ze/abc',
+        ])->assertSessionHasNoErrors();
+
+        $restaurant->refresh();
+        $this->assertSame('Rua das Flores, 123 - Centro', $restaurant->address);
+        $this->assertSame('https://www.ifood.com.br/delivery/sao-paulo-sp/bar-do-ze/abc', $restaurant->ifood_url);
+
+        $this->get(route('restaurant.establishment.edit'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('address', 'Rua das Flores, 123 - Centro')
+                ->where('ifoodUrl', 'https://www.ifood.com.br/delivery/sao-paulo-sp/bar-do-ze/abc'));
+
+        auth()->logout();
+        $this->profile($restaurant)
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('address', 'Rua das Flores, 123 - Centro')
+                ->where('ifoodUrl', 'https://www.ifood.com.br/delivery/sao-paulo-sp/bar-do-ze/abc'));
+    }
+
+    public function test_profile_without_address_or_ifood_sends_nulls(): void
+    {
+        $restaurant = $this->restaurant();
+
+        $this->profile($restaurant)
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('address', null)->where('ifoodUrl', null));
+    }
+
+    public function test_ifood_link_without_scheme_gets_https(): void
+    {
+        $restaurant = $this->restaurant();
+
+        $this->saveProfile($restaurant, ['ifood_url' => 'ifood.com.br/delivery/x/y'])->assertSessionHasNoErrors();
+
+        $this->assertSame('https://ifood.com.br/delivery/x/y', $restaurant->fresh()->ifood_url);
+    }
+
+    /** @return array<string, array{string}> */
+    public static function invalidIfoodLinks(): array
+    {
+        return [
+            'other site' => ['https://example.com/ifood'],
+            'lookalike domain' => ['https://ifood.com.br.evil.com/x'],
+            'suffix domain' => ['https://notifood.com.br/x'],
+            'plain http' => ['http://www.ifood.com.br/delivery/x'],
+            'javascript' => ['javascript:alert(1)'],
+            'not a link' => ['meu ifood'],
+            'too long' => ['https://www.ifood.com.br/'.str_repeat('a', 250)],
+        ];
+    }
+
+    #[DataProvider('invalidIfoodLinks')]
+    public function test_only_https_ifood_links_are_accepted(string $link): void
+    {
+        $restaurant = $this->restaurant();
+
+        $this->saveProfile($restaurant, ['ifood_url' => $link])->assertSessionHasErrors('ifood_url');
+
+        $this->assertNull($restaurant->fresh()->ifood_url);
+    }
+
+    public function test_address_is_limited_in_length(): void
+    {
+        $restaurant = $this->restaurant();
+
+        $this->saveProfile($restaurant, ['address' => str_repeat('a', 256)])->assertSessionHasErrors('address');
+
+        $this->assertNull($restaurant->fresh()->address);
+    }
+
+    public function test_address_and_ifood_can_be_cleared(): void
+    {
+        $restaurant = $this->restaurant(['address' => 'Rua A, 1', 'ifood_url' => 'https://www.ifood.com.br/x']);
+
+        $this->saveProfile($restaurant, ['address' => '', 'ifood_url' => ''])->assertSessionHasNoErrors();
+
+        $restaurant->refresh();
+        $this->assertNull($restaurant->address);
+        $this->assertNull($restaurant->ifood_url);
+    }
+
+    public function test_publishing_from_the_profile_keeps_address_and_ifood(): void
+    {
+        $restaurant = $this->restaurant(['profile_public' => false, 'address' => 'Rua A, 1', 'ifood_url' => 'https://www.ifood.com.br/x']);
+
+        // The "make public" shortcut sends only handle and visibility.
+        $this->actingAs($restaurant)
+            ->put(route('restaurant.establishment.profile.update'), ['handle' => $restaurant->handle, 'profile_public' => true])
+            ->assertSessionHasNoErrors();
+
+        $restaurant->refresh();
+        $this->assertTrue($restaurant->profile_public);
+        $this->assertSame('Rua A, 1', $restaurant->address);
+        $this->assertSame('https://www.ifood.com.br/x', $restaurant->ifood_url);
+    }
+
+    public function test_waiter_cannot_change_address_or_ifood(): void
+    {
+        $restaurant = $this->restaurant();
+
+        $this->actingAs($this->waiterOf($restaurant))
+            ->put(route('restaurant.establishment.profile.update'), [
+                'handle' => $restaurant->handle,
+                'profile_public' => true,
+                'address' => 'Outro lugar',
+                'ifood_url' => 'https://www.ifood.com.br/outro',
+            ])
+            ->assertRedirect(route('dashboard'));
+
+        $restaurant->refresh();
+        $this->assertNull($restaurant->address);
+        $this->assertNull($restaurant->ifood_url);
     }
 
     // ── open now ─────────────────────────────────────────────────────────────
