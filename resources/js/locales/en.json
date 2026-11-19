@@ -488,7 +488,7 @@
     },
     "join_table": {
         "link_title": "Open a table with the waiter",
-        "link_description": "Generate a QR code and show it to the waiter opening your table: it gets linked to you. It lasts 1 minute and works once.",
+        "link_description": "Generate a QR code and show it to the waiter opening your table: it gets linked to you.",
         "link_generate": "Generate QR code",
         "link_generate_new": "Generate a new QR code",
         "link_cancel": "Cancel",

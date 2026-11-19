@@ -488,7 +488,7 @@
     },
     "join_table": {
         "link_title": "Abrir mesa com o garçom",
-        "link_description": "Gere um QR code e mostre ao garçom ao abrir sua mesa: ela fica vinculada a você. Vale por 1 minuto e só pode ser usado uma vez.",
+        "link_description": "Gere um QR code e mostre ao garçom ao abrir sua mesa: ela fica vinculada a você.",
         "link_generate": "Gerar QR code",
         "link_generate_new": "Gerar novo QR code",
         "link_cancel": "Cancelar",
