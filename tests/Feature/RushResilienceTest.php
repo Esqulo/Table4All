@@ -9,11 +9,14 @@ use App\Models\Product;
 use App\Models\QueueItem;
 use App\Models\RestaurantPost;
 use App\Models\RestaurantQueue;
+use App\Models\RestaurantStory;
 use App\Models\RestaurantTable;
 use App\Models\Sale;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -315,6 +318,22 @@ class RushResilienceTest extends TestCase
         $this->actingAs($this->restaurant)->post(route('restaurant.posts.store'), $payload)->assertSessionHasNoErrors();
 
         $this->assertSame(1, RestaurantPost::count());
+    }
+
+    public function test_story_resent_with_the_same_key_is_published_once(): void
+    {
+        Storage::fake('public');
+
+        foreach (range(1, 2) as $attempt) {
+            $this->actingAs($this->restaurant)->post(route('restaurant.stories.store'), [
+                'media' => UploadedFile::fake()->image('hoje.jpg', 200, 356),
+                'request_key' => 'story-1',
+            ])->assertSessionHasNoErrors();
+        }
+
+        $this->assertSame(1, RestaurantStory::count());
+        // The second copy didn't leave a file behind either.
+        $this->assertCount(1, Storage::disk('public')->allFiles('stories'));
     }
 
     public function test_comment_resent_with_the_same_key_is_recorded_once(): void

@@ -4,6 +4,7 @@ use App\Models\Product;
 use App\Support\ImageOptimizer;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Facades\Storage;
 
 Artisan::command('inspire', function () {
@@ -33,3 +34,6 @@ Artisan::command('products:optimize-images', function () {
 
     $this->info("Optimized {$optimized} product picture(s).");
 })->purpose('Resize and re-encode stored product pictures (see docs/performance.md)');
+
+// "Hoje tem!" stories last 24 hours: delete them and their files once they expire.
+Schedule::command('stories:prune')->everyFiveMinutes()->withoutOverlapping();

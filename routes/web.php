@@ -14,6 +14,7 @@ use App\Http\Controllers\Restaurant\ProductController;
 use App\Http\Controllers\Restaurant\QueueController;
 use App\Http\Controllers\Restaurant\QueueItemController;
 use App\Http\Controllers\Restaurant\SaleController;
+use App\Http\Controllers\Restaurant\StoryController;
 use App\Http\Controllers\Restaurant\TableController;
 use App\Http\Controllers\Restaurant\WaiterController;
 use App\Http\Controllers\RestaurantProfileController;
@@ -128,6 +129,11 @@ Route::middleware(['auth', 'verified', EnsureRestaurant::class])
             ->middleware('throttle:20,1')
             ->name('posts.store');
         Route::delete('publicacoes/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
+        // "Hoje tem!": stories that disappear after 24 hours (uploads are heavy: a tighter limit)
+        Route::post('hoje-tem', [StoryController::class, 'store'])
+            ->middleware('throttle:10,1')
+            ->name('stories.store');
+        Route::delete('hoje-tem/{story}', [StoryController::class, 'destroy'])->name('stories.destroy');
         Route::put('estabelecimento/horarios', [EstablishmentController::class, 'updateHours'])->name('establishment.hours.update');
         Route::post('estabelecimento/logo', [EstablishmentController::class, 'updateLogo'])->name('establishment.logo.update');
         Route::delete('estabelecimento/logo', [EstablishmentController::class, 'destroyLogo'])->name('establishment.logo.destroy');

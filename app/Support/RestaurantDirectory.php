@@ -5,12 +5,11 @@ namespace App\Support;
 use App\Enums\AccountType;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
  * Finds restaurants with a public profile, for consumers: the search (by name
- * or by the profile's handle) and the "recently active" strip of the feed.
+ * or by the profile's handle).
  */
 final class RestaurantDirectory
 {
@@ -60,22 +59,6 @@ final class RestaurantDirectory
         $words = array_slice(array_unique($words), 0, self::MAX_WORDS);
 
         return $words === [] ? null : implode(' & ', array_map(fn (string $w): string => $w.':*', $words));
-    }
-
-    /**
-     * Restaurants that posted most recently (the ones without posts last), to browse from the feed.
-     *
-     * @return list<array<string, mixed>>
-     */
-    public static function recentlyActive(int $limit = self::MAX_RESULTS): array
-    {
-        $rows = self::publicRestaurants()
-            ->orderByDesc(DB::raw('COALESCE((SELECT MAX(p.id) FROM restaurant_posts p WHERE p.user_id = users.id), 0)'))
-            ->orderBy('name')
-            ->limit($limit)
-            ->get();
-
-        return self::present($rows);
     }
 
     /** @return Builder<User> */

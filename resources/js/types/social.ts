@@ -41,7 +41,7 @@ export type PublicRestaurant = {
 
 export type RatingSummary = { average: number; count: number };
 
-/** A restaurant as consumers find it (search results, browse strip). */
+/** A restaurant as consumers find it (search results). */
 export type DirectoryRestaurant = {
     id: number;
     name: string;
@@ -55,4 +55,36 @@ export type FeedPost = RestaurantPost & {
     restaurant: PublicRestaurant;
     /** The viewer is the restaurant that posted it (may delete it). */
     is_owner: boolean;
+};
+
+/** A "Hoje tem!" story: a picture or a short video, gone 24 hours after posting. */
+export type Story = {
+    id: number;
+    media_type: 'image' | 'video';
+    /** Others only get `ready`; the owner also sees videos converting or that failed. */
+    status: 'processing' | 'ready' | 'failed';
+    /** Null until a video is converted. */
+    url: string | null;
+    /** First frame of a video, shown while it loads. */
+    poster_url: string | null;
+    duration_ms: number | null;
+    created_at: string;
+    expires_at: string;
+};
+
+/** One restaurant's live stories in the "Hoje tem!" strip, oldest first. */
+export type StoryGroup = {
+    restaurant: Pick<PublicRestaurant, 'id' | 'name' | 'handle' | 'logo_url'>;
+    /** The viewer is this restaurant (may delete them). */
+    is_owner: boolean;
+    stories: Story[];
+};
+
+/** Upload limits the server enforces, so the browser can say no before sending megabytes. */
+export type StoryLimits = {
+    maxVideoSeconds: number;
+    maxVideoMb: number;
+    maxImageMb: number;
+    /** False when the server can't convert videos (no ffmpeg): pictures only. */
+    videoEnabled: boolean;
 };

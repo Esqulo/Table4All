@@ -8,10 +8,15 @@ import { PostComposer } from '@/components/social/post-composer';
 import {
     RestaurantSearchBox,
     RestaurantSearchResults,
-    RestaurantStrip,
 } from '@/components/social/restaurant-search';
+import { StoriesStrip } from '@/components/social/stories';
 import { SEARCH_HASH } from '@/lib/social';
-import type { DirectoryRestaurant, FeedPost } from '@/types';
+import type {
+    DirectoryRestaurant,
+    FeedPost,
+    StoryGroup,
+    StoryLimits,
+} from '@/types';
 
 type Props = {
     /** One page of the feed; InfiniteScroll merges the next ones in. */
@@ -26,8 +31,10 @@ type Props = {
     q: string;
     /** Null while there is no search (term shorter than 2 characters). */
     searchResults: DirectoryRestaurant[] | null;
-    /** Recently active restaurants, to browse profiles. */
-    restaurants: DirectoryRestaurant[];
+    /** "Hoje tem!": restaurants with stories from the last 24 hours. */
+    stories: StoryGroup[];
+    /** Null for accounts that can't post stories. */
+    storyLimits: StoryLimits | null;
 };
 
 /** Posts from every public restaurant, newest first (a ranking algorithm comes later). */
@@ -39,7 +46,8 @@ export default function SocialFeed({
     profilePublic,
     q,
     searchResults,
-    restaurants,
+    stories,
+    storyLimits,
 }: Props) {
     const { t } = useTranslation();
     const focusSearch =
@@ -62,6 +70,8 @@ export default function SocialFeed({
                 ) : (
                     <>
                         {/* Only while browsing: search results come right under the box. */}
+                        <StoriesStrip groups={stories} limits={storyLimits} />
+
                         {canPost && (
                             <div className="space-y-2">
                                 <PostComposer />
@@ -73,8 +83,6 @@ export default function SocialFeed({
                                 )}
                             </div>
                         )}
-
-                        <RestaurantStrip restaurants={restaurants} />
 
                         {posts.data.length === 0 ? (
                             <p className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">

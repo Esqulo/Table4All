@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    // Converts "Hoje tem!" videos. Names on the PATH or absolute paths.
+    'ffmpeg' => [
+        'ffmpeg' => env('FFMPEG_BINARY', 'ffmpeg'),
+        'ffprobe' => env('FFPROBE_BINARY', 'ffprobe'),
+    ],
+
 ];

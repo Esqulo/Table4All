@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Enums\AccountType;
 use App\Models\RestaurantPost;
+use App\Models\RestaurantStory;
 use App\Models\User;
 use App\Support\Emoji;
 use App\Support\PostFeed;
 use App\Support\RestaurantDirectory;
+use App\Support\StoryFeed;
+use App\Support\Video\VideoTranscoder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -19,14 +22,11 @@ class SocialFeedController extends Controller
     /** Posts per page (infinite scroll). */
     private const PER_PAGE = 10;
 
-    /** Restaurants in the "browse" strip at the top of the feed. */
-    private const STRIP_SIZE = 12;
-
     /**
      * Newest first for now; a ranking algorithm comes later. Restaurants that
      * hid their profile are left out, their own posts included.
      */
-    public function index(Request $request): Response
+    public function index(Request $request, VideoTranscoder $transcoder): Response
     {
         $viewer = $request->user();
 
@@ -54,7 +54,14 @@ class SocialFeedController extends Controller
             'searchResults' => fn () => mb_strlen($q) >= RestaurantDirectory::MIN_TERM
                 ? RestaurantDirectory::search($q)
                 : null,
-            'restaurants' => fn () => RestaurantDirectory::recentlyActive(self::STRIP_SIZE),
+            // "Hoje tem!": stories that disappear after 24 hours. Reloaded alone while a video converts.
+            'stories' => fn () => StoryFeed::forViewer($viewer),
+            'storyLimits' => $isRestaurant ? [
+                'maxVideoSeconds' => RestaurantStory::MAX_VIDEO_SECONDS,
+                'maxVideoMb' => RestaurantStory::MAX_VIDEO_KB / 1024,
+                'maxImageMb' => RestaurantStory::MAX_IMAGE_KB / 1024,
+                'videoEnabled' => $transcoder->available(),
+            ] : null,
         ]);
     }
 

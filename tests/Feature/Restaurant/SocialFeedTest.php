@@ -363,26 +363,7 @@ class SocialFeedTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->reloadOnly(['q', 'searchResults'], fn (Assert $reload) => $reload
                     ->missing('posts')
-                    ->missing('restaurants')
+                    ->missing('stories')
                     ->has('searchResults', 1)));
-    }
-
-    // ── browse strip ─────────────────────────────────────────────────────────
-
-    public function test_strip_lists_public_restaurants_most_recently_active_first(): void
-    {
-        $quiet = $this->restaurant(['name' => 'A Sem Posts']);
-        $older = $this->restaurant(['name' => 'B Postou Antes']);
-        $newer = $this->restaurant(['name' => 'C Postou Agora']);
-        $this->restaurant(['name' => 'Oculto', 'profile_public' => false]);
-        $this->newPost($older);
-        $this->newPost($newer);
-
-        $this->actingAs($this->customer())->get(route('social.feed'))
-            ->assertInertia(fn (Assert $page) => $page
-                ->has('restaurants', 3)
-                ->where('restaurants.0.id', $newer->id)
-                ->where('restaurants.1.id', $older->id)
-                ->where('restaurants.2.id', $quiet->id));
     }
 }
