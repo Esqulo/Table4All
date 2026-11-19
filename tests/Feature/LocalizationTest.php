@@ -126,13 +126,13 @@ class LocalizationTest extends TestCase
             ->post(route('restaurant.waiters.store'), ['email' => 'novo@bar.test']);
 
         Mail::assertSent(WaiterInvitationMail::class, function (WaiterInvitationMail $mail) {
-            return $mail->envelope()->subject === 'Invitation to join as a waiter — Bar do Zé'
+            return $mail->envelope()->subject === 'Invitation to join the team — Bar do Zé'
                 && str_contains($mail->render(), 'Accept invitation');
         });
 
         App::setLocale('pt_BR');
         Mail::assertSent(WaiterInvitationMail::class, function (WaiterInvitationMail $mail) {
-            return $mail->envelope()->subject === 'Convite para ser garçom — Bar do Zé'
+            return $mail->envelope()->subject === 'Convite para a equipe — Bar do Zé'
                 && str_contains($mail->render(), 'Aceitar convite');
         });
     }

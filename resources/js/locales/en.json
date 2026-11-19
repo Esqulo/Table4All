@@ -883,7 +883,7 @@
     "waiter_accept": {
         "head_title": "Invitation — {{restaurant}}",
         "heading": "Invitation from",
-        "intro": "You were invited as a waiter. You will sign in with:",
+        "intro": "You were invited to join the team. You will sign in with:",
         "email_taken": "An account with this email already exists. Sign in with your existing account and contact the restaurant.",
         "go_to_login": "Go to login",
         "name_label": "Your name",

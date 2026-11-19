@@ -883,7 +883,7 @@
     "waiter_accept": {
         "head_title": "Convite — {{restaurant}}",
         "heading": "Convite de",
-        "intro": "Você foi convidado como garçom. O acesso será feito com:",
+        "intro": "Você foi convidado para a equipe. O acesso será feito com:",
         "email_taken": "Já existe uma conta com este e-mail. Entre com sua conta existente e entre em contato com o restaurante.",
         "go_to_login": "Ir para o login",
         "name_label": "Seu nome",
