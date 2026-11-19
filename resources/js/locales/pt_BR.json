@@ -76,7 +76,7 @@
         "tables": "Mesas",
         "products": "Produtos",
         "queues": "Filas",
-        "waiters": "Garçons",
+        "waiters": "Equipe",
         "sales": "Promoções",
         "delivery": "Entregas",
         "feed": "Feed",
@@ -431,7 +431,7 @@
         "payment_by": "por {{name}}"
     },
     "waiters": {
-        "title": "Garçons",
+        "title": "Equipe",
         "invite_heading": "Convidar garçom",
         "invite_hint": "O garçom receberá um e-mail com um link para criar a conta. O convite expira em 7 dias.",
         "email_label": "E-mail",
@@ -442,7 +442,7 @@
         "empty": "Nenhum garçom ativo ainda.",
         "cancel_confirm": "Tem certeza que deseja cancelar este convite?",
         "delete_confirm": "Tem certeza que deseja remover este garçom?",
-        "breadcrumb_index": "Garçons",
+        "breadcrumb_index": "Equipe",
         "msg_invited": "Convite enviado com sucesso.",
         "msg_invite_cancelled": "Convite cancelado.",
         "msg_deleted": "Garçom removido com sucesso.",

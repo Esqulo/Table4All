@@ -76,7 +76,7 @@
         "tables": "Tables",
         "products": "Products",
         "queues": "Queues",
-        "waiters": "Waiters",
+        "waiters": "Team",
         "sales": "Sales",
         "delivery": "Delivery",
         "feed": "Feed",
@@ -431,7 +431,7 @@
         "payment_by": "by {{name}}"
     },
     "waiters": {
-        "title": "Waiters",
+        "title": "Team",
         "invite_heading": "Invite waiter",
         "invite_hint": "The waiter will receive an email with a link to create their account. The invitation expires in 7 days.",
         "email_label": "Email",
@@ -442,7 +442,7 @@
         "empty": "No active waiters yet.",
         "cancel_confirm": "Are you sure you want to cancel this invitation?",
         "delete_confirm": "Are you sure you want to remove this waiter?",
-        "breadcrumb_index": "Waiters",
+        "breadcrumb_index": "Team",
         "msg_invited": "Invitation sent successfully.",
         "msg_invite_cancelled": "Invitation cancelled.",
         "msg_deleted": "Waiter removed successfully.",

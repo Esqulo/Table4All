@@ -422,3 +422,49 @@
         animation: t4a-float-fade 1600ms ease forwards;
     }
 }
+
+/* Sidebar: thin scrollbar in the sidebar palette, stronger on hover. */
+@utility scrollbar-sidebar {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(
+            in oklch,
+            var(--sidebar-foreground) 18%,
+            transparent
+        )
+        transparent;
+    scrollbar-gutter: stable;
+
+    &:hover {
+        scrollbar-color: color-mix(
+                in oklch,
+                var(--sidebar-foreground) 32%,
+                transparent
+            )
+            transparent;
+    }
+
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        border-radius: 9999px;
+        background-color: color-mix(
+            in oklch,
+            var(--sidebar-foreground) 18%,
+            transparent
+        );
+    }
+
+    &:hover::-webkit-scrollbar-thumb {
+        background-color: color-mix(
+            in oklch,
+            var(--sidebar-foreground) 32%,
+            transparent
+        );
+    }
+}
