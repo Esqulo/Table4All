@@ -10,6 +10,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import DeliveryController from '@/actions/App/Http/Controllers/Restaurant/DeliveryController';
 import QueueItemController from '@/actions/App/Http/Controllers/Restaurant/QueueItemController';
+import { ItemNote } from '@/components/item-note';
 import { Button } from '@/components/ui/button';
 import { useLiveReload } from '@/hooks/use-live-reload';
 import { useCanWrite } from '@/hooks/use-permission';
@@ -21,6 +22,8 @@ type DeliveryItem = {
     product: string;
     picture_url: string | null;
     quantity: number;
+    /** For whoever prepares or delivers it ("sem cebola"). */
+    notes: string | null;
     price: number;
     status: 'done' | 'pending';
     ordered_by: string | null;
@@ -184,6 +187,10 @@ export default function DeliveryIndex({ items }: Props) {
                                                         )}
                                                     </span>
                                                 </div>
+                                                <ItemNote
+                                                    notes={item.notes}
+                                                    className="mt-1 w-fit text-xs"
+                                                />
                                             </div>
 
                                             {canWrite && (

@@ -457,7 +457,10 @@
         "service_fee_restore": "Cobrar",
         "service_fee_waived": "Retirada",
         "msg_service_fee_waived": "Taxa de serviço retirada desta mesa.",
-        "msg_service_fee_restored": "Taxa de serviço cobrada de novo nesta mesa."
+        "msg_service_fee_restored": "Taxa de serviço cobrada de novo nesta mesa.",
+        "item_add_another": "Outra observação",
+        "item_notes_placeholder": "Observação (ex.: sem cebola, ao ponto)",
+        "item_notes_label": "Observação para {{product}}"
     },
     "waiters": {
         "title": "Equipe",
@@ -632,7 +635,9 @@
         "call_sent_bill": "Pedimos a conta. Já vem alguém!",
         "subtotal": "Produtos",
         "service_fee": "Taxa de serviço ({{rate}})",
-        "service_fee_cap": "limitada a {{cap}}"
+        "service_fee_cap": "limitada a {{cap}}",
+        "item_notes_placeholder": "Alguma observação? (ex.: sem cebola)",
+        "item_notes_label": "Observação para {{product}}"
     },
     "two_factor": {
         "title": "Autenticação de dois fatores",

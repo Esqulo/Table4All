@@ -109,6 +109,8 @@ export type QueueItem = {
     queue: { id: number; name: string } | null;
     restaurant_table?: { id: number; title: string };
     quantity: number;
+    /** For the kitchen or the waiter ("sem cebola", "ao ponto"). */
+    notes: string | null;
     price: number;
     status: QueueItemStatus;
     created_at: string;

@@ -505,6 +505,7 @@ class TableController extends Controller
                 'product_id' => $product->id,
                 'queue_id' => $product->queue_id,
                 'quantity' => $qty,
+                'notes' => QueueItem::cleanNotes($item['notes'] ?? null),
                 'price' => (float) ($item['price'] ?? 0),
                 'status' => QueueItemStatus::PENDING->value,
                 'created_at' => $now,

@@ -17,6 +17,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $queue_id
  * @property int|null $ordered_by_user_id
  * @property int $quantity
+ * @property string|null $notes for the kitchen or the waiter ("sem cebola", "ao ponto")
  * @property QueueItemStatus $status
  * @property float $price
  * @property Carbon|null $created_at
@@ -30,9 +31,25 @@ final class QueueItem extends Model
         'queue_id',
         'ordered_by_user_id',
         'quantity',
+        'notes',
         'price',
         'status',
     ];
+
+    /** Longest note on an item: a short instruction, not a message. */
+    public const NOTES_MAX = 140;
+
+    /** A note as stored: one line, trimmed, null when empty. */
+    public static function cleanNotes(mixed $notes): ?string
+    {
+        if (! is_string($notes)) {
+            return null;
+        }
+
+        $clean = trim((string) preg_replace('/\s+/u', ' ', $notes));
+
+        return $clean === '' ? null : mb_substr($clean, 0, self::NOTES_MAX);
+    }
 
     protected function casts(): array
     {

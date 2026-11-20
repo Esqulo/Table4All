@@ -46,6 +46,7 @@ class DeliveryController extends Controller
                     ? Storage::disk('public')->url($item->product->picture)
                     : null,
                 'quantity' => $item->quantity,
+                'notes' => $item->notes,
                 'price' => (float) $item->price,
                 'status' => $item->status->value,
                 'ordered_by' => $item->orderedBy !== null ? ($item->orderedBy->name ?? $item->orderedBy->email) : null,

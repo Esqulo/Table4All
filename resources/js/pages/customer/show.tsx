@@ -19,6 +19,7 @@ import {
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import JoinController from '@/actions/App/Http/Controllers/Customer/JoinController';
+import { ItemNote } from '@/components/item-note';
 import { TableCallButtons } from '@/components/table-call-buttons';
 import type { TableCalls } from '@/components/table-call-buttons';
 import { TableChat } from '@/components/table-chat';
@@ -74,8 +75,13 @@ type PreparingItem = {
     price: number;
     quantity: number;
     ordered_by: string | null;
+    /** For the kitchen or the waiter ("sem cebola"). */
+    notes: string | null;
     has_queue: boolean;
 };
+
+/** Longest note on an item (QueueItem::NOTES_MAX). */
+const NOTES_MAX = 140;
 
 type Member = {
     id: number;
@@ -576,6 +582,7 @@ type ListLine = {
     price: number;
     ordered_by: string | null;
     picture_url?: string | null;
+    notes?: string | null;
 };
 
 /** Everything the table ordered, by where it is: kitchen, on the way, on the table. */
@@ -720,6 +727,10 @@ function OrderSection({
                                         {line.ordered_by}
                                     </p>
                                 )}
+                                <ItemNote
+                                    notes={line.notes}
+                                    className="mt-1 w-fit text-xs"
+                                />
                             </div>
                             <span className="text-sm font-medium tabular-nums">
                                 {fmt(line.price * line.quantity)}
@@ -751,6 +762,8 @@ function MenuDialog({
     const [search, setSearch] = useState('');
     const [activeCategory, setActiveCategory] = useState<number | null>(null);
     const [cart, setCart] = useState<Record<number, number>>({});
+    // A note per product in the cart, for the kitchen ("sem cebola").
+    const [notes, setNotes] = useState<Record<number, string>>({});
     const [step, setStep] = useState<'menu' | 'review'>('menu');
     const [submitting, setSubmitting] = useState(false);
     // Identifies this cart to the server: re-sending it after a timeout or a double
@@ -840,9 +853,15 @@ function MenuDialog({
         });
     }
 
+    function changeNote(id: number, value: string) {
+        setRequestKey(newRequestKey());
+        setNotes((prev) => ({ ...prev, [id]: value.slice(0, NOTES_MAX) }));
+    }
+
     function close() {
         onOpenChange(false);
         setCart({});
+        setNotes({});
         setStep('menu');
         setSearch('');
         setActiveCategory(null);
@@ -860,6 +879,7 @@ function MenuDialog({
                 items: Object.entries(cart).map(([productId, quantity]) => ({
                     product_id: Number(productId),
                     quantity,
+                    notes: notes[Number(productId)]?.trim() || null,
                 })),
                 request_key: requestKey,
             },
@@ -974,6 +994,10 @@ function MenuDialog({
                                         quantity={quantity}
                                         onIncrement={() => increment(item.id)}
                                         onDecrement={() => decrement(item.id)}
+                                        note={notes[item.id] ?? ''}
+                                        onNoteChange={(value) =>
+                                            changeNote(item.id, value)
+                                        }
                                     />
                                 ))}
                             </div>
@@ -1105,26 +1129,44 @@ function ReviewRow({
     quantity,
     onIncrement,
     onDecrement,
+    note,
+    onNoteChange,
 }: {
     item: MenuItem;
     fmt: (n: number) => string;
     quantity: number;
     onIncrement: () => void;
     onDecrement: () => void;
+    note: string;
+    onNoteChange: (value: string) => void;
 }) {
+    const { t } = useTranslation();
+
     return (
-        <div className="flex items-center gap-3 px-4 py-3">
-            <ProductThumb item={item} size="h-12 w-12" />
-            <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{item.name}</p>
-                <p className="text-xs font-semibold text-primary tabular-nums">
-                    {fmt(item.price * quantity)}
-                </p>
+        <div className="space-y-2 px-4 py-3">
+            <div className="flex items-center gap-3">
+                <ProductThumb item={item} size="h-12 w-12" />
+                <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{item.name}</p>
+                    <p className="text-xs font-semibold text-primary tabular-nums">
+                        {fmt(item.price * quantity)}
+                    </p>
+                </div>
+                <Stepper
+                    quantity={quantity}
+                    onIncrement={onIncrement}
+                    onDecrement={onDecrement}
+                />
             </div>
-            <Stepper
-                quantity={quantity}
-                onIncrement={onIncrement}
-                onDecrement={onDecrement}
+            <Input
+                value={note}
+                onChange={(e) => onNoteChange(e.target.value)}
+                maxLength={NOTES_MAX}
+                placeholder={t('join_table.item_notes_placeholder')}
+                aria-label={t('join_table.item_notes_label', {
+                    product: item.name,
+                })}
+                className="h-9 text-sm"
             />
         </div>
     );

@@ -19,6 +19,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import QueueItemController from '@/actions/App/Http/Controllers/Restaurant/QueueItemController';
 import TableController from '@/actions/App/Http/Controllers/Restaurant/TableController';
+import { ItemNote } from '@/components/item-note';
 import { ReadOnlyNotice } from '@/components/read-only-notice';
 import {
     AssignWaiterSelect,
@@ -190,14 +191,13 @@ export default function ManageOrder({
         });
 
     // Receives the confirmed items from the dialog, each stamped with its effective price.
-    const handleAddProducts = (
-        items: { productId: number; price: number; quantity: number }[],
-    ) => {
+    const handleAddProducts = (items: AddedItem[]) => {
         const merged = { ...orderState };
         const queueAdditions: {
             product_id: number;
             price: number;
             quantity: number;
+            notes: string | null;
         }[] = [];
 
         for (const item of items) {
@@ -212,6 +212,7 @@ export default function ManageOrder({
                     product_id: item.productId,
                     price: item.price,
                     quantity: item.quantity,
+                    notes: item.notes,
                 });
             } else {
                 const key = lineKey(item.productId, item.price);
@@ -492,6 +493,10 @@ export default function ManageOrder({
                                                 x{item.quantity} ·{' '}
                                                 {fmt(item.price)}
                                             </p>
+                                            <ItemNote
+                                                notes={item.notes}
+                                                className="mt-1 w-fit text-xs"
+                                            />
                                         </div>
                                         {item.status === 'pending' &&
                                         item.queue_id !== null ? (
@@ -1083,15 +1088,27 @@ function AddPaymentDialog({
 
 // ─── Add products dialog ──────────────────────────────────────────────────────
 
+/** Longest note on an item (QueueItem::NOTES_MAX). */
+const NOTES_MAX = 140;
+
+type AddedItem = {
+    productId: number;
+    price: number;
+    quantity: number;
+    /** For the kitchen ("sem cebola"); only items with a prep queue carry one. */
+    notes: string | null;
+};
+
 type DialogProps = {
     open: boolean;
     products: AvailableProduct[];
     activeSales: ActiveSale[];
-    onConfirm: (
-        items: { productId: number; price: number; quantity: number }[],
-    ) => void;
+    onConfirm: (items: AddedItem[]) => void;
     onClose: () => void;
 };
+
+/** Units of a product being added with the same note. */
+type PendingEntry = { quantity: number; notes: string };
 
 function AddProductsDialog({
     open,
@@ -1102,7 +1119,9 @@ function AddProductsDialog({
 }: DialogProps) {
     const { t } = useTranslation();
     const [search, setSearch] = useState('');
-    const [pending, setPending] = useState<Record<number, number>>({});
+    // Per product, one entry per note: two burgers "ao ponto" and one "mal passado"
+    // go to the kitchen as two lines.
+    const [pending, setPending] = useState<Record<number, PendingEntry[]>>({});
 
     const saleByProductId = Object.fromEntries(
         activeSales.map((s) => [s.product_id, s.sale_price]),
@@ -1118,21 +1137,45 @@ function AddProductsDialog({
         p.name.toLowerCase().includes(search.toLowerCase()),
     );
 
-    const totalSelected = Object.values(pending).reduce((a, b) => a + b, 0);
+    const totalSelected = Object.values(pending)
+        .flat()
+        .reduce((sum, entry) => sum + entry.quantity, 0);
 
-    const setPendingQty = (id: number, delta: number) =>
+    const addEntry = (id: number) =>
+        setPending((prev) => ({
+            ...prev,
+            [id]: [...(prev[id] ?? []), { quantity: 1, notes: '' }],
+        }));
+
+    const changeQty = (id: number, index: number, delta: number) =>
         setPending((prev) => {
-            const next = Math.max(0, (prev[id] ?? 0) + delta);
+            const entries = (prev[id] ?? [])
+                .map((entry, i) =>
+                    i === index
+                        ? { ...entry, quantity: entry.quantity + delta }
+                        : entry,
+                )
+                .filter((entry) => entry.quantity > 0);
             const updated = { ...prev };
 
-            if (next === 0) {
+            if (entries.length === 0) {
                 delete updated[id];
             } else {
-                updated[id] = next;
+                updated[id] = entries;
             }
 
             return updated;
         });
+
+    const changeNotes = (id: number, index: number, notes: string) =>
+        setPending((prev) => ({
+            ...prev,
+            [id]: (prev[id] ?? []).map((entry, i) =>
+                i === index
+                    ? { ...entry, notes: notes.slice(0, NOTES_MAX) }
+                    : entry,
+            ),
+        }));
 
     const reset = () => {
         setSearch('');
@@ -1140,14 +1183,22 @@ function AddProductsDialog({
     };
 
     const handleConfirm = () => {
-        const items = Object.entries(pending)
-            .filter(([, qty]) => qty > 0)
-            .map(([id, quantity]) => {
-                const productId = Number(id);
-                const product = products.find((p) => p.id === productId)!;
+        const items: AddedItem[] = [];
 
-                return { productId, price: effectivePrice(product), quantity };
-            });
+        for (const [id, entries] of Object.entries(pending)) {
+            const productId = Number(id);
+            const product = products.find((p) => p.id === productId)!;
+
+            for (const entry of entries) {
+                items.push({
+                    productId,
+                    price: effectivePrice(product),
+                    quantity: entry.quantity,
+                    notes: product.queue_id ? entry.notes.trim() || null : null,
+                });
+            }
+        }
+
         onConfirm(items);
         reset();
     };
@@ -1191,7 +1242,12 @@ function AddProductsDialog({
                         </p>
                     ) : (
                         filtered.map((product, idx) => {
-                            const qty = pending[product.id] ?? 0;
+                            const entries = pending[product.id] ?? [];
+                            const qty = entries.reduce(
+                                (sum, entry) => sum + entry.quantity,
+                                0,
+                            );
+                            const hasQueue = product.queue_id !== null;
                             const suffix = t(
                                 `products.price_suffix.${product.price_type}`,
                             );
@@ -1202,97 +1258,137 @@ function AddProductsDialog({
                                 <div
                                     key={product.id}
                                     className={[
-                                        'flex items-center gap-3 px-6 py-3',
+                                        'px-6 py-3',
                                         idx > 0 ? 'border-t border-border' : '',
                                         qty > 0 ? 'bg-primary/5' : '',
                                     ].join(' ')}
                                 >
-                                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
-                                        {product.picture_url ? (
-                                            <img
-                                                loading="lazy"
-                                                decoding="async"
-                                                src={product.picture_url}
-                                                alt={product.name}
-                                                className="h-full w-full object-cover"
-                                            />
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
+                                            {product.picture_url ? (
+                                                <img
+                                                    loading="lazy"
+                                                    decoding="async"
+                                                    src={product.picture_url}
+                                                    alt={product.name}
+                                                    className="h-full w-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                                                    <ImageOff className="h-3.5 w-3.5 opacity-40" />
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="truncate text-sm font-medium">
+                                                {product.name}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {onSale ? (
+                                                    <>
+                                                        <span className="font-semibold text-green-600">
+                                                            {fmt(price)}
+                                                        </span>
+                                                        <span className="ml-1 line-through opacity-60">
+                                                            {fmt(product.price)}
+                                                        </span>
+                                                    </>
+                                                ) : (
+                                                    fmt(price)
+                                                )}
+                                                {' / '}
+                                                {suffix}
+                                                {product.queue_id && (
+                                                    <span className="ml-1.5 rounded bg-muted px-1 py-0.5 text-[10px] font-medium">
+                                                        {product.queue?.name}
+                                                    </span>
+                                                )}
+                                            </p>
+                                        </div>
+                                        {qty === 0 ? (
+                                            <Button
+                                                type="button"
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() =>
+                                                    addEntry(product.id)
+                                                }
+                                            >
+                                                <Plus className="mr-1 h-3.5 w-3.5" />
+                                                {t('tables.item_add')}
+                                            </Button>
+                                        ) : hasQueue ? (
+                                            // Each entry has its own stepper below; this adds
+                                            // the same product with another note.
+                                            <Button
+                                                type="button"
+                                                size="sm"
+                                                variant="ghost"
+                                                className="shrink-0 text-xs"
+                                                onClick={() =>
+                                                    addEntry(product.id)
+                                                }
+                                            >
+                                                <Plus className="mr-1 h-3.5 w-3.5" />
+                                                {t('tables.item_add_another')}
+                                            </Button>
                                         ) : (
-                                            <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                                                <ImageOff className="h-3.5 w-3.5 opacity-40" />
-                                            </div>
+                                            <QtyStepper
+                                                quantity={qty}
+                                                onChange={(delta) =>
+                                                    changeQty(
+                                                        product.id,
+                                                        0,
+                                                        delta,
+                                                    )
+                                                }
+                                            />
                                         )}
                                     </div>
-                                    <div className="min-w-0 flex-1">
-                                        <p className="truncate text-sm font-medium">
-                                            {product.name}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {onSale ? (
-                                                <>
-                                                    <span className="font-semibold text-green-600">
-                                                        {fmt(price)}
-                                                    </span>
-                                                    <span className="ml-1 line-through opacity-60">
-                                                        {fmt(product.price)}
-                                                    </span>
-                                                </>
-                                            ) : (
-                                                fmt(price)
-                                            )}
-                                            {' / '}
-                                            {suffix}
-                                            {product.queue_id && (
-                                                <span className="ml-1.5 rounded bg-muted px-1 py-0.5 text-[10px] font-medium">
-                                                    {product.queue?.name}
-                                                </span>
-                                            )}
-                                        </p>
-                                    </div>
-                                    {qty === 0 ? (
-                                        <Button
-                                            type="button"
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() =>
-                                                setPendingQty(product.id, 1)
-                                            }
-                                        >
-                                            <Plus className="mr-1 h-3.5 w-3.5" />
-                                            {t('tables.item_add')}
-                                        </Button>
-                                    ) : (
-                                        <div className="flex items-center gap-1">
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="icon"
-                                                className="h-8 w-8"
-                                                onClick={() =>
-                                                    setPendingQty(
-                                                        product.id,
-                                                        -1,
-                                                    )
-                                                }
-                                            >
-                                                <Minus className="h-3.5 w-3.5" />
-                                            </Button>
-                                            <span className="w-6 text-center text-sm tabular-nums">
-                                                {qty}
-                                            </span>
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="icon"
-                                                className="h-8 w-8"
-                                                onClick={() =>
-                                                    setPendingQty(
-                                                        product.id,
-                                                        +1,
-                                                    )
-                                                }
-                                            >
-                                                <Plus className="h-3.5 w-3.5" />
-                                            </Button>
+
+                                    {hasQueue && entries.length > 0 && (
+                                        <div className="mt-2 space-y-2 pl-13">
+                                            {entries.map((entry, i) => (
+                                                <div
+                                                    key={i}
+                                                    className="flex items-center gap-2"
+                                                >
+                                                    <Input
+                                                        value={entry.notes}
+                                                        onChange={(e) =>
+                                                            changeNotes(
+                                                                product.id,
+                                                                i,
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        maxLength={NOTES_MAX}
+                                                        placeholder={t(
+                                                            'tables.item_notes_placeholder',
+                                                        )}
+                                                        aria-label={t(
+                                                            'tables.item_notes_label',
+                                                            {
+                                                                product:
+                                                                    product.name,
+                                                            },
+                                                        )}
+                                                        className="h-8 min-w-0 flex-1 text-sm"
+                                                    />
+                                                    <QtyStepper
+                                                        quantity={
+                                                            entry.quantity
+                                                        }
+                                                        onChange={(delta) =>
+                                                            changeQty(
+                                                                product.id,
+                                                                i,
+                                                                delta,
+                                                            )
+                                                        }
+                                                    />
+                                                </div>
+                                            ))}
                                         </div>
                                     )}
                                 </div>
@@ -1319,5 +1415,39 @@ function AddProductsDialog({
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+    );
+}
+
+function QtyStepper({
+    quantity,
+    onChange,
+}: {
+    quantity: number;
+    onChange: (delta: number) => void;
+}) {
+    return (
+        <div className="flex shrink-0 items-center gap-1">
+            <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => onChange(-1)}
+            >
+                <Minus className="h-3.5 w-3.5" />
+            </Button>
+            <span className="w-6 text-center text-sm tabular-nums">
+                {quantity}
+            </span>
+            <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => onChange(+1)}
+            >
+                <Plus className="h-3.5 w-3.5" />
+            </Button>
+        </div>
     );
 }

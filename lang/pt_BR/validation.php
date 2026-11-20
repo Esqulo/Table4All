@@ -205,6 +205,8 @@ return [
         'service_fee_value' => 'valor da taxa de serviço',
         'service_fee_cap' => 'valor limite da taxa de serviço',
         'waived' => 'taxa retirada',
+        'items.*.notes' => 'observação',
+        'queue_additions.*.notes' => 'observação',
         'logo' => 'logo',
         'banner' => 'banner',
         'handle' => '@ do perfil',

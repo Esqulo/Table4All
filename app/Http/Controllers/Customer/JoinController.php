@@ -173,6 +173,7 @@ class JoinController extends Controller
                 'name' => $item->product->name,
                 'price' => (float) $item->price,
                 'quantity' => (int) $item->quantity,
+                'notes' => $item->notes,
                 'has_queue' => $item->queue_id !== null,
                 'ordered_by' => $item->orderedBy !== null ? ($item->orderedBy->name ?? $item->orderedBy->email) : null,
             ]);
@@ -353,6 +354,7 @@ class JoinController extends Controller
             'items' => ['required', 'array', 'min:1', 'max:100'],
             'items.*.product_id' => ['required', 'integer'],
             'items.*.quantity' => ['required', 'integer', 'min:1', 'max:99'],
+            'items.*.notes' => ['nullable', 'string', 'max:'.QueueItem::NOTES_MAX],
             'request_key' => ['nullable', 'string', 'max:64'],
         ]);
 
@@ -381,6 +383,7 @@ class JoinController extends Controller
                 'queue_id' => $product->queue_id ?: null,
                 'ordered_by_user_id' => $userId,
                 'quantity' => $item['quantity'],
+                'notes' => QueueItem::cleanNotes($item['notes'] ?? null),
                 'price' => (float) ($activeSales[$product->id] ?? $product->price),
                 'status' => QueueItemStatus::PENDING->value,
                 'created_at' => $now,

@@ -3,6 +3,7 @@ import { CheckCircle2, Clock, ConciergeBell, ImageOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import QueueController from '@/actions/App/Http/Controllers/Restaurant/QueueController';
 import QueueItemController from '@/actions/App/Http/Controllers/Restaurant/QueueItemController';
+import { ItemNote } from '@/components/item-note';
 import { Button } from '@/components/ui/button';
 import { useLiveReload } from '@/hooks/use-live-reload';
 import { useCanWrite } from '@/hooks/use-permission';
@@ -162,6 +163,10 @@ function PendingCard({ item, pos }: { item: QueueItem; pos: number }) {
                 <p className="mt-1 text-sm font-medium text-muted-foreground">
                     {item.restaurant_table?.title}
                 </p>
+                <ItemNote
+                    notes={item.notes}
+                    className="mt-3 text-base font-semibold"
+                />
             </div>
 
             {/* Action */}
@@ -225,6 +230,7 @@ function DoneCard({ item, pos }: { item: QueueItem; pos: number }) {
                     {item.restaurant_table?.title} · ×{item.quantity} ·{' '}
                     {fmtTime(item.created_at)}
                 </p>
+                <ItemNote notes={item.notes} className="mt-1.5 w-fit" />
             </div>
 
             {/* Action */}
