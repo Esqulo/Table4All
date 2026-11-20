@@ -99,5 +99,10 @@
     "payments.coupon_not_combinable": "Este cupom não pode ser usado junto com outros, e esta mesa já usou um cupom.",
     "payments.coupon_already_used": "Você já usou um cupom nesta mesa.",
     "payments.checkout_description": ":table · :restaurant",
-    "coupons.code_taken": "Já existe um cupom com este código."
+    "coupons.code_taken": "Já existe um cupom com este código.",
+    "loyalty.attribute_tiers": "etapas",
+    "loyalty.attribute_visits": "visitas",
+    "loyalty.attribute_discount_type": "tipo de desconto",
+    "loyalty.attribute_discount_value": "valor do desconto",
+    "loyalty.attribute_max_discount": "desconto máximo"
 }

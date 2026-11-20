@@ -881,4 +881,13 @@ class OnlinePaymentTest extends TestCase
         [$code, $other] = $this->anotherTable();
         $this->payAt($code, $other, 20, ['coupon' => 'SEMPRE'])->assertSessionHasNoErrors()->assertRedirect();
     }
+
+    public function test_a_personal_coupon_only_works_for_its_customer(): void
+    {
+        $this->coupon($this->restaurant, ['code' => 'FIEL-ABC', 'customer_id' => $this->member->id, 'multiple_per_table' => true, 'max_uses' => 1]);
+
+        $this->pay($this->owner, 20, ['coupon' => 'FIEL-ABC'])
+            ->assertSessionHasErrors(['coupon' => __('payments.coupon_invalid')]);
+        $this->pay($this->member, 20, ['coupon' => 'FIEL-ABC'])->assertSessionHasNoErrors()->assertRedirect();
+    }
 }

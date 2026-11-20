@@ -93,7 +93,9 @@
         "restaurants": "Restaurantes",
         "coupons": "Cupons",
         "finance": "Financeiro",
-        "payouts": "Repasses"
+        "payouts": "Repasses",
+        "incentives": "Incentivos",
+        "rewards": "Recompensas"
     },
     "settings": {
         "title": "Configurações",
@@ -1332,5 +1334,143 @@
         "mark_paid_confirm": "Confirmar que você pagou {{amount}} a {{name}} por fora da Stripe?",
         "stripe_not_connected": "sem conta Stripe",
         "msg_paid": "Repasse marcado como pago."
+    },
+    "customer_rewards": {
+        "title": "Recompensas",
+        "join_table": "Entrar em uma mesa",
+        "level": {
+            "short": "Nível",
+            "progress": "Progresso do nível",
+            "to_next": "{{xp}} / {{next}} XP · faltam {{missing}} XP para o nível {{level}}",
+            "how": "Faça visitas para ganhar XP e subir de nível!"
+        },
+        "stats": {
+            "visits": "Visitas",
+            "places": "Lugares",
+            "best_streak": "Melhor sequência",
+            "saved": "Economizado"
+        },
+        "loyalty": {
+            "title": "Fidelidade",
+            "description": "Cada lugar tem suas etapas de recompensa. Fique mais de {{days}} dias sem voltar e a sequência zera.",
+            "empty": "Sente-se em uma mesa, peça algo e, quando a conta fechar, sua sequência começa aqui.",
+            "streak_one": "{{count}} visita seguida",
+            "streak_other": "{{count}} visitas seguidas",
+            "progress_label": "{{filled}} de {{total}} visitas para a próxima recompensa",
+            "missing_one": "Falta {{count}} visita para ganhar {{value}}!",
+            "missing_other": "Faltam {{count}} visitas para ganhar {{value}}",
+            "earned": "Você ganhou {{value}}! O cupom está na sua carteira.",
+            "no_rewards": "Este lugar ainda não oferece recompensas.",
+            "days_left_one": "Volte em até {{count}} dia para manter a sequência",
+            "days_left_other": "Volte em até {{count}} dias para manter a sequência",
+            "last_day": "Último dia! Volte hoje para não perder a sequência",
+            "tier_one": "{{count}} visita · {{value}}",
+            "tier_other": "{{count}} visitas · {{value}}"
+        },
+        "wallet": {
+            "title": "Carteira",
+            "description": "Seus cupons de recompensa aparecem aqui.",
+            "available_one": "Você tem {{count}} cupom para usar. Digite o código ao pagar pelo app.",
+            "available_other": "Você tem {{count}} cupons para usar. Digite o código ao pagar pelo app.",
+            "empty": "Nenhum cupom ainda. Complete a barra de fidelidade de um lugar para ganhar o primeiro.",
+            "off": "de desconto",
+            "copy": "Copiar o código {{code}}",
+            "valid_until": "Válido até {{date}}",
+            "available": "Disponível",
+            "used": "Usado",
+            "expired": "Expirado",
+            "up_to": "até {{value}}"
+        },
+        "achievements": {
+            "title": "Conquistas",
+            "count": "{{unlocked}} de {{total}} desbloqueadas",
+            "unlocked": "Desbloqueada",
+            "first_visit": {
+                "title": "Primeira mesa",
+                "description_one": "Feche a conta de {{count}} mesa.",
+                "description_other": "Feche a conta de {{count}} mesas."
+            },
+            "regular": {
+                "title": "Figurinha carimbada",
+                "description_one": "Faça {{count}} visita.",
+                "description_other": "Faça {{count}} visitas."
+            },
+            "explorer": {
+                "title": "Explorador",
+                "description_one": "Visite {{count}} lugar diferente.",
+                "description_other": "Visite {{count}} lugares diferentes."
+            },
+            "loyal": {
+                "title": "Freguês fiel",
+                "description_one": "Faça uma sequência de {{count}} visita.",
+                "description_other": "Faça uma sequência de {{count}} visitas no mesmo lugar."
+            },
+            "saver": {
+                "title": "Caçador de descontos",
+                "description_one": "Use {{count}} cupom ao pagar.",
+                "description_other": "Use {{count}} cupons ao pagar."
+            },
+            "big_spender": {
+                "title": "Mesa farta",
+                "description_one": "Peça R$ {{count}} em itens.",
+                "description_other": "Peça R$ {{count}} em itens."
+            }
+        },
+        "history": {
+            "title": "Histórico",
+            "description": "Você já economizou {{value}} em cupons pelo app.",
+            "empty": "Suas mesas aparecem aqui.",
+            "table_total": "Mesa: {{value}}",
+            "open": "Mesa aberta · voltar",
+            "payment_paid": "Pago {{value}}",
+            "payment_processing": "Confirmando {{value}}",
+            "payment_refunded": "Estornado {{value}}",
+            "saved": "−{{value}} cupom",
+            "prev": "Anterior",
+            "next": "Próxima",
+            "page": "Página {{page}} de {{total}}"
+        }
+    },
+    "incentives": {
+        "title": "Incentivos",
+        "description": "Recompensas que fazem os clientes voltarem. Você escolhe quais oferecer; o custo dos descontos é do restaurante.",
+        "msg_enabled": "Incentivo ativado.",
+        "msg_disabled": "Incentivo desativado.",
+        "loyalty": {
+            "title": "Cartão fidelidade",
+            "description": "Recompense quem volta: a cada etapa da sequência o cliente ganha um cupom para usar aqui.",
+            "toggle": "Ativar o cartão fidelidade",
+            "preview": "Como o cliente vê a barra",
+            "rule_visit": "Conta uma visita por dia, quando a mesa do cliente é fechada com consumo.",
+            "rule_streak_one": "Se o cliente ficar mais de {{count}} dia sem voltar, a sequência zera.",
+            "rule_streak_other": "Se o cliente ficar mais de {{count}} dias sem voltar, a sequência zera.",
+            "rule_coupon_one": "Cada cupom é pessoal, de uso único, e vale por {{count}} dia.",
+            "rule_coupon_other": "Cada cupom é pessoal, de uso único, e vale por {{count}} dias.",
+            "rule_cost": "O desconto é concedido pelo restaurante e usado no pagamento pelo app.",
+            "enabled_since": "Ativo desde {{date}}. Só contam as visitas a partir dessa data.",
+            "disabled_note": "Desativado: as visitas não contam para recompensas. Ao ativar, a contagem começa do zero."
+        },
+        "stats": {
+            "rewards_granted": "Cupons gerados",
+            "customers": "Clientes premiados",
+            "rewards_used": "Cupons usados",
+            "discount_given": "Descontos concedidos"
+        },
+        "discount_capped": "{{value}} (até {{max}})",
+        "msg_tiers_saved": "Etapas salvas.",
+        "tiers": {
+            "title": "Etapas e recompensas",
+            "visits": "Visitas",
+            "type": "Tipo",
+            "value": "Valor",
+            "max_discount": "Desconto máx. (R$)",
+            "remove": "Remover etapa",
+            "add": "Adicionar etapa",
+            "save": "Salvar etapas",
+            "limits": "Até {{tiers}} etapas e {{visits}} visitas. Mudanças valem também para as sequências em andamento.",
+            "summary_one": "{{count}} visita: {{value}}",
+            "summary_other": "{{count}} visitas: {{value}}",
+            "restarts": "depois da última, a barra recomeça"
+        }
     }
 }

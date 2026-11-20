@@ -93,7 +93,9 @@
         "restaurants": "Restaurants",
         "coupons": "Coupons",
         "finance": "Finance",
-        "payouts": "Payouts"
+        "payouts": "Payouts",
+        "incentives": "Incentives",
+        "rewards": "Rewards"
     },
     "settings": {
         "title": "Settings",
@@ -1332,5 +1334,143 @@
         "mark_paid_confirm": "Confirm you paid {{amount}} to {{name}} outside Stripe?",
         "stripe_not_connected": "no Stripe account",
         "msg_paid": "Payout marked as paid."
+    },
+    "customer_rewards": {
+        "title": "Rewards",
+        "join_table": "Join a table",
+        "level": {
+            "short": "Level",
+            "progress": "Level progress",
+            "to_next": "{{xp}} / {{next}} XP · {{missing}} XP to level {{level}}",
+            "how": "Visit places to earn XP and level up!"
+        },
+        "stats": {
+            "visits": "Visits",
+            "places": "Places",
+            "best_streak": "Best streak",
+            "saved": "Saved"
+        },
+        "loyalty": {
+            "title": "Loyalty",
+            "description": "Each place has its own reward tiers. Stay away more than {{days}} days and the streak resets.",
+            "empty": "Sit at a table, order something and, once the bill is closed, your streak starts here.",
+            "streak_one": "{{count}} visit in a row",
+            "streak_other": "{{count}} visits in a row",
+            "progress_label": "{{filled}} of {{total}} visits to the next reward",
+            "missing_one": "{{count}} more visit to earn {{value}}!",
+            "missing_other": "{{count}} more visits to earn {{value}}",
+            "earned": "You earned {{value}}! The coupon is in your wallet.",
+            "no_rewards": "This place doesn't offer rewards yet.",
+            "days_left_one": "Come back within {{count}} day to keep the streak",
+            "days_left_other": "Come back within {{count}} days to keep the streak",
+            "last_day": "Last day! Come back today to keep your streak",
+            "tier_one": "{{count}} visit · {{value}}",
+            "tier_other": "{{count}} visits · {{value}}"
+        },
+        "wallet": {
+            "title": "Wallet",
+            "description": "Your reward coupons show up here.",
+            "available_one": "You have {{count}} coupon to use. Type the code when paying in the app.",
+            "available_other": "You have {{count}} coupons to use. Type the code when paying in the app.",
+            "empty": "No coupons yet. Fill a place's loyalty bar to earn your first one.",
+            "off": "off",
+            "copy": "Copy the code {{code}}",
+            "valid_until": "Valid until {{date}}",
+            "available": "Available",
+            "used": "Used",
+            "expired": "Expired",
+            "up_to": "up to {{value}}"
+        },
+        "achievements": {
+            "title": "Achievements",
+            "count": "{{unlocked}} of {{total}} unlocked",
+            "unlocked": "Unlocked",
+            "first_visit": {
+                "title": "First table",
+                "description_one": "Close the bill of {{count}} table.",
+                "description_other": "Close the bill of {{count}} tables."
+            },
+            "regular": {
+                "title": "Regular",
+                "description_one": "Make {{count}} visit.",
+                "description_other": "Make {{count}} visits."
+            },
+            "explorer": {
+                "title": "Explorer",
+                "description_one": "Visit {{count}} different place.",
+                "description_other": "Visit {{count}} different places."
+            },
+            "loyal": {
+                "title": "Loyal customer",
+                "description_one": "Reach a streak of {{count}} visit.",
+                "description_other": "Reach a streak of {{count}} visits at one place."
+            },
+            "saver": {
+                "title": "Deal hunter",
+                "description_one": "Use {{count}} coupon when paying.",
+                "description_other": "Use {{count}} coupons when paying."
+            },
+            "big_spender": {
+                "title": "Feast",
+                "description_one": "Order R$ {{count}} worth of items.",
+                "description_other": "Order R$ {{count}} worth of items."
+            }
+        },
+        "history": {
+            "title": "History",
+            "description": "You've saved {{value}} with coupons in the app.",
+            "empty": "Your tables show up here.",
+            "table_total": "Table: {{value}}",
+            "open": "Open table · go back",
+            "payment_paid": "Paid {{value}}",
+            "payment_processing": "Confirming {{value}}",
+            "payment_refunded": "Refunded {{value}}",
+            "saved": "−{{value}} coupon",
+            "prev": "Previous",
+            "next": "Next",
+            "page": "Page {{page}} of {{total}}"
+        }
+    },
+    "incentives": {
+        "title": "Incentives",
+        "description": "Rewards that bring customers back. You choose which to offer; the discounts are paid by the restaurant.",
+        "msg_enabled": "Incentive switched on.",
+        "msg_disabled": "Incentive switched off.",
+        "loyalty": {
+            "title": "Loyalty card",
+            "description": "Reward customers who come back: at each tier of their streak they earn a coupon to use here.",
+            "toggle": "Switch the loyalty card on",
+            "preview": "How customers see the bar",
+            "rule_visit": "One visit per day counts, once the customer's table is closed with something on the bill.",
+            "rule_streak_one": "If the customer stays away more than {{count}} day, the streak resets.",
+            "rule_streak_other": "If the customer stays away more than {{count}} days, the streak resets.",
+            "rule_coupon_one": "Each coupon is personal, single-use and valid for {{count}} day.",
+            "rule_coupon_other": "Each coupon is personal, single-use and valid for {{count}} days.",
+            "rule_cost": "The discount is granted by the restaurant and used when paying in the app.",
+            "enabled_since": "On since {{date}}. Only visits from that date count.",
+            "disabled_note": "Off: visits don't count toward rewards. Switching it on starts the count from zero."
+        },
+        "stats": {
+            "rewards_granted": "Coupons handed out",
+            "customers": "Customers rewarded",
+            "rewards_used": "Coupons used",
+            "discount_given": "Discounts given"
+        },
+        "discount_capped": "{{value}} (up to {{max}})",
+        "msg_tiers_saved": "Tiers saved.",
+        "tiers": {
+            "title": "Tiers and rewards",
+            "visits": "Visits",
+            "type": "Type",
+            "value": "Value",
+            "max_discount": "Max. discount (R$)",
+            "remove": "Remove tier",
+            "add": "Add tier",
+            "save": "Save tiers",
+            "limits": "Up to {{tiers}} tiers and {{visits}} visits. Changes also apply to streaks in progress.",
+            "summary_one": "{{count}} visit: {{value}}",
+            "summary_other": "{{count}} visits: {{value}}",
+            "restarts": "after the last one, the bar starts over"
+        }
     }
 }
