@@ -6,6 +6,7 @@ use App\Enums\OnlinePaymentStatus;
 use App\Enums\TableCustomerStatus;
 use App\Http\Controllers\Controller;
 use App\Support\Loyalty\LoyaltyProgram;
+use App\Support\ServiceFee;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -179,6 +180,7 @@ class RewardController extends Controller
             ->whereNull('rt.deleted_at')
             ->select([
                 'rt.id', 'rt.title', 'rt.closed_at', 'rt.access_code',
+                'rt.service_fee_type', 'rt.service_fee_value', 'rt.service_fee_cap', 'rt.service_fee_waived',
                 'rtc.created_at as joined_at',
                 'r.name as restaurant_name', 'r.handle as restaurant_handle',
             ])
@@ -227,7 +229,8 @@ class RewardController extends Controller
                 'closed_at' => $utc($t->closed_at),
                 // Only an open table can be gone back to.
                 'code' => $t->closed_at === null ? $t->access_code : null,
-                'table_total' => (float) $t->table_total,
+                // The bill: the products plus the service fee.
+                'table_total' => (float) $t->table_total + ServiceFee::forTable($t, (int) round(100 * (float) $t->table_total)) / 100,
                 'my_total' => (float) $t->my_total,
                 'payments' => ($payments->get($t->id) ?? collect())->map(fn (object $p) => [
                     'status' => (string) $p->status,

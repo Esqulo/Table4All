@@ -47,6 +47,8 @@ import { useLiveReload } from '@/hooks/use-live-reload';
 import { useCanWrite } from '@/hooks/use-permission';
 import { formatBRL } from '@/lib/money';
 import { newRequestKey } from '@/lib/request-key';
+import { serviceFeeCents, serviceFeeRate } from '@/lib/service-fee';
+import type { ServiceFeeTerms } from '@/lib/service-fee';
 import type {
     PaymentMethod,
     Product,
@@ -79,6 +81,8 @@ type Props = {
     orderVersion: string;
     /** Nothing was ordered or paid: the table may be deleted. */
     deletable?: boolean;
+    /** The service fee copied from the restaurant when the table opened; null for none. */
+    serviceFee?: ServiceFeeTerms | null;
     /** The waiter in charge and what the viewer may do about it. */
     assignment?: AssignmentContext & {
         waiter: TableWaiter;
@@ -116,6 +120,7 @@ export default function ManageOrder({
     queueItems,
     orderVersion,
     deletable = false,
+    serviceFee = null,
     assignment,
 }: Props) {
     const { t } = useTranslation();
@@ -155,6 +160,7 @@ export default function ManageOrder({
     const [addProductsOpen, setAddProductsOpen] = useState(false);
     const [addPaymentOpen, setAddPaymentOpen] = useState(false);
     const [autoSubmitting, setAutoSubmitting] = useState(false);
+    const [togglingFee, setTogglingFee] = useState(false);
 
     const effectivePriceFor = (productId: number): number => {
         const sale = activeSales.find((s) => s.product_id === productId);
@@ -336,6 +342,7 @@ export default function ManageOrder({
             'queueItems',
             'activeSales',
             'orderVersion',
+            'serviceFee',
         ],
         intervalMs: 15_000,
         enabled:
@@ -355,10 +362,24 @@ export default function ManageOrder({
         (sum, p) => sum + Math.round(Number(p.amount) * 100),
         0,
     );
+    // The service fee follows the order being edited, worked out like the server does.
+    const feeCents = serviceFeeCents(serviceFee, productCents);
+    const totalCents = productCents + feeCents;
     const productTotal = productCents / 100;
     const paymentTotal = paymentCents / 100;
-    const remaining = (productCents - paymentCents) / 100;
-    const canClose = productCents > 0 && paymentCents >= productCents;
+    const remaining = (totalCents - paymentCents) / 100;
+    const canClose = productCents > 0 && paymentCents >= totalCents;
+
+    const toggleServiceFee = (waived: boolean) =>
+        router.patch(
+            TableController.waiveServiceFee.url({ table: table.id }),
+            { waived },
+            {
+                preserveScroll: true,
+                onStart: () => setTogglingFee(true),
+                onFinish: () => setTogglingFee(false),
+            },
+        );
 
     return (
         <>
@@ -676,15 +697,79 @@ export default function ManageOrder({
                                     {t('tables.add_products')}
                                 </Button>
 
-                                <div className="flex items-center justify-between rounded-xl border border-border px-5 py-3">
-                                    <span className="text-sm text-muted-foreground">
-                                        {t('tables.order_total')}
-                                    </span>
-                                    <span className="text-lg font-bold tabular-nums">
-                                        {currentLines.length > 0
-                                            ? fmt(productTotal)
-                                            : '—'}
-                                    </span>
+                                <div className="space-y-2 rounded-xl border border-border px-5 py-3">
+                                    {serviceFee && (
+                                        <>
+                                            <div className="flex items-center justify-between text-sm">
+                                                <span className="text-muted-foreground">
+                                                    {t('tables.subtotal')}
+                                                </span>
+                                                <span className="tabular-nums">
+                                                    {fmt(productTotal)}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center justify-between gap-3 text-sm">
+                                                <span className="flex min-w-0 flex-wrap items-center gap-x-2 text-muted-foreground">
+                                                    <span
+                                                        className={
+                                                            serviceFee.waived
+                                                                ? 'line-through'
+                                                                : undefined
+                                                        }
+                                                    >
+                                                        {t(
+                                                            'tables.service_fee',
+                                                            {
+                                                                rate: serviceFeeRate(
+                                                                    serviceFee,
+                                                                ),
+                                                            },
+                                                        )}
+                                                    </span>
+                                                    {canWrite && (
+                                                        <button
+                                                            type="button"
+                                                            className="text-xs font-medium text-primary underline-offset-2 hover:underline disabled:opacity-50"
+                                                            disabled={
+                                                                togglingFee ||
+                                                                isDirty
+                                                            }
+                                                            onClick={() =>
+                                                                toggleServiceFee(
+                                                                    !serviceFee.waived,
+                                                                )
+                                                            }
+                                                        >
+                                                            {serviceFee.waived
+                                                                ? t(
+                                                                      'tables.service_fee_restore',
+                                                                  )
+                                                                : t(
+                                                                      'tables.service_fee_waive',
+                                                                  )}
+                                                        </button>
+                                                    )}
+                                                </span>
+                                                <span className="shrink-0 tabular-nums">
+                                                    {serviceFee.waived
+                                                        ? t(
+                                                              'tables.service_fee_waived',
+                                                          )
+                                                        : fmt(feeCents / 100)}
+                                                </span>
+                                            </div>
+                                        </>
+                                    )}
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-muted-foreground">
+                                            {t('tables.order_total')}
+                                        </span>
+                                        <span className="text-lg font-bold tabular-nums">
+                                            {currentLines.length > 0
+                                                ? fmt(totalCents / 100)
+                                                : '—'}
+                                        </span>
+                                    </div>
                                 </div>
 
                                 <Button

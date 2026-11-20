@@ -20,6 +20,7 @@ use App\Support\CustomerLink;
 use App\Support\Idempotency;
 use App\Support\Payments\CheckoutRefused;
 use App\Support\Payments\TableCheckout;
+use App\Support\ServiceFee;
 use App\Support\TableChat;
 use App\Support\TableMembership;
 use Illuminate\Http\Request;
@@ -81,7 +82,7 @@ class JoinController extends Controller
         $table = RestaurantTable::where('access_code', $code)
             ->whereNull('closed_at')
             ->whereNull('deleted_at')
-            ->first(['id', 'user_id', 'title', 'responsible_user_id']);
+            ->first(['id', 'user_id', 'title', 'responsible_user_id', ...ServiceFee::COLUMNS, 'service_fee_waived']);
 
         if (! $table) {
             Inertia::flash('toast', ['type' => 'error', 'message' => 'join_table.invalid_code']);
@@ -176,15 +177,23 @@ class JoinController extends Controller
                 'ordered_by' => $item->orderedBy !== null ? ($item->orderedBy->name ?? $item->orderedBy->email) : null,
             ]);
 
+        // The bill is the products plus the service fee, shown apart from them.
         $money = null;
         $totals = function () use ($table, &$money): array {
-            return $money ??= [
-                'total' => (float) DB::table('restaurant_table_product')
-                    ->where('restaurant_table_id', $table->id)
-                    ->sum(DB::raw('price * quantity')),
-                'paid' => (float) $table->payments()->sum('amount'),
-            ];
+            if ($money === null) {
+                $products = ServiceFee::productCents($table->id);
+                $fee = ServiceFee::forTable($table, $products);
+                $money = [
+                    'subtotal' => $products / 100,
+                    'serviceFee' => $fee / 100,
+                    'total' => ($products + $fee) / 100,
+                    'paid' => (float) $table->payments()->sum('amount'),
+                ];
+            }
+
+            return $money;
         };
+        $feeTerms = ServiceFee::terms($table);
 
         return Inertia::render('customer/show', [
             'code' => $code,
@@ -194,6 +203,10 @@ class JoinController extends Controller
             'menu' => $menu,
             'products' => $products,
             'preparing' => $preparing,
+            'subtotal' => fn () => $totals()['subtotal'],
+            'serviceFee' => fn () => $totals()['serviceFee'],
+            // How the fee is worked out ("10%"), when the table has one and it wasn't waived.
+            'serviceFeeTerms' => fn () => $feeTerms === null || $feeTerms['waived'] ? null : $feeTerms,
             'total' => fn () => $totals()['total'],
             'paid' => fn () => $totals()['paid'],
             'remaining' => fn () => max(0.0, $totals()['total'] - $totals()['paid']),

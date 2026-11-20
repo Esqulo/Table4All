@@ -159,7 +159,10 @@ export type RestaurantTable = {
     /** Up to five products, for the board thumbnails. */
     products: Pick<OrderItem, 'id' | 'name' | 'picture' | 'picture_url'>[];
     products_count: number;
+    /** The products delivered (snapshotted prices). */
     order_total: number;
+    /** The service fee on top of the products (0 when none or waived). */
+    service_fee: number;
     paid_total: number;
     /** The team member in charge, when the restaurant assigns waiters to tables. */
     waiter_id?: number | null;

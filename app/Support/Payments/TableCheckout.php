@@ -10,6 +10,7 @@ use App\Models\OnlinePayment;
 use App\Models\RestaurantTable;
 use App\Models\TablePayment;
 use App\Models\User;
+use App\Support\ServiceFee;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -499,11 +500,10 @@ final class TableCheckout
         }
     }
 
+    /** The products plus the service fee. */
     private function billCents(int $tableId): int
     {
-        return (int) round(100 * (float) DB::table('restaurant_table_product')
-            ->where('restaurant_table_id', $tableId)
-            ->sum(DB::raw('price * quantity')));
+        return ServiceFee::bill($tableId)['total'];
     }
 
     private function paidCents(int $tableId): int

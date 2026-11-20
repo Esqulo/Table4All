@@ -450,7 +450,14 @@
         "msg_released": "You left the table. It is free now.",
         "msg_assigned": "Table waiter updated.",
         "msg_unassigned": "The table has no waiter now.",
-        "error_already_taken": "Another waiter took this table first."
+        "error_already_taken": "Another waiter took this table first.",
+        "subtotal": "Products",
+        "service_fee": "Service fee ({{rate}})",
+        "service_fee_waive": "Remove",
+        "service_fee_restore": "Charge",
+        "service_fee_waived": "Removed",
+        "msg_service_fee_waived": "Service fee removed from this table.",
+        "msg_service_fee_restored": "Service fee charged again on this table."
     },
     "waiters": {
         "title": "Team",
@@ -622,7 +629,10 @@
         "call_waiting_bill": "Bill requested",
         "call_cancel": "Cancel call",
         "call_sent_waiter": "We called the waiter. Someone is on the way!",
-        "call_sent_bill": "We asked for the bill. Someone is on the way!"
+        "call_sent_bill": "We asked for the bill. Someone is on the way!",
+        "subtotal": "Products",
+        "service_fee": "Service fee ({{rate}})",
+        "service_fee_cap": "capped at {{cap}}"
     },
     "two_factor": {
         "title": "Two-factor authentication",
@@ -1089,7 +1099,22 @@
         "table_assignment_label": "A waiter in charge of each table",
         "table_assignment_hint": "Whoever opens a table is in charge of it. Waiters can take free tables and leave their own; you and the managers can change any table’s waiter.",
         "table_assignment_off_confirm": "Turn it off? Open tables will have no waiter in charge.",
-        "msg_service_saved": "Service settings saved."
+        "msg_service_saved": "Service settings saved.",
+        "service_fee_title": "Service fee",
+        "service_fee_description": "Charged on each table's bill, apart from the products.",
+        "service_fee_type_label": "How to charge",
+        "service_fee_none": "Don't charge",
+        "service_fee_percent": "Percentage",
+        "service_fee_fixed": "Fixed amount",
+        "service_fee_percent_label": "Percentage of the products",
+        "service_fee_cap_label": "Cap (optional)",
+        "service_fee_cap_placeholder": "No cap",
+        "service_fee_fixed_label": "Amount per table",
+        "service_fee_percent_hint": "Up to {{max}}%. With a cap, the fee never goes past it, however large the bill.",
+        "service_fee_example": "Example: on {{bill}} of products, the fee is {{fee}}.",
+        "service_fee_hint": "Applies to tables opened from now on; tables already open keep the fee they opened with. Staff can take the fee off a table if the customer asks.",
+        "service_fee_save": "Save service fee",
+        "msg_service_fee_saved": "Service fee saved."
     },
     "venue_profile": {
         "edit": "Edit profile",

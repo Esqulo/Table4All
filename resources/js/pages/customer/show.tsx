@@ -42,6 +42,8 @@ import { Input } from '@/components/ui/input';
 import { useLiveReload } from '@/hooks/use-live-reload';
 import { formatBRL } from '@/lib/money';
 import { newRequestKey } from '@/lib/request-key';
+import { serviceFeeRate } from '@/lib/service-fee';
+import type { ServiceFeeTerms } from '@/lib/service-fee';
 import { cn } from '@/lib/utils';
 
 type MenuItem = {
@@ -94,6 +96,13 @@ type Props = {
     menu: MenuItem[];
     products: OrderLine[];
     preparing: PreparingItem[];
+    /** The products delivered. */
+    subtotal: number;
+    /** The service fee on top of them (0 when none or waived). */
+    serviceFee: number;
+    /** How the fee is worked out, for its label; null when there is none. */
+    serviceFeeTerms: ServiceFeeTerms | null;
+    /** Products plus service fee: what the table owes. */
     total: number;
     paid: number;
     remaining: number;
@@ -133,6 +142,9 @@ export default function CustomerShow({
     menu,
     products,
     preparing,
+    subtotal,
+    serviceFee,
+    serviceFeeTerms,
     total,
     paid,
     remaining,
@@ -189,6 +201,9 @@ export default function CustomerShow({
         only: [
             'products',
             'preparing',
+            'subtotal',
+            'serviceFee',
+            'serviceFeeTerms',
             'total',
             'paid',
             'remaining',
@@ -287,7 +302,15 @@ export default function CustomerShow({
                             kitchen={kitchen}
                             onTheWay={onTheWay}
                             delivered={products}
-                            total={total}
+                            bill={
+                                <BillBreakdown
+                                    subtotal={subtotal}
+                                    serviceFee={serviceFee}
+                                    terms={serviceFeeTerms}
+                                    total={total}
+                                    fmt={fmt}
+                                />
+                            }
                             fmt={fmt}
                             onOpenMenu={() => setMenuOpen(true)}
                         />
@@ -295,6 +318,17 @@ export default function CustomerShow({
 
                     {tab === 'bill' && (
                         <>
+                            {total > 0 && (
+                                <div className="overflow-hidden rounded-xl border border-border bg-card">
+                                    <BillBreakdown
+                                        subtotal={subtotal}
+                                        serviceFee={serviceFee}
+                                        terms={serviceFeeTerms}
+                                        total={total}
+                                        fmt={fmt}
+                                    />
+                                </div>
+                            )}
                             <PayPanel
                                 code={code}
                                 remaining={remaining}
@@ -479,6 +513,63 @@ function TableHeader({
     );
 }
 
+/**
+ * The bill: the products, the service fee on its own line (with how it is
+ * worked out) and the total. Without a fee, just the total.
+ */
+function BillBreakdown({
+    subtotal,
+    serviceFee,
+    terms,
+    total,
+    fmt,
+}: {
+    subtotal: number;
+    serviceFee: number;
+    terms: ServiceFeeTerms | null;
+    total: number;
+    fmt: (n: number) => string;
+}) {
+    const { t, i18n } = useTranslation();
+    const locale = i18n.language === 'pt_BR' ? 'pt-BR' : 'en-US';
+
+    return (
+        <div className="space-y-1.5 px-4 py-3">
+            {terms && (
+                <>
+                    <div className="flex items-baseline justify-between text-sm text-muted-foreground">
+                        <span>{t('join_table.subtotal')}</span>
+                        <span className="tabular-nums">{fmt(subtotal)}</span>
+                    </div>
+                    <div className="flex items-baseline justify-between gap-3 text-sm text-muted-foreground">
+                        <span>
+                            {t('join_table.service_fee', {
+                                rate: serviceFeeRate(terms, locale),
+                            })}
+                            {terms.type === 'percent' && terms.cap !== null && (
+                                <span className="block text-xs">
+                                    {t('join_table.service_fee_cap', {
+                                        cap: fmt(terms.cap),
+                                    })}
+                                </span>
+                            )}
+                        </span>
+                        <span className="shrink-0 tabular-nums">
+                            {fmt(serviceFee)}
+                        </span>
+                    </div>
+                </>
+            )}
+            <div className="flex items-baseline justify-between">
+                <span className="text-sm font-semibold">
+                    {t('join_table.table_total')}
+                </span>
+                <span className="font-bold tabular-nums">{fmt(total)}</span>
+            </div>
+        </div>
+    );
+}
+
 type ListLine = {
     name: string;
     quantity: number;
@@ -492,14 +583,15 @@ function OrdersTab({
     kitchen,
     onTheWay,
     delivered,
-    total,
+    bill,
     fmt,
     onOpenMenu,
 }: {
     kitchen: PreparingItem[];
     onTheWay: PreparingItem[];
     delivered: OrderLine[];
-    total: number;
+    /** The bill under the delivered items: products, service fee and total. */
+    bill: React.ReactNode;
     fmt: (n: number) => string;
     onOpenMenu: () => void;
 }) {
@@ -558,14 +650,7 @@ function OrdersTab({
                     lines={delivered}
                     fmt={fmt}
                     footer={
-                        <div className="flex items-baseline justify-between border-t border-border px-4 py-3">
-                            <span className="text-sm font-semibold">
-                                {t('join_table.table_total')}
-                            </span>
-                            <span className="font-bold tabular-nums">
-                                {fmt(total)}
-                            </span>
-                        </div>
+                        <div className="border-t border-border">{bill}</div>
                     }
                 />
             )}

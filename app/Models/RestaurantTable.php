@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\ServiceFee;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -17,6 +18,10 @@ use Illuminate\Support\Carbon;
  * @property int $user_id
  * @property int|null $responsible_user_id
  * @property int|null $waiter_id the team member in charge (App\Support\TableAssignment)
+ * @property string|null $service_fee_type the service fee terms copied from the restaurant (App\Support\ServiceFee)
+ * @property string|null $service_fee_value
+ * @property string|null $service_fee_cap
+ * @property bool $service_fee_waived
  * @property string $title
  * @property string|null $access_code
  * @property Carbon|string|null $closed_at
@@ -35,6 +40,26 @@ final class RestaurantTable extends Model
         'title',
         'access_code',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'service_fee_waived' => 'boolean',
+        ];
+    }
+
+    /**
+     * A table opens under the restaurant's current service fee: later changes to the
+     * setting don't touch a bill already running (ServiceFee).
+     */
+    protected static function booted(): void
+    {
+        self::creating(function (RestaurantTable $table): void {
+            if (! array_key_exists('service_fee_type', $table->getAttributes())) {
+                $table->forceFill(ServiceFee::snapshot($table->user_id));
+            }
+        });
+    }
 
     /**
      * Customers join by code alone (no restaurant in the URL), so a code must be

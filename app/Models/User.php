@@ -41,6 +41,9 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property int|null $price_level
  * @property int|null $table_capacity
  * @property bool $table_assignment_enabled
+ * @property string|null $service_fee_type 'fixed' or 'percent' (App\Support\ServiceFee), null for none
+ * @property string|null $service_fee_value
+ * @property string|null $service_fee_cap
  * @property float|null $latitude
  * @property float|null $longitude
  * @property AccountType $account_type

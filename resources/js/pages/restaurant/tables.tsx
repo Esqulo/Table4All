@@ -178,10 +178,14 @@ function TableCard({
     const canWrite = useCanWrite('tables');
     const [qrOpen, setQrOpen] = useState(false);
 
-    // Computed server-side from the prices snapshotted at order time.
-    const total = table.order_total;
+    // Computed server-side from the prices snapshotted at order time, plus the
+    // service fee. Summed in cents so a paid table never shows a leftover cent.
+    const totalCents =
+        Math.round(table.order_total * 100) +
+        Math.round(table.service_fee * 100);
+    const total = totalCents / 100;
     const paid = table.paid_total;
-    const remaining = total - paid;
+    const remaining = (totalCents - Math.round(paid * 100)) / 100;
 
     return (
         <>

@@ -36,6 +36,8 @@ import { Switch } from '@/components/ui/switch';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useCanWrite } from '@/hooks/use-permission';
 import { croppedFile, imageSourceUrl } from '@/lib/image-upload';
+import { formatBRL } from '@/lib/money';
+import { serviceFeeCents } from '@/lib/service-fee';
 import type { OpeningHourInterval, PriceLevel, VenuePhoto } from '@/types';
 
 type Props = {
@@ -55,6 +57,9 @@ type Props = {
     addressLocated: boolean;
     /** Each table has a waiter in charge (taken, released, assigned). */
     tableAssignmentEnabled: boolean;
+    /** The service fee on the bills: none (type null), fixed per table or a percentage. */
+    serviceFee: ServiceFeeSettings;
+    serviceFeeMaxPercent: number;
     hours: OpeningHourInterval[];
     photos: VenuePhoto[];
     maxPhotos: number;
@@ -87,6 +92,8 @@ export default function Establishment({
     tableCapacity,
     addressLocated,
     tableAssignmentEnabled,
+    serviceFee,
+    serviceFeeMaxPercent,
     hours,
     photos,
     maxPhotos,
@@ -133,6 +140,10 @@ export default function Establishment({
                     <LogoSection logoUrl={logoUrl} />
                     <ServiceSection
                         tableAssignmentEnabled={tableAssignmentEnabled}
+                    />
+                    <ServiceFeeSection
+                        initial={serviceFee}
+                        maxPercent={serviceFeeMaxPercent}
                     />
                     <HoursSection initial={hours} />
                     <PhotosSection photos={photos} maxPhotos={maxPhotos} />
@@ -806,6 +817,267 @@ function ServiceSection({
                     className="mt-0.5"
                 />
             </label>
+        </Section>
+    );
+}
+
+// ─── Service fee ──────────────────────────────────────────────────────────────
+
+type ServiceFeeType = 'percent' | 'fixed';
+
+type ServiceFeeSettings = {
+    type: ServiceFeeType | null;
+    value: number | null;
+    cap: number | null;
+};
+
+/** The bill used for the example under the form: R$ 100,00 of products. */
+const EXAMPLE_BILL_CENTS = 10_000;
+
+/** Typing money as digits that fill the cents (like the payment dialogs). */
+function centsFromInput(value: string): number {
+    const digits = value.replace(/\D/g, '');
+
+    return digits === '' ? 0 : Math.min(parseInt(digits, 10), 999_999);
+}
+
+function centsLabel(cents: number): string {
+    return cents > 0
+        ? (cents / 100).toLocaleString('pt-BR', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+          })
+        : '';
+}
+
+/**
+ * The service fee ("taxa de serviço") added to the bills: a fixed amount per
+ * table, or a percentage of the products with an optional cap. Tables keep the
+ * terms they opened under, so a change applies to the next tables.
+ */
+function ServiceFeeSection({
+    initial,
+    maxPercent,
+}: {
+    initial: ServiceFeeSettings;
+    maxPercent: number;
+}) {
+    const { t } = useTranslation();
+    const toCents = (n: number | null) =>
+        n === null ? 0 : Math.round(n * 100);
+    const [type, setType] = useState<ServiceFeeType | null>(initial.type);
+    const [percent, setPercent] = useState(
+        initial.type === 'percent' && initial.value !== null
+            ? String(initial.value)
+            : '',
+    );
+    const [fixedCents, setFixedCents] = useState(
+        initial.type === 'fixed' ? toCents(initial.value) : 0,
+    );
+    const [capCents, setCapCents] = useState(toCents(initial.cap));
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [processing, setProcessing] = useState(false);
+
+    const percentValue = Number(percent.replace(',', '.'));
+    const value =
+        type === 'percent'
+            ? Number.isFinite(percentValue) && percentValue > 0
+                ? Math.round(percentValue * 100) / 100
+                : null
+            : type === 'fixed'
+              ? fixedCents > 0
+                  ? fixedCents / 100
+                  : null
+              : null;
+    const cap = type === 'percent' && capCents > 0 ? capCents / 100 : null;
+
+    const dirty =
+        type !== initial.type ||
+        (type !== null && value !== initial.value) ||
+        (type === 'percent' && cap !== initial.cap);
+
+    const example =
+        type !== null && value !== null
+            ? serviceFeeCents(
+                  { type, value, cap, waived: false },
+                  EXAMPLE_BILL_CENTS,
+              )
+            : 0;
+
+    const save = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        router.put(
+            EstablishmentController.updateServiceFee.url(),
+            {
+                service_fee_type: type,
+                service_fee_value: type === null ? null : value,
+                service_fee_cap: cap,
+            },
+            {
+                preserveScroll: true,
+                onStart: () => {
+                    setProcessing(true);
+                    setErrors({});
+                },
+                onError: setErrors,
+                onFinish: () => setProcessing(false),
+            },
+        );
+    };
+
+    return (
+        <Section
+            title={t('establishment.service_fee_title')}
+            description={t('establishment.service_fee_description')}
+        >
+            <form onSubmit={save} className="space-y-5">
+                <div className="space-y-2">
+                    <Label id="service_fee_type_label">
+                        {t('establishment.service_fee_type_label')}
+                    </Label>
+                    <ToggleGroup
+                        type="single"
+                        variant="outline"
+                        aria-labelledby="service_fee_type_label"
+                        value={type ?? 'none'}
+                        onValueChange={(v) => {
+                            // Radix sends '' when the chosen item is tapped again: keep it.
+                            if (v !== '') {
+                                setType(
+                                    v === 'none' ? null : (v as ServiceFeeType),
+                                );
+                            }
+                        }}
+                        className="w-fit"
+                    >
+                        <ToggleGroupItem value="none" className="px-3">
+                            {t('establishment.service_fee_none')}
+                        </ToggleGroupItem>
+                        <ToggleGroupItem value="percent" className="px-3">
+                            {t('establishment.service_fee_percent')}
+                        </ToggleGroupItem>
+                        <ToggleGroupItem value="fixed" className="px-3">
+                            {t('establishment.service_fee_fixed')}
+                        </ToggleGroupItem>
+                    </ToggleGroup>
+                    <InputError message={errors.service_fee_type} />
+                </div>
+
+                {type === 'percent' && (
+                    <div className="flex flex-wrap gap-5">
+                        <div className="space-y-2">
+                            <Label htmlFor="service_fee_percent">
+                                {t('establishment.service_fee_percent_label')}
+                            </Label>
+                            <div className="relative w-32">
+                                <Input
+                                    id="service_fee_percent"
+                                    type="text"
+                                    inputMode="decimal"
+                                    value={percent}
+                                    onChange={(e) =>
+                                        setPercent(
+                                            e.target.value.replace(
+                                                /[^\d.,]/g,
+                                                '',
+                                            ),
+                                        )
+                                    }
+                                    placeholder="10"
+                                    autoComplete="off"
+                                    className="pr-8"
+                                    aria-invalid={!!errors.service_fee_value}
+                                />
+                                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-muted-foreground">
+                                    %
+                                </span>
+                            </div>
+                            <InputError message={errors.service_fee_value} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="service_fee_cap">
+                                {t('establishment.service_fee_cap_label')}
+                            </Label>
+                            <div className="relative w-40">
+                                <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-muted-foreground">
+                                    R$
+                                </span>
+                                <Input
+                                    id="service_fee_cap"
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={centsLabel(capCents)}
+                                    onChange={(e) =>
+                                        setCapCents(
+                                            centsFromInput(e.target.value),
+                                        )
+                                    }
+                                    placeholder={t(
+                                        'establishment.service_fee_cap_placeholder',
+                                    )}
+                                    autoComplete="off"
+                                    className="pl-9"
+                                    aria-invalid={!!errors.service_fee_cap}
+                                />
+                            </div>
+                            <InputError message={errors.service_fee_cap} />
+                        </div>
+                    </div>
+                )}
+
+                {type === 'fixed' && (
+                    <div className="space-y-2">
+                        <Label htmlFor="service_fee_fixed">
+                            {t('establishment.service_fee_fixed_label')}
+                        </Label>
+                        <div className="relative w-40">
+                            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-muted-foreground">
+                                R$
+                            </span>
+                            <Input
+                                id="service_fee_fixed"
+                                type="text"
+                                inputMode="numeric"
+                                value={centsLabel(fixedCents)}
+                                onChange={(e) =>
+                                    setFixedCents(
+                                        centsFromInput(e.target.value),
+                                    )
+                                }
+                                placeholder="0,00"
+                                autoComplete="off"
+                                className="pl-9"
+                                aria-invalid={!!errors.service_fee_value}
+                            />
+                        </div>
+                        <InputError message={errors.service_fee_value} />
+                    </div>
+                )}
+
+                <div className="max-w-xl space-y-1 text-sm text-muted-foreground">
+                    {type === 'percent' && (
+                        <p>
+                            {t('establishment.service_fee_percent_hint', {
+                                max: maxPercent,
+                            })}
+                        </p>
+                    )}
+                    {type !== null && example > 0 && (
+                        <p className="font-medium text-foreground">
+                            {t('establishment.service_fee_example', {
+                                bill: formatBRL(EXAMPLE_BILL_CENTS / 100),
+                                fee: formatBRL(example / 100),
+                            })}
+                        </p>
+                    )}
+                    <p>{t('establishment.service_fee_hint')}</p>
+                </div>
+
+                <Button type="submit" disabled={!dirty || processing}>
+                    {t('establishment.service_fee_save')}
+                </Button>
+            </form>
         </Section>
     );
 }

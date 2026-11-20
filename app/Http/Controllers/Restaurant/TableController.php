@@ -14,6 +14,7 @@ use App\Models\TableCall;
 use App\Models\User;
 use App\Support\CustomerLink;
 use App\Support\Idempotency;
+use App\Support\ServiceFee;
 use App\Support\TableAssignment;
 use Closure;
 use Illuminate\Http\RedirectResponse;
@@ -53,8 +54,11 @@ class TableController extends Controller
             ->orderBy('title')
             ->get()
             ->each(function (RestaurantTable $table): void {
-                $table->setAttribute('order_total', (float) $table->getAttribute('order_total'));
+                $orderTotal = (float) $table->getAttribute('order_total');
+                $table->setAttribute('order_total', $orderTotal);
                 $table->setAttribute('paid_total', (float) ($table->getAttribute('paid_total') ?? 0));
+                // On top of the products: the board's balance includes it.
+                $table->setAttribute('service_fee', ServiceFee::forTable($table, (int) round($orderTotal * 100)) / 100);
             });
 
         return Inertia::render('restaurant/tables', [
@@ -168,6 +172,8 @@ class TableController extends Controller
             'queueItems' => $queueItems,
             // Lets the client prove which version of the order it edited (see syncOrder).
             'orderVersion' => $this->orderVersion($table->id),
+            // The fee is worked out in the browser too, on the order being edited.
+            'serviceFee' => fn () => ServiceFee::terms($table),
             // Only a table nothing was ordered or paid at can be deleted (destroy()).
             'deletable' => fn () => ! self::hasConsumption($table->id),
             'assignment' => fn () => $this->assignmentFor($request->user(), $table),
@@ -341,14 +347,11 @@ class TableController extends Controller
                 return true;
             }
 
-            $productTotal = (float) DB::table('restaurant_table_product')
-                ->where('restaurant_table_id', $locked->id)
-                ->sum(DB::raw('price * quantity'));
-
             $paymentTotal = (float) $locked->payments()->sum('amount');
 
             // In cents: floating-point sums (e.g. 3 x 0.10) must not block a paid table.
-            if ((int) round($paymentTotal * 100) < (int) round($productTotal * 100)) {
+            // The bill is the products plus the service fee.
+            if ((int) round($paymentTotal * 100) < ServiceFee::bill($locked->id)['total']) {
                 return false;
             }
 
@@ -377,6 +380,39 @@ class TableController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => 'tables.msg_closed']);
 
         return to_route('restaurant.tables.index');
+    }
+
+    /**
+     * Takes the service fee off the table's bill, or puts it back: in Brazil the customer
+     * may decline it. An online payment held meanwhile is refunded what it overpays
+     * (TableCheckout::markPaid credits only what the bill still owes).
+     */
+    public function waiveServiceFee(Request $request, RestaurantTable $table): RedirectResponse
+    {
+        abort_unless($table->user_id === $request->user()->effectiveRestaurantId(), 403);
+        abort_if($table->closed_at !== null, 422, __('tables.error_already_closed'));
+        abort_if(ServiceFee::terms($table) === null, 404);
+
+        /** @var array{waived: bool} $data */
+        $data = $request->validate([
+            'waived' => ['required', 'boolean'],
+        ]);
+
+        // Locked like every change to the bill, so closing or a payment sees one fee or the other.
+        DB::transaction(function () use ($table, $data): void {
+            RestaurantTable::whereKey($table->id)->lockForUpdate()->first(['id']);
+
+            RestaurantTable::whereKey($table->id)
+                ->whereNull('closed_at')
+                ->update(['service_fee_waived' => $data['waived']]);
+        });
+
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => $data['waived'] ? 'tables.msg_service_fee_waived' : 'tables.msg_service_fee_restored',
+        ]);
+
+        return to_route('restaurant.tables.show', $table);
     }
 
     public function destroy(Request $request, RestaurantTable $table): RedirectResponse

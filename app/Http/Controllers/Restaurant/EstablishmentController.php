@@ -9,6 +9,7 @@ use App\Models\RestaurantPhoto;
 use App\Models\User;
 use App\Support\ImageOptimizer;
 use App\Support\RestaurantHandle;
+use App\Support\ServiceFee;
 use App\Support\TableAssignment;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
@@ -57,6 +58,8 @@ class EstablishmentController extends Controller
             // Whether the address was found on the map ("closest first" on the discovery page).
             'addressLocated' => $restaurant->latitude !== null,
             'tableAssignmentEnabled' => TableAssignment::enabled($restaurant->id),
+            'serviceFee' => ServiceFee::settings($restaurant),
+            'serviceFeeMaxPercent' => ServiceFee::MAX_PERCENT,
             'profileBaseUrl' => url('vempro'),
             'hours' => RestaurantOpeningHour::where('user_id', $restaurantId)
                 ->orderBy('weekday')
@@ -146,6 +149,43 @@ class EstablishmentController extends Controller
         }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'establishment.msg_service_saved']);
+
+        return back();
+    }
+
+    /**
+     * The service fee on the bills: none, a fixed amount per table, or a percentage of the
+     * products with an optional cap. Applies to the tables opened from now on (ServiceFee).
+     */
+    public function updateServiceFee(Request $request): RedirectResponse
+    {
+        /** @var array{service_fee_type: string|null, service_fee_value?: float|int|string|null, service_fee_cap?: float|int|string|null} $data */
+        $data = $request->validate([
+            'service_fee_type' => ['present', 'nullable', Rule::in(ServiceFee::TYPES)],
+            'service_fee_value' => [
+                'nullable',
+                'required_with:service_fee_type',
+                'numeric',
+                'gt:0',
+                $request->input('service_fee_type') === ServiceFee::PERCENT
+                    ? 'max:'.ServiceFee::MAX_PERCENT
+                    : 'max:'.ServiceFee::MAX_AMOUNT,
+            ],
+            'service_fee_cap' => ['nullable', 'numeric', 'gt:0', 'max:'.ServiceFee::MAX_AMOUNT],
+        ]);
+
+        $type = $data['service_fee_type'];
+
+        $request->user()->forceFill([
+            'service_fee_type' => $type,
+            'service_fee_value' => $type === null ? null : round((float) ($data['service_fee_value'] ?? 0), 2),
+            // A cap only limits a percentage: a fixed fee is already the amount charged.
+            'service_fee_cap' => $type === ServiceFee::PERCENT && isset($data['service_fee_cap'])
+                ? round((float) $data['service_fee_cap'], 2)
+                : null,
+        ])->save();
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'establishment.msg_service_fee_saved']);
 
         return back();
     }

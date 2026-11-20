@@ -450,7 +450,14 @@
         "msg_released": "Você saiu da mesa. Ela está livre.",
         "msg_assigned": "Garçom da mesa atualizado.",
         "msg_unassigned": "A mesa ficou sem garçom.",
-        "error_already_taken": "Outro garçom assumiu esta mesa primeiro."
+        "error_already_taken": "Outro garçom assumiu esta mesa primeiro.",
+        "subtotal": "Produtos",
+        "service_fee": "Taxa de serviço ({{rate}})",
+        "service_fee_waive": "Retirar",
+        "service_fee_restore": "Cobrar",
+        "service_fee_waived": "Retirada",
+        "msg_service_fee_waived": "Taxa de serviço retirada desta mesa.",
+        "msg_service_fee_restored": "Taxa de serviço cobrada de novo nesta mesa."
     },
     "waiters": {
         "title": "Equipe",
@@ -622,7 +629,10 @@
         "call_waiting_bill": "Conta pedida",
         "call_cancel": "Cancelar chamada",
         "call_sent_waiter": "Chamamos o garçom. Já vem alguém!",
-        "call_sent_bill": "Pedimos a conta. Já vem alguém!"
+        "call_sent_bill": "Pedimos a conta. Já vem alguém!",
+        "subtotal": "Produtos",
+        "service_fee": "Taxa de serviço ({{rate}})",
+        "service_fee_cap": "limitada a {{cap}}"
     },
     "two_factor": {
         "title": "Autenticação de dois fatores",
@@ -1089,7 +1099,22 @@
         "table_assignment_label": "Garçom responsável por mesa",
         "table_assignment_hint": "Quem abre a mesa fica responsável por ela. Garçons podem assumir mesas livres e sair das suas; você e os gerentes podem trocar o garçom de qualquer mesa.",
         "table_assignment_off_confirm": "Desligar? As mesas abertas ficam sem garçom responsável.",
-        "msg_service_saved": "Configurações de atendimento salvas."
+        "msg_service_saved": "Configurações de atendimento salvas.",
+        "service_fee_title": "Taxa de serviço",
+        "service_fee_description": "Cobrada na conta de cada mesa, separada do valor dos produtos.",
+        "service_fee_type_label": "Como cobrar",
+        "service_fee_none": "Não cobrar",
+        "service_fee_percent": "Porcentagem",
+        "service_fee_fixed": "Valor fixo",
+        "service_fee_percent_label": "Porcentagem dos produtos",
+        "service_fee_cap_label": "Valor limite (opcional)",
+        "service_fee_cap_placeholder": "Sem limite",
+        "service_fee_fixed_label": "Valor por mesa",
+        "service_fee_percent_hint": "Até {{max}}%. Com um valor limite, a taxa nunca passa dele, por maior que seja a conta.",
+        "service_fee_example": "Exemplo: numa conta de {{bill}} em produtos, a taxa é {{fee}}.",
+        "service_fee_hint": "Vale para as mesas abertas a partir de agora; as que já estão abertas continuam com a taxa com que abriram. A equipe pode retirar a taxa de uma mesa se o cliente pedir.",
+        "service_fee_save": "Salvar taxa de serviço",
+        "msg_service_fee_saved": "Taxa de serviço salva."
     },
     "venue_profile": {
         "edit": "Editar perfil",
