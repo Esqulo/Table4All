@@ -47,6 +47,8 @@ class CouponRequest extends FormRequest
             'discount_value' => ['required', 'numeric', 'gt:0', $isPercent ? 'max:100' : 'max:99999.99'],
             'max_discount' => ['nullable', 'numeric', 'gt:0', 'max:99999.99'],
             'expires_on' => ['nullable', 'date_format:Y-m-d'],
+            // Total uses across every table and customer; empty for unlimited.
+            'max_uses' => ['nullable', 'integer', 'min:1', 'max:1000000'],
             'multiple_per_table' => ['boolean'],
         ];
     }

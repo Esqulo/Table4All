@@ -43,7 +43,9 @@ trait ManagesCoupons
                 'expires_on' => $coupon->expires_at?->setTimezone($timezone)->format('Y-m-d'),
                 'expired' => $coupon->isExpired(),
                 'multiple_per_table' => $coupon->multiple_per_table,
+                'max_uses' => $coupon->max_uses,
                 'uses' => (int) $coupon->getAttribute('uses'),
+                'exhausted' => $coupon->max_uses !== null && (int) $coupon->getAttribute('uses') >= $coupon->max_uses,
             ]);
 
         return Inertia::render($this->couponPage(), [
@@ -108,6 +110,7 @@ trait ManagesCoupons
             'expires_at' => is_string($expiresOn)
                 ? Carbon::createFromFormat('Y-m-d', $expiresOn, (string) config('app.business_timezone'))?->endOfDay()->utc()
                 : null,
+            'max_uses' => isset($data['max_uses']) ? (int) $data['max_uses'] : null,
             'multiple_per_table' => (bool) $data['multiple_per_table'],
         ];
     }

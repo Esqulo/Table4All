@@ -2,7 +2,9 @@
 
 namespace Tests\Feature\Restaurant;
 
+use App\Enums\OnlinePaymentStatus;
 use App\Models\Coupon;
+use App\Models\OnlinePayment;
 use App\Support\Payments\PaymentGateway;
 use App\Support\Payments\StripePaymentGateway;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -221,6 +223,54 @@ class PaymentSettingsTest extends TestCase
 
         $this->actingAs($restaurant)->get(route('restaurant.coupons.index'))
             ->assertInertia(fn (Assert $page) => $page->component('restaurant/coupons')->has('coupons', 0));
+    }
+
+    public function test_a_coupon_can_be_limited_to_a_number_of_uses(): void
+    {
+        $restaurant = $this->restaurant();
+
+        $this->actingAs($restaurant)->post(route('restaurant.coupons.store'), $this->couponForm(['max_uses' => '2']))
+            ->assertSessionHasNoErrors();
+        $coupon = Coupon::sole();
+        $this->assertSame(2, $coupon->max_uses);
+
+        // Empty means unlimited again.
+        $this->actingAs($restaurant)->put(route('restaurant.coupons.update', $coupon), $this->couponForm(['max_uses' => '']))
+            ->assertSessionHasNoErrors();
+        $this->assertNull($coupon->refresh()->max_uses);
+
+        foreach (['0', '-1', '1.5', 'dois'] as $invalid) {
+            $this->actingAs($restaurant)->put(route('restaurant.coupons.update', $coupon), $this->couponForm(['max_uses' => $invalid]))
+                ->assertSessionHasErrors('max_uses');
+        }
+        $this->assertNull($coupon->refresh()->max_uses);
+    }
+
+    public function test_the_coupons_page_shows_uses_against_the_limit(): void
+    {
+        $restaurant = $this->restaurant();
+        $coupon = Coupon::create(['user_id' => $restaurant->id, 'code' => 'UMA', 'discount_type' => 'percent', 'discount_value' => 5, 'max_uses' => 1]);
+        OnlinePayment::create([
+            'restaurant_table_id' => $this->closedTable($restaurant)->id,
+            'restaurant_id' => $restaurant->id,
+            'stripe_account_id' => 'acct_x',
+            'status' => OnlinePaymentStatus::PAID,
+            'amount_cents' => 1000,
+            'discount_cents' => 50,
+            'charge_cents' => 950,
+            'coupon_id' => $coupon->id,
+            'fee_tier' => 'standard',
+            'fee_rate_bps' => 0,
+            'fee_cents' => 0,
+            'application_fee_cents' => 0,
+        ]);
+
+        $this->actingAs($restaurant)->get(route('restaurant.coupons.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('coupons.0.max_uses', 1)
+                ->where('coupons.0.uses', 1)
+                ->where('coupons.0.exhausted', true)
+            );
     }
 
     // ─── Admin ────────────────────────────────────────────────────────────────

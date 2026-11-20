@@ -23,6 +23,7 @@ use Illuminate\Support\Str;
  * @property float $discount_value
  * @property float|null $max_discount
  * @property Carbon|null $expires_at
+ * @property int|null $max_uses
  * @property bool $multiple_per_table
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -39,6 +40,7 @@ final class Coupon extends Model
         'discount_value',
         'max_discount',
         'expires_at',
+        'max_uses',
         'multiple_per_table',
     ];
 
@@ -49,6 +51,7 @@ final class Coupon extends Model
             'discount_value' => 'float',
             'max_discount' => 'float',
             'expires_at' => 'datetime',
+            'max_uses' => 'integer',
             'multiple_per_table' => 'boolean',
         ];
     }

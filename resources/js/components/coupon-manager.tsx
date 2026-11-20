@@ -36,7 +36,10 @@ export type CouponRow = {
     expires_on: string | null;
     expired: boolean;
     multiple_per_table: boolean;
+    /** Total uses allowed; null for unlimited. */
+    max_uses: number | null;
     uses: number;
+    exhausted: boolean;
 };
 
 /** The restaurant and admin coupon controllers have the same actions. */
@@ -150,6 +153,11 @@ function CouponItem({
                             {t('coupons.expired')}
                         </Badge>
                     )}
+                    {coupon.exhausted && (
+                        <Badge variant="outline" className="text-destructive">
+                            {t('coupons.exhausted')}
+                        </Badge>
+                    )}
                     <Badge variant="secondary">
                         {coupon.multiple_per_table
                             ? t('coupons.multiple_badge')
@@ -167,7 +175,12 @@ function CouponItem({
                           })
                         : t('coupons.no_expiry')}
                     {' · '}
-                    {t('coupons.uses', { count: coupon.uses })}
+                    {coupon.max_uses !== null
+                        ? t('coupons.uses_of', {
+                              count: coupon.uses,
+                              max: coupon.max_uses,
+                          })
+                        : t('coupons.uses', { count: coupon.uses })}
                 </p>
             </div>
             <div className="flex gap-1">
@@ -348,6 +361,26 @@ function CouponDialog({
                                     {t('coupons.expires_on_hint')}
                                 </p>
                                 <InputError message={errors.expires_on} />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="max_uses">
+                                    {t('coupons.max_uses')}
+                                </Label>
+                                <Input
+                                    id="max_uses"
+                                    name="max_uses"
+                                    type="number"
+                                    inputMode="numeric"
+                                    step="1"
+                                    min="1"
+                                    defaultValue={coupon?.max_uses ?? ''}
+                                    placeholder={t('coupons.unlimited')}
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    {t('coupons.max_uses_hint')}
+                                </p>
+                                <InputError message={errors.max_uses} />
                             </div>
 
                             <label className="flex items-start gap-3 rounded-lg border border-border p-3">

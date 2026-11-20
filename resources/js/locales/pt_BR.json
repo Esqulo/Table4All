@@ -1269,7 +1269,13 @@
         "save": "Salvar",
         "msg_created": "Cupom criado.",
         "msg_updated": "Cupom atualizado.",
-        "msg_deleted": "Cupom excluído."
+        "msg_deleted": "Cupom excluído.",
+        "max_uses": "Limite de usos",
+        "max_uses_hint": "Quantas vezes o cupom pode ser usado no total, somando todas as mesas e clientes. Deixe vazio para não limitar.",
+        "unlimited": "Ilimitado",
+        "uses_of_one": "{{count}} de {{max}} uso",
+        "uses_of_other": "{{count}} de {{max}} usos",
+        "exhausted": "Esgotado"
     },
     "finance": {
         "title": "Financeiro",

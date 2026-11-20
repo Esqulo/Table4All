@@ -1269,7 +1269,13 @@
         "save": "Save",
         "msg_created": "Coupon created.",
         "msg_updated": "Coupon updated.",
-        "msg_deleted": "Coupon deleted."
+        "msg_deleted": "Coupon deleted.",
+        "max_uses": "Usage limit",
+        "max_uses_hint": "How many times the coupon can be used in total, across every table and customer. Leave empty for no limit.",
+        "unlimited": "Unlimited",
+        "uses_of_one": "{{count}} of {{max}} use",
+        "uses_of_other": "{{count}} of {{max}} uses",
+        "exhausted": "Used up"
     },
     "finance": {
         "title": "Finance",

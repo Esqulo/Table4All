@@ -171,6 +171,7 @@ return [
         'discount_value' => 'valor do desconto',
         'max_discount' => 'desconto máximo',
         'expires_on' => 'validade',
+        'max_uses' => 'limite de usos',
         'fee_tier' => 'tier',
         'password' => 'senha',
         'password_confirmation' => 'confirmação de senha',

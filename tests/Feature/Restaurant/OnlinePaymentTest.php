@@ -800,4 +800,85 @@ class OnlinePaymentTest extends TestCase
             ])
             ->assertJsonPath('props.couponQuote.valid', false);
     }
+
+    // ─── Coupon usage limit ───────────────────────────────────────────────────
+
+    /** Another table at the same restaurant, with its own customer; returns [code, customer]. */
+    private function anotherTable(): array
+    {
+        $table = $this->openTable($this->restaurant, ['title' => 'Mesa 2']);
+        $this->billLine($table, $this->product($this->restaurant), 5, 10.00);
+        $customer = $this->customer();
+        $this->actingAs($customer)->get(route('customer.table', (string) $table->access_code))->assertOk();
+
+        return [(string) $table->access_code, $customer];
+    }
+
+    /** @param  array<string, mixed>  $data */
+    private function payAt(string $code, User $user, float $amount, array $data = []): TestResponse
+    {
+        return $this->actingAs($user)->post(route('customer.payments.store', $code), ['amount' => $amount, ...$data]);
+    }
+
+    public function test_a_coupon_limited_to_two_uses_is_refused_the_third_time_anywhere(): void
+    {
+        $this->coupon($this->restaurant, ['code' => 'DUAS', 'multiple_per_table' => true, 'max_uses' => 2]);
+
+        $this->pay($this->owner, 20, ['coupon' => 'DUAS'])->assertSessionHasNoErrors();
+        $this->completeOnStripe($this->owner);
+        $this->pay($this->member, 10, ['coupon' => 'DUAS'])->assertSessionHasNoErrors();
+        $this->completeOnStripe($this->member);
+
+        [$code, $other] = $this->anotherTable();
+        $this->payAt($code, $other, 20, ['coupon' => 'DUAS'])
+            ->assertSessionHasErrors(['coupon' => __('payments.coupon_exhausted')]);
+        // Without the coupon they still pay.
+        $this->payAt($code, $other, 20)->assertSessionHasNoErrors()->assertRedirect();
+    }
+
+    public function test_an_open_checkout_holds_one_of_the_coupons_uses(): void
+    {
+        $this->coupon($this->restaurant, ['code' => 'UMA', 'multiple_per_table' => true, 'max_uses' => 1]);
+        [$code, $other] = $this->anotherTable();
+
+        $this->pay($this->owner, 20, ['coupon' => 'UMA'])->assertSessionHasNoErrors();
+        $this->payAt($code, $other, 20, ['coupon' => 'UMA'])->assertSessionHasErrors('coupon');
+
+        // Dropping the checkout frees the use.
+        $this->actingAs($this->owner)->post(route('customer.payments.cancel', $this->lastPayment()));
+        $this->payAt($code, $other, 20, ['coupon' => 'UMA'])->assertSessionHasNoErrors()->assertRedirect();
+    }
+
+    public function test_restarting_your_own_checkout_does_not_spend_another_use(): void
+    {
+        $this->coupon($this->restaurant, ['code' => 'UMA', 'max_uses' => 1]);
+
+        $this->pay($this->owner, 20, ['coupon' => 'UMA'])->assertSessionHasNoErrors();
+        $this->pay($this->owner, 30, ['coupon' => 'UMA'])->assertSessionHasNoErrors()->assertRedirect();
+
+        $this->assertSame(1, OnlinePayment::where('status', OnlinePaymentStatus::PENDING->value)->count());
+    }
+
+    public function test_a_fully_refunded_payment_gives_the_use_back(): void
+    {
+        $this->coupon($this->restaurant, ['code' => 'UMA', 'max_uses' => 1]);
+        $this->pay($this->member, 50, ['coupon' => 'UMA']);
+        $payment = $this->lastPayment();
+        $payment->forceFill(['status' => OnlinePaymentStatus::REFUNDED])->save();
+
+        [$code, $other] = $this->anotherTable();
+        $this->payAt($code, $other, 20, ['coupon' => 'UMA'])->assertSessionHasNoErrors()->assertRedirect();
+    }
+
+    public function test_coupons_without_a_limit_are_unlimited(): void
+    {
+        $this->coupon($this->restaurant, ['code' => 'SEMPRE', 'multiple_per_table' => true]);
+
+        $this->pay($this->owner, 20, ['coupon' => 'SEMPRE'])->assertSessionHasNoErrors();
+        $this->completeOnStripe($this->owner);
+        $this->pay($this->member, 10, ['coupon' => 'SEMPRE'])->assertSessionHasNoErrors();
+        $this->completeOnStripe($this->member);
+        [$code, $other] = $this->anotherTable();
+        $this->payAt($code, $other, 20, ['coupon' => 'SEMPRE'])->assertSessionHasNoErrors()->assertRedirect();
+    }
 }

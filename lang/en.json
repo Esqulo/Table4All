@@ -43,6 +43,7 @@
     "payments.checkout_closed": "This payment was closed. Please start a new one.",
     "payments.coupon_invalid": "Coupon not found.",
     "payments.coupon_expired": "This coupon has expired.",
+    "payments.coupon_exhausted": "This coupon has reached its usage limit.",
     "payments.coupon_no_discount": "This coupon gives no discount on this amount.",
     "payments.coupon_table_locked": "A coupon that can't be combined with others was already used at this table.",
     "payments.coupon_not_combinable": "This coupon can't be combined with others, and this table already used a coupon.",

@@ -236,6 +236,27 @@ final class TableCheckout
             throw new CheckoutRefused('coupon', 'payments.coupon_expired');
         }
 
+        if ($coupon->max_uses !== null) {
+            // Locked so two checkouts (even at different tables) can't both take
+            // the last use: the second waits here and then sees the first one's hold.
+            Coupon::whereKey($coupon->id)->lockForUpdate()->value('id');
+
+            // Paid uses plus checkouts still holding it, except this customer's own
+            // open checkout at this table, which a new one replaces.
+            $uses = OnlinePayment::where('coupon_id', $coupon->id)
+                ->whereIn('status', OnlinePaymentStatus::holding())
+                ->where(fn ($q) => $q
+                    ->where('restaurant_table_id', '!=', $table->id)
+                    ->orWhere('user_id', '!=', $payer->id)
+                    ->orWhereNull('user_id')
+                    ->orWhere('status', '!=', OnlinePaymentStatus::PENDING->value))
+                ->count();
+
+            if ($uses >= $coupon->max_uses) {
+                throw new CheckoutRefused('coupon', 'payments.coupon_exhausted');
+            }
+        }
+
         // Coupons already used (or held by an open checkout) at this table.
         $used = OnlinePayment::where('restaurant_table_id', $table->id)
             ->whereNotNull('coupon_id')

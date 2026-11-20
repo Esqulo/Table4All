@@ -93,6 +93,7 @@
     "payments.checkout_closed": "Este pagamento foi encerrado. Comece um novo.",
     "payments.coupon_invalid": "Cupom não encontrado.",
     "payments.coupon_expired": "Este cupom expirou.",
+    "payments.coupon_exhausted": "Este cupom atingiu o limite de usos.",
     "payments.coupon_no_discount": "Este cupom não dá desconto neste valor.",
     "payments.coupon_table_locked": "Já foi usado nesta mesa um cupom que não pode ser combinado com outros.",
     "payments.coupon_not_combinable": "Este cupom não pode ser usado junto com outros, e esta mesa já usou um cupom.",
