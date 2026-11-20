@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\AccountType;
+use App\Jobs\GeocodeRestaurant;
 use App\Support\RestaurantHandle;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -34,6 +35,10 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property bool $profile_public
  * @property string|null $address
  * @property string|null $ifood_url
+ * @property int|null $price_level
+ * @property int|null $table_capacity
+ * @property float|null $latitude
+ * @property float|null $longitude
  * @property AccountType $account_type
  * @property int|null $restaurant_id
  * @property string|null $stripe_account_id
@@ -50,7 +55,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'email', 'phone', 'avatar', 'logo', 'banner', 'handle', 'profile_public', 'address', 'ifood_url', 'account_type', 'password', 'restaurant_id'])]
+#[Fillable(['name', 'email', 'phone', 'avatar', 'logo', 'banner', 'handle', 'profile_public', 'address', 'ifood_url', 'price_level', 'table_capacity', 'account_type', 'password', 'restaurant_id'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token', 'search_name', 'search_vector', 'stripe_account_id'])]
 class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
@@ -68,6 +73,19 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             // Accent-free copy of the name for the restaurant search ("cafe" finds "Café").
             if ($user->isDirty('name') || $user->search_name === null) {
                 $user->search_name = self::searchable((string) $user->name);
+            }
+
+            // The coordinates belong to the old address: "closest first" must not use them.
+            if ($user->isDirty('address') && $user->exists) {
+                $user->latitude = null;
+                $user->longitude = null;
+            }
+        });
+
+        static::saved(function (User $user): void {
+            // Finds the new address on the map, on the queue (an outside service, seconds away).
+            if ($user->account_type === AccountType::RESTAURANT && $user->wasChanged('address') && filled($user->address)) {
+                GeocodeRestaurant::dispatch($user->id)->afterCommit();
             }
         });
     }
@@ -204,6 +222,10 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             'stripe_charges_enabled' => 'boolean',
             'stripe_details_submitted' => 'boolean',
             'platform_pays_stripe_fees' => 'boolean',
+            'price_level' => 'integer',
+            'table_capacity' => 'integer',
+            'latitude' => 'float',
+            'longitude' => 'float',
         ];
     }
 }

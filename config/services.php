@@ -49,4 +49,18 @@ return [
         'ffprobe' => env('FFPROBE_BINARY', 'ffprobe'),
     ],
 
+    // Restaurants' addresses on the map, for "closest first" on the discovery page
+    // (App\Support\Geo\Geocoder, on the queue). A Nominatim-compatible search URL; empty turns it off.
+    'geocoding' => [
+        'url' => env('GEOCODING_URL', 'https://nominatim.openstreetmap.org/search'),
+        'country' => env('GEOCODING_COUNTRY', 'br'),
+    ],
+
+    // Where a visitor roughly is when the browser doesn't share its location
+    // (App\Support\Geo\IpLocator). "{ip}" is replaced; the JSON answer has latitude and longitude.
+    // Empty turns it off. Cloudflare's visitor location headers are used first when present.
+    'ip_location' => [
+        'url' => env('IP_LOCATION_URL', 'https://ipwho.is/{ip}'),
+    ],
+
 ];

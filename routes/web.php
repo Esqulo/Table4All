@@ -9,6 +9,7 @@ use App\Http\Controllers\AdmissionRequestController;
 use App\Http\Controllers\Customer\JoinController as CustomerJoinController;
 use App\Http\Controllers\Customer\PaymentController as CustomerPaymentController;
 use App\Http\Controllers\Customer\RewardController as CustomerRewardController;
+use App\Http\Controllers\DiscoverController;
 use App\Http\Controllers\PostInteractionController;
 use App\Http\Controllers\Restaurant\CouponController;
 use App\Http\Controllers\Restaurant\DashboardController;
@@ -83,6 +84,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // The social network for consumers: posts from every public restaurant, newest first.
     // Its own address: /vempro is the public face of each restaurant (/vempro/{handle}).
     Route::get('feed', [SocialFeedController::class, 'index'])->name('social.feed');
+    // Finding restaurants: search, filters (how full, price, open now) and closest/best rated first.
+    Route::get('descobrir', [DiscoverController::class, 'index'])->name('social.discover');
 
     Route::prefix('customer')
         ->name('customer.')

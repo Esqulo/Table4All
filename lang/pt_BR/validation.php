@@ -207,6 +207,8 @@ return [
         'profile_public' => 'visibilidade do perfil',
         'address' => 'endereço',
         'ifood_url' => 'link do iFood',
+        'price_level' => 'faixa de preço',
+        'table_capacity' => 'número de mesas',
         'media' => 'arquivo',
         'body' => 'texto',
         'image' => 'foto',

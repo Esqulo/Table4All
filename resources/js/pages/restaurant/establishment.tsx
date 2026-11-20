@@ -5,6 +5,7 @@ import {
     Copy,
     ExternalLink,
     ImagePlus,
+    MapPin,
     Moon,
     Plus,
     Store,
@@ -30,8 +31,9 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { croppedFile, imageSourceUrl } from '@/lib/image-upload';
-import type { OpeningHourInterval, VenuePhoto } from '@/types';
+import type { OpeningHourInterval, PriceLevel, VenuePhoto } from '@/types';
 
 type Props = {
     logoUrl: string | null;
@@ -43,6 +45,11 @@ type Props = {
     profileBaseUrl: string;
     address: string | null;
     ifoodUrl: string | null;
+    /** What the discovery page filters by; null when not given. */
+    priceLevel: PriceLevel | null;
+    tableCapacity: number | null;
+    /** The address was found on the map ("closest first" on the discovery page). */
+    addressLocated: boolean;
     hours: OpeningHourInterval[];
     photos: VenuePhoto[];
     maxPhotos: number;
@@ -71,6 +78,9 @@ export default function Establishment({
     profileBaseUrl,
     address,
     ifoodUrl,
+    priceLevel,
+    tableCapacity,
+    addressLocated,
     hours,
     photos,
     maxPhotos,
@@ -104,6 +114,9 @@ export default function Establishment({
                     profileBaseUrl={profileBaseUrl}
                     address={address}
                     ifoodUrl={ifoodUrl}
+                    priceLevel={priceLevel}
+                    tableCapacity={tableCapacity}
+                    addressLocated={addressLocated}
                 />
                 <BannerSection bannerUrl={bannerUrl} logoUrl={logoUrl} />
                 <LogoSection logoUrl={logoUrl} />
@@ -156,18 +169,28 @@ function ProfileSection({
     profileBaseUrl,
     address,
     ifoodUrl,
+    priceLevel,
+    tableCapacity,
+    addressLocated,
 }: {
     handle: string | null;
     profilePublic: boolean;
     profileBaseUrl: string;
     address: string | null;
     ifoodUrl: string | null;
+    priceLevel: PriceLevel | null;
+    tableCapacity: number | null;
+    addressLocated: boolean;
 }) {
     const { t } = useTranslation();
     const [value, setValue] = useState(handle ?? '');
     const [isPublic, setIsPublic] = useState(profilePublic);
     const [addressValue, setAddressValue] = useState(address ?? '');
     const [ifoodValue, setIfoodValue] = useState(ifoodUrl ?? '');
+    const [priceValue, setPriceValue] = useState<PriceLevel | null>(priceLevel);
+    const [capacityValue, setCapacityValue] = useState(
+        tableCapacity === null ? '' : String(tableCapacity),
+    );
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
 
@@ -176,7 +199,10 @@ function ProfileSection({
         normalized !== (handle ?? '') ||
         isPublic !== profilePublic ||
         addressValue.trim() !== (address ?? '') ||
-        ifoodValue.trim() !== (ifoodUrl ?? '');
+        ifoodValue.trim() !== (ifoodUrl ?? '') ||
+        priceValue !== priceLevel ||
+        capacityValue.trim() !==
+            (tableCapacity === null ? '' : String(tableCapacity));
     const savedUrl = handle ? `${profileBaseUrl}/${handle}` : null;
 
     const save = (e: React.FormEvent) => {
@@ -189,6 +215,10 @@ function ProfileSection({
                 profile_public: isPublic,
                 address: addressValue.trim() || null,
                 ifood_url: ifoodValue.trim() || null,
+                price_level: priceValue,
+                table_capacity: capacityValue.trim()
+                    ? Number(capacityValue)
+                    : null,
             },
             {
                 preserveScroll: true,
@@ -201,6 +231,12 @@ function ProfileSection({
                     setValue(normalized);
                     setAddressValue(saved.address ?? '');
                     setIfoodValue(saved.ifoodUrl ?? '');
+                    setPriceValue(saved.priceLevel);
+                    setCapacityValue(
+                        saved.tableCapacity === null
+                            ? ''
+                            : String(saved.tableCapacity),
+                    );
                 },
                 onError: setErrors,
                 onFinish: () => setProcessing(false),
@@ -283,7 +319,81 @@ function ProfileSection({
                     <p className="text-sm text-muted-foreground">
                         {t('establishment.address_hint')}
                     </p>
+                    {address && (
+                        <p className="flex items-start gap-1.5 text-sm text-muted-foreground">
+                            <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
+                            {addressLocated
+                                ? t('establishment.address_located')
+                                : t('establishment.address_not_located')}
+                        </p>
+                    )}
                     <InputError message={errors.address} />
+                </div>
+
+                <div className="max-w-xl space-y-2">
+                    <Label id="price_level_label">
+                        {t('establishment.price_level_label')}
+                    </Label>
+                    <ToggleGroup
+                        type="single"
+                        variant="outline"
+                        aria-labelledby="price_level_label"
+                        value={
+                            priceValue === null ? 'none' : String(priceValue)
+                        }
+                        onValueChange={(v) => {
+                            // Radix sends '' when the chosen item is tapped again: keep it.
+                            if (v !== '') {
+                                setPriceValue(
+                                    v === 'none'
+                                        ? null
+                                        : (Number(v) as PriceLevel),
+                                );
+                            }
+                        }}
+                        className="w-fit"
+                    >
+                        <ToggleGroupItem value="none" className="px-3">
+                            {t('establishment.price_level_none')}
+                        </ToggleGroupItem>
+                        {(['1', '2', '3'] as const).map((level) => (
+                            <ToggleGroupItem
+                                key={level}
+                                value={level}
+                                className="min-w-12 font-semibold"
+                            >
+                                {'$'.repeat(Number(level))}
+                            </ToggleGroupItem>
+                        ))}
+                    </ToggleGroup>
+                    <p className="text-sm text-muted-foreground">
+                        {t('establishment.price_level_hint')}
+                    </p>
+                    <InputError message={errors.price_level} />
+                </div>
+
+                <div className="max-w-xl space-y-2">
+                    <Label htmlFor="table_capacity">
+                        {t('establishment.table_capacity_label')}
+                    </Label>
+                    <Input
+                        id="table_capacity"
+                        type="number"
+                        inputMode="numeric"
+                        min={1}
+                        max={500}
+                        step={1}
+                        value={capacityValue}
+                        onChange={(e) =>
+                            setCapacityValue(e.target.value.replace(/\D/g, ''))
+                        }
+                        className="w-32"
+                        aria-invalid={!!errors.table_capacity}
+                    />
+                    <p className="text-sm text-muted-foreground">
+                        {t('establishment.table_capacity_hint')}
+                    </p>
+                    <InputError message={errors.table_capacity} />
                 </div>
 
                 <div className="max-w-xl space-y-2">

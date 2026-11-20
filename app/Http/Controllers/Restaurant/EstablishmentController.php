@@ -32,6 +32,9 @@ class EstablishmentController extends Controller
     /** Venue photos can be shown full width on a phone. */
     private const PHOTO_MAX_SIDE = 1600;
 
+    /** Tables a venue can declare: well past any real dining room, bounded for the crowd level. */
+    private const MAX_TABLE_CAPACITY = 500;
+
     /** An https address on iFood's own domain, so the profile can't link anywhere else. */
     private const IFOOD_URL_PATTERN = '#^https://([a-z0-9-]+\.)*ifood\.com\.br(/[^\s]*)?$#i';
 
@@ -46,6 +49,10 @@ class EstablishmentController extends Controller
             'profilePublic' => $request->user()->profile_public,
             'address' => $request->user()->address,
             'ifoodUrl' => $request->user()->ifood_url,
+            'priceLevel' => $request->user()->price_level,
+            'tableCapacity' => $request->user()->table_capacity,
+            // Whether the address was found on the map ("closest first" on the discovery page).
+            'addressLocated' => $request->user()->latitude !== null,
             'profileBaseUrl' => url('vempro'),
             'hours' => RestaurantOpeningHour::where('user_id', $restaurantId)
                 ->orderBy('weekday')
@@ -66,7 +73,8 @@ class EstablishmentController extends Controller
 
     /**
      * The @handle of the public profile (/vempro/{handle}), whether the profile is visible,
-     * and its address and iFood link. Those two are left alone when a request omits them
+     * its address and iFood link, and what the discovery page filters by (price level and
+     * how many tables the venue has). Those are left alone when a request omits them
      * (the "make public" shortcut on the profile page only sends handle and visibility).
      */
     public function updateProfile(Request $request): RedirectResponse
@@ -81,7 +89,7 @@ class EstablishmentController extends Controller
             $request->merge(['ifood_url' => 'https://'.$ifood]);
         }
 
-        /** @var array{handle: string, profile_public: bool, address?: string|null, ifood_url?: string|null} $data */
+        /** @var array{handle: string, profile_public: bool, address?: string|null, ifood_url?: string|null, price_level?: int|null, table_capacity?: int|null} $data */
         $data = $request->validate([
             'handle' => [
                 'required',
@@ -94,6 +102,8 @@ class EstablishmentController extends Controller
             'profile_public' => ['required', 'boolean'],
             'address' => ['sometimes', 'nullable', 'string', 'max:255'],
             'ifood_url' => ['sometimes', 'nullable', 'string', 'max:255', 'url:https', 'regex:'.self::IFOOD_URL_PATTERN],
+            'price_level' => ['sometimes', 'nullable', 'integer', 'between:1,3'],
+            'table_capacity' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:'.self::MAX_TABLE_CAPACITY],
         ], [
             'handle.regex' => __('establishment.error_handle_format'),
             'handle.unique' => __('establishment.error_handle_taken'),

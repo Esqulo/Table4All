@@ -9,6 +9,7 @@ import {
     LayoutGrid,
     ListOrdered,
     Newspaper,
+    Compass,
     Percent,
     QrCode,
     ScrollText,
@@ -28,6 +29,7 @@ import AdminPayoutController from '@/actions/App/Http/Controllers/Admin/PayoutCo
 import AdminRestaurantController from '@/actions/App/Http/Controllers/Admin/RestaurantController';
 import CustomerJoinController from '@/actions/App/Http/Controllers/Customer/JoinController';
 import CustomerRewardController from '@/actions/App/Http/Controllers/Customer/RewardController';
+import DiscoverController from '@/actions/App/Http/Controllers/DiscoverController';
 import CouponController from '@/actions/App/Http/Controllers/Restaurant/CouponController';
 import DashboardController from '@/actions/App/Http/Controllers/Restaurant/DashboardController';
 import DeliveryController from '@/actions/App/Http/Controllers/Restaurant/DeliveryController';
@@ -184,6 +186,11 @@ export function AppSidebar() {
                         title: t('nav.feed'),
                         href: SocialFeedController.index.url(),
                         icon: Newspaper,
+                    },
+                    {
+                        title: t('nav.discover'),
+                        href: DiscoverController.index.url(),
+                        icon: Compass,
                     },
                     {
                         title: t('nav.table'),

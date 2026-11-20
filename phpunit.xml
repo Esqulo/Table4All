@@ -43,6 +43,9 @@
         <env name="MAIL_MAILER" value="array" force="true"/>
         <server name="MAIL_MAILER" value="array" force="true"/>
         <env name="QUEUE_CONNECTION" value="sync" force="true"/>
+        <!-- No outside geolocation services in tests; tests that need them set the URL and fake HTTP. -->
+        <env name="GEOCODING_URL" value="" force="true"/>
+        <env name="IP_LOCATION_URL" value="" force="true"/>
         <server name="QUEUE_CONNECTION" value="sync" force="true"/>
         <env name="SESSION_DRIVER" value="array" force="true"/>
         <server name="SESSION_DRIVER" value="array" force="true"/>

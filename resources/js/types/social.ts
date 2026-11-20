@@ -89,7 +89,13 @@ export type StoryLimits = {
     videoEnabled: boolean;
 };
 
-/** A restaurant in the list to browse before searching (feed, ?explorar=1). */
+/** Price level a restaurant chose: 1 ($) to 3 ($$$). */
+export type PriceLevel = 1 | 2 | 3;
+
+/** How full the venue is now: 1 calm, 2, 3 packed ("bombando"). */
+export type CrowdLevel = 1 | 2 | 3;
+
+/** A restaurant in the discovery grid (/descobrir). */
 export type DiscoverRestaurant = DirectoryRestaurant & {
     banner_url: string | null;
     address: string | null;
@@ -97,4 +103,23 @@ export type DiscoverRestaurant = DirectoryRestaurant & {
     is_open: boolean | null;
     /** Has a "Hoje tem!" story on air. */
     has_stories: boolean;
+    /** Null when the restaurant hasn't chosen one. */
+    price_level: PriceLevel | null;
+    /** Null when the restaurant hasn't said how many tables it has. */
+    crowd_level: CrowdLevel | null;
+    /** Only when sorting by distance and the restaurant was found on the map. */
+    distance_km: number | null;
+};
+
+export type DiscoverSort = 'relevance' | 'distance' | 'rating';
+
+/** The discovery page's search, filters and order, as the server read them. */
+export type DiscoverFilters = {
+    q: string;
+    /** [min, max]; [1, 3] means off. */
+    crowd: [number, number];
+    /** [min, max]; [1, 3] means off. */
+    price: [number, number];
+    open: boolean;
+    sort: DiscoverSort;
 };

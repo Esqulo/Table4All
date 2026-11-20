@@ -5,7 +5,7 @@ import SocialFeedController from '@/actions/App/Http/Controllers/SocialFeedContr
 import AppLogoWordmark from '@/components/app-logo-wordmark';
 import { Button } from '@/components/ui/button';
 import { goBack } from '@/lib/history';
-import { feedSearchUrl } from '@/lib/social';
+import { discoverSearchUrl } from '@/lib/social';
 import { home, login } from '@/routes';
 
 /** Signed in, on the public pages (where auth.user is null for guests). */
@@ -28,7 +28,7 @@ export function SocialNavActions() {
     return (
         <div className="flex items-center gap-1">
             <Link
-                href={feedSearchUrl()}
+                href={discoverSearchUrl()}
                 aria-label={t('social.nav_search')}
                 title={t('social.nav_search')}
                 className="flex size-9 items-center justify-center rounded-full hover:bg-muted"

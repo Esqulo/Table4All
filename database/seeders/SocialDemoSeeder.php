@@ -9,6 +9,7 @@ use App\Models\RestaurantOpeningHour;
 use App\Models\RestaurantPhoto;
 use App\Models\RestaurantPost;
 use App\Models\RestaurantReview;
+use App\Models\RestaurantTable;
 use App\Models\User;
 use GdImage;
 use Illuminate\Database\Seeder;
@@ -112,8 +113,26 @@ class SocialDemoSeeder extends Seeder
             'password' => Hash::make('password'),
             'logo' => $this->store('logos', $this->logo($data['initials'], $from, $to), 'png'),
             'banner' => $this->store('banners', $this->picture(1920, 640, $from, $to, $data['tagline']), 'jpg'),
+            'price_level' => $data['price'],
+            'table_capacity' => $data['tables'],
         ]);
         $restaurant->forceFill(['email_verified_at' => now()])->save();
+        // Address and position for "closest first" on the discovery page. Quietly, so seeding
+        // doesn't queue map lookups of these made-up addresses.
+        $restaurant->forceFill([
+            'address' => $data['address'],
+            'latitude' => $data['coords'][0],
+            'longitude' => $data['coords'][1],
+        ])->saveQuietly();
+
+        // Tables open right now, so the discovery page shows how full each venue is.
+        for ($i = 1; $i <= $data['open_tables']; $i++) {
+            RestaurantTable::create([
+                'user_id' => $restaurant->id,
+                'title' => "Mesa {$i}",
+                'access_code' => RestaurantTable::generateUniqueCode(),
+            ]);
+        }
 
         $now = now();
         RestaurantOpeningHour::insert(array_map(fn (array $h): array => [
@@ -352,6 +371,7 @@ class SocialDemoSeeder extends Seeder
         return [
             [
                 'name' => 'Boteco do Seu Zé', 'handle' => 'boteco-do-seu-ze', 'initials' => 'ZÉ',
+                'price' => 1, 'tables' => 12, 'open_tables' => 10, 'address' => 'Rua Augusta, 1500 - Consolação, São Paulo - SP', 'coords' => [-23.5568, -46.6620],
                 'colors' => ['#1f7a4d', '#0b3d2e'], 'tagline' => 'Boteco raiz desde 1998', 'rating_base' => 5,
                 'hours' => [...$nights('17:00', '01:00'), [6, '12:00', '02:00'], [0, '12:00', '18:00']],
                 'photos' => ['Balcao', 'Petiscos', 'Mesas na calcada'],
@@ -364,6 +384,7 @@ class SocialDemoSeeder extends Seeder
             ],
             [
                 'name' => 'Pizzaria Forno a Lenha', 'handle' => 'forno-a-lenha', 'initials' => 'FL',
+                'price' => 2, 'tables' => 20, 'open_tables' => 9, 'address' => 'Rua Treze de Maio, 800 - Bela Vista, São Paulo - SP', 'coords' => [-23.5603, -46.6436],
                 'colors' => ['#c0392b', '#5e1a12'], 'tagline' => 'Pizza napolitana no forno a lenha', 'rating_base' => 4,
                 'hours' => $nights('18:30', '23:30', [0, 2, 3, 4, 5, 6]),
                 'photos' => ['Forno a lenha', 'Margherita', 'Salao'],
@@ -375,6 +396,7 @@ class SocialDemoSeeder extends Seeder
             ],
             [
                 'name' => 'Sushi Maré', 'handle' => 'sushi-mare', 'initials' => 'SM',
+                'price' => 3, 'tables' => 10, 'open_tables' => 1, 'address' => 'Rua Galvão Bueno, 300 - Liberdade, São Paulo - SP', 'coords' => [-23.5583, -46.6345],
                 'colors' => ['#1d4e89', '#0a1f3c'], 'tagline' => 'Peixe fresco todo dia', 'rating_base' => 5,
                 'hours' => $nights('11:30', '15:00', [1, 2, 3, 4, 5, 6]),
                 'photos' => ['Balcao de sushi', 'Combinado'],
@@ -385,6 +407,7 @@ class SocialDemoSeeder extends Seeder
             ],
             [
                 'name' => 'Churrascaria Brasa Viva', 'handle' => 'brasa-viva', 'initials' => 'BV',
+                'price' => 3, 'tables' => 40, 'open_tables' => 30, 'address' => 'Av. Brigadeiro Faria Lima, 2000 - Pinheiros, São Paulo - SP', 'coords' => [-23.5751, -46.6880],
                 'colors' => ['#d35400', '#4a1c03'], 'tagline' => 'Rodizio completo', 'rating_base' => 4,
                 'hours' => [...$nights('11:30', '16:00', [1, 2, 3, 4, 5, 6, 0]), ...$nights('19:00', '23:00', [5, 6])],
                 'photos' => ['Picanha na brasa', 'Buffet', 'Salao'],
@@ -396,6 +419,7 @@ class SocialDemoSeeder extends Seeder
             ],
             [
                 'name' => 'Grão & Prosa Café', 'handle' => 'grao-e-prosa', 'initials' => 'GP',
+                'price' => 2, 'tables' => 8, 'open_tables' => 0, 'address' => 'Rua Harmonia, 200 - Vila Madalena, São Paulo - SP', 'coords' => [-23.5546, -46.6913],
                 'colors' => ['#8e6e53', '#3b2a1e'], 'tagline' => 'Cafe especial e bolos caseiros', 'rating_base' => 5,
                 'hours' => $nights('08:00', '19:00', [1, 2, 3, 4, 5, 6]),
                 'photos' => ['Espresso', 'Bolos do dia'],
@@ -407,6 +431,7 @@ class SocialDemoSeeder extends Seeder
             ],
             [
                 'name' => 'Chapa Quente Burger', 'handle' => 'chapa-quente', 'initials' => 'CQ',
+                'price' => 1, 'tables' => 15, 'open_tables' => 4, 'address' => 'Rua Tuiuti, 1200 - Tatuapé, São Paulo - SP', 'coords' => [-23.5404, -46.5763],
                 'colors' => ['#e1a100', '#6b3a00'], 'tagline' => 'Smash burger na chapa', 'rating_base' => 4, 'reviews' => false,
                 'hours' => $nights('18:00', '23:59', [3, 4, 5, 6, 0]),
                 'photos' => ['Smash duplo'],
@@ -417,6 +442,7 @@ class SocialDemoSeeder extends Seeder
             [
                 // Hidden profile: must not appear in the feed or the search.
                 'name' => 'Bar Escondido', 'handle' => 'bar-escondido', 'initials' => 'BE', 'public' => false,
+                'price' => 2, 'tables' => 6, 'open_tables' => 0, 'address' => 'Rua Aspicuelta, 100 - Vila Madalena, São Paulo - SP', 'coords' => [-23.5560, -46.6900],
                 'colors' => ['#555555', '#222222'], 'tagline' => 'Perfil oculto', 'rating_base' => 3,
                 'hours' => $nights('19:00', '02:00', [5, 6]),
                 'photos' => [],
