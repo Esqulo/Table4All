@@ -1,10 +1,14 @@
 import { Form, Head, Link } from '@inertiajs/react';
 import { BellRing, CheckCheck, Check, Receipt } from 'lucide-react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import CallController from '@/actions/App/Http/Controllers/Restaurant/CallController';
 import TableController from '@/actions/App/Http/Controllers/Restaurant/TableController';
 import Heading from '@/components/heading';
+import { WaiterBadge } from '@/components/table-waiter';
+import type { AssignmentContext, TableWaiter } from '@/components/table-waiter';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { useLiveReload } from '@/hooks/use-live-reload';
 import { useCanWrite, usePermission } from '@/hooks/use-permission';
 import { formatBRL } from '@/lib/money';
@@ -16,11 +20,12 @@ type Call = {
     created_at: string;
     table: { id: number; title: string };
     requested_by: string | null;
+    waiter: TableWaiter;
     total: number;
     remaining: number;
 };
 
-type Props = { calls: Call[] };
+type Props = { calls: Call[]; assignment: AssignmentContext };
 
 /** Calls older than this stand out: someone has been waiting a while. */
 const LATE_MINUTES = 3;
@@ -36,11 +41,22 @@ function minutesSince(iso: string): number {
  * Tables that called the waiter or asked for the bill, oldest first. Refreshes on its
  * own during service; "Atendida" takes the call off the board for everyone.
  */
-export default function Calls({ calls }: Props) {
+export default function Calls({ calls: allCalls, assignment }: Props) {
     const { t, i18n } = useTranslation();
     const locale = i18n.language === 'pt_BR' ? 'pt-BR' : 'en-US';
     const canAnswer = useCanWrite('calls');
     const canOpenTables = usePermission('tables') !== 'none';
+
+    // A waiter can keep to the calls of the tables in their charge (and the free ones).
+    const [onlyMine, setOnlyMine] = useState(false);
+    const showMineFilter = assignment.enabled && assignment.canServe;
+    const calls =
+        showMineFilter && onlyMine
+            ? allCalls.filter(
+                  (call) =>
+                      call.waiter === null || call.waiter.id === assignment.me,
+              )
+            : allCalls;
 
     // Short interval: a waiting table is the point of this screen.
     useLiveReload({ only: ['calls'], intervalMs: 8_000 });
@@ -59,6 +75,16 @@ export default function Calls({ calls }: Props) {
                     title={t('calls.title')}
                     description={t('calls.description')}
                 />
+
+                {showMineFilter && (
+                    <label className="flex items-center gap-2 text-sm">
+                        <Switch
+                            checked={onlyMine}
+                            onCheckedChange={setOnlyMine}
+                        />
+                        {t('calls.only_mine')}
+                    </label>
+                )}
 
                 {calls.length === 0 ? (
                     <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-14 text-muted-foreground">
@@ -141,6 +167,13 @@ export default function Calls({ calls }: Props) {
                                             {call.requested_by &&
                                                 ` · ${call.requested_by}`}
                                         </p>
+                                        {assignment.enabled && (
+                                            <WaiterBadge
+                                                waiter={call.waiter}
+                                                me={assignment.me}
+                                                className="mt-1.5"
+                                            />
+                                        )}
                                     </div>
                                     {canAnswer && (
                                         <Form

@@ -20,6 +20,12 @@ import { useTranslation } from 'react-i18next';
 import QueueItemController from '@/actions/App/Http/Controllers/Restaurant/QueueItemController';
 import TableController from '@/actions/App/Http/Controllers/Restaurant/TableController';
 import { ReadOnlyNotice } from '@/components/read-only-notice';
+import {
+    AssignWaiterSelect,
+    ClaimReleaseButton,
+    WaiterBadge,
+} from '@/components/table-waiter';
+import type { AssignmentContext, TableWaiter } from '@/components/table-waiter';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -73,6 +79,11 @@ type Props = {
     orderVersion: string;
     /** Nothing was ordered or paid: the table may be deleted. */
     deletable?: boolean;
+    /** The waiter in charge and what the viewer may do about it. */
+    assignment?: AssignmentContext & {
+        waiter: TableWaiter;
+        candidates: { id: number; name: string }[];
+    };
 };
 
 const fmt = (n: number) => formatBRL(n);
@@ -105,6 +116,7 @@ export default function ManageOrder({
     queueItems,
     orderVersion,
     deletable = false,
+    assignment,
 }: Props) {
     const { t } = useTranslation();
     const canWrite = useCanWrite('tables');
@@ -383,6 +395,32 @@ export default function ManageOrder({
                         </p>
                     </div>
                 </div>
+
+                {assignment?.enabled && (
+                    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card px-4 py-3">
+                        <span className="text-sm font-medium">
+                            {t('tables.waiter_label')}
+                        </span>
+                        {assignment.canAssign ? (
+                            <AssignWaiterSelect
+                                tableId={table.id}
+                                waiter={assignment.waiter}
+                                candidates={assignment.candidates}
+                            />
+                        ) : (
+                            <WaiterBadge
+                                waiter={assignment.waiter}
+                                me={assignment.me}
+                            />
+                        )}
+                        <ClaimReleaseButton
+                            tableId={table.id}
+                            waiter={assignment.waiter}
+                            assignment={assignment}
+                            className="sm:ml-auto"
+                        />
+                    </div>
+                )}
 
                 <ReadOnlyNotice feature="tables" />
 

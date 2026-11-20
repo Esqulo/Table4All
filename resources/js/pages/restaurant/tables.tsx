@@ -5,6 +5,8 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import TableController from '@/actions/App/Http/Controllers/Restaurant/TableController';
 import Heading from '@/components/heading';
+import { ClaimReleaseButton, WaiterBadge } from '@/components/table-waiter';
+import type { AssignmentContext } from '@/components/table-waiter';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -16,15 +18,42 @@ import {
 import { useLiveReload } from '@/hooks/use-live-reload';
 import { useCanWrite } from '@/hooks/use-permission';
 import { formatBRL } from '@/lib/money';
+import { cn } from '@/lib/utils';
 import type { RestaurantTable } from '@/types';
+
+const ONLY_MINE_KEY = 'tables.onlyMine';
 
 type Props = {
     tables: RestaurantTable[];
+    assignment: AssignmentContext;
 };
 
-export default function Tables({ tables }: Props) {
+export default function Tables({ tables, assignment }: Props) {
     const { t } = useTranslation();
     const canWrite = useCanWrite('tables');
+    // Waiters can narrow the board to the tables in their charge (remembered on this device).
+    const [onlyMine, setOnlyMine] = useState(() => {
+        try {
+            return window.localStorage.getItem(ONLY_MINE_KEY) === '1';
+        } catch {
+            return false;
+        }
+    });
+    const showMineFilter = assignment.enabled && assignment.canServe;
+    const visible =
+        showMineFilter && onlyMine
+            ? tables.filter((table) => table.waiter_id === assignment.me)
+            : tables;
+
+    const toggleMine = (value: boolean) => {
+        setOnlyMine(value);
+
+        try {
+            window.localStorage.setItem(ONLY_MINE_KEY, value ? '1' : '0');
+        } catch {
+            // Private mode: the choice just isn't remembered.
+        }
+    };
 
     // Totals and item counts change as orders are delivered and paid.
     useLiveReload({ only: ['tables'], intervalMs: 20_000 });
@@ -46,14 +75,49 @@ export default function Tables({ tables }: Props) {
                     )}
                 </div>
 
+                {showMineFilter && tables.length > 0 && (
+                    <div
+                        role="group"
+                        aria-label={t('tables.filter_label')}
+                        className="inline-flex rounded-full border bg-card p-1"
+                    >
+                        {[false, true].map((mine) => (
+                            <button
+                                key={String(mine)}
+                                type="button"
+                                aria-pressed={onlyMine === mine}
+                                onClick={() => toggleMine(mine)}
+                                className={cn(
+                                    'h-8 rounded-full px-4 text-sm font-medium transition-colors',
+                                    onlyMine === mine
+                                        ? 'bg-primary text-primary-foreground'
+                                        : 'text-muted-foreground hover:text-foreground',
+                                )}
+                            >
+                                {mine
+                                    ? t('tables.filter_mine')
+                                    : t('tables.filter_all')}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
                 {tables.length === 0 ? (
                     <p className="py-12 text-center text-sm text-muted-foreground">
                         {t('tables.empty')}
                     </p>
+                ) : visible.length === 0 ? (
+                    <p className="py-12 text-center text-sm text-muted-foreground">
+                        {t('tables.empty_mine')}
+                    </p>
                 ) : (
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                        {tables.map((table) => (
-                            <TableCard key={table.id} table={table} />
+                        {visible.map((table) => (
+                            <TableCard
+                                key={table.id}
+                                table={table}
+                                assignment={assignment}
+                            />
                         ))}
                     </div>
                 )}
@@ -103,7 +167,13 @@ function TableQrDialog({
     );
 }
 
-function TableCard({ table }: { table: RestaurantTable }) {
+function TableCard({
+    table,
+    assignment,
+}: {
+    table: RestaurantTable;
+    assignment: AssignmentContext;
+}) {
     const { t } = useTranslation();
     const canWrite = useCanWrite('tables');
     const [qrOpen, setQrOpen] = useState(false);
@@ -133,6 +203,13 @@ function TableCard({ table }: { table: RestaurantTable }) {
                                 count: table.products_count,
                             })}
                         </p>
+                        {assignment.enabled && (
+                            <WaiterBadge
+                                waiter={table.waiter ?? null}
+                                me={assignment.me}
+                                className="mt-2"
+                            />
+                        )}
                     </div>
                     {table.access_code && (
                         <button
@@ -213,6 +290,12 @@ function TableCard({ table }: { table: RestaurantTable }) {
                 )}
 
                 <div className="mt-auto flex flex-col gap-2 border-t border-border p-3">
+                    <ClaimReleaseButton
+                        tableId={table.id}
+                        waiter={table.waiter ?? null}
+                        assignment={assignment}
+                        className="w-full"
+                    />
                     <Button asChild className="w-full">
                         <Link
                             href={TableController.show.url({ table: table.id })}

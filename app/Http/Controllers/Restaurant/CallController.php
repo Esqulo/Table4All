@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Restaurant;
 
 use App\Http\Controllers\Controller;
 use App\Models\TableCall;
+use App\Support\TableAssignment;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,6 +24,7 @@ class CallController extends Controller
     {
         return Inertia::render('restaurant/calls', [
             'calls' => fn () => self::openCalls($request->user()->effectiveRestaurantId()),
+            'assignment' => TableAssignment::context($request->user()),
         ]);
     }
 
@@ -54,6 +56,7 @@ class CallController extends Controller
     {
         $rows = self::openQuery($restaurantId)
             ->leftJoin('users as requester', 'requester.id', '=', 'table_calls.requested_by_user_id')
+            ->leftJoin('users as waiter', 'waiter.id', '=', 'restaurant_tables.waiter_id')
             ->orderBy('table_calls.created_at')
             ->select([
                 'table_calls.id',
@@ -62,6 +65,8 @@ class CallController extends Controller
                 'restaurant_tables.id as table_id',
                 'restaurant_tables.title as table_title',
                 'requester.name as requested_by',
+                'waiter.id as waiter_id',
+                'waiter.name as waiter_name',
             ])
             // What the table owes: useful when it asks for the bill.
             ->selectSub(
@@ -87,6 +92,8 @@ class CallController extends Controller
                 'created_at' => Carbon::parse($row->created_at, 'UTC')->toIso8601String(),
                 'table' => ['id' => (int) $row->table_id, 'title' => $row->table_title],
                 'requested_by' => $row->requested_by,
+                // The waiter in charge of the table, when tables have one.
+                'waiter' => $row->waiter_id === null ? null : ['id' => (int) $row->waiter_id, 'name' => $row->waiter_name],
                 'total' => (float) $row->total,
                 'remaining' => max(0.0, (float) $row->total - (float) $row->paid),
             ];

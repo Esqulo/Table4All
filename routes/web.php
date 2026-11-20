@@ -158,7 +158,16 @@ Route::middleware(['auth', 'verified', EnsureRestaurantOrWaiter::class])
                 ->name('tables.add-payment');
             Route::patch('mesas/{table}/fechar', [TableController::class, 'close'])
                 ->name('tables.close');
+            // A team member takes a free table or lets go of their own.
+            Route::patch('mesas/{table}/assumir', [TableController::class, 'claim'])
+                ->name('tables.claim');
+            Route::patch('mesas/{table}/liberar', [TableController::class, 'release'])
+                ->name('tables.release');
         });
+        // The owner or a manager gives a table to someone on the team (team management).
+        Route::put('mesas/{table}/garcom', [TableController::class, 'assignWaiter'])
+            ->middleware($feature(StaffFeature::STAFF))
+            ->name('tables.assign');
 
         // Tables calling the waiter or asking for the bill.
         Route::get('chamadas', [CallController::class, 'index'])
@@ -263,6 +272,7 @@ Route::middleware(['auth', 'verified', EnsureRestaurant::class])
         // Venue settings: public profile, opening hours, photos, logo and banner
         Route::put('estabelecimento/perfil', [EstablishmentController::class, 'updateProfile'])->name('establishment.profile.update');
         Route::put('estabelecimento/horarios', [EstablishmentController::class, 'updateHours'])->name('establishment.hours.update');
+        Route::put('estabelecimento/atendimento', [EstablishmentController::class, 'updateService'])->name('establishment.service.update');
         Route::post('estabelecimento/logo', [EstablishmentController::class, 'updateLogo'])->name('establishment.logo.update');
         Route::delete('estabelecimento/logo', [EstablishmentController::class, 'destroyLogo'])->name('establishment.logo.destroy');
         Route::post('estabelecimento/banner', [EstablishmentController::class, 'updateBanner'])->name('establishment.banner.update');

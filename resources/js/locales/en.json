@@ -434,7 +434,23 @@
         "msg_order_conflict": "This table was changed by someone else while you were editing. The current items were reloaded; review them and save again.",
         "payment_by": "by {{name}}",
         "delete_blocked": "Tables with orders or payments can’t be deleted.",
-        "error_delete_with_consumption": "This table has orders or payments and can’t be deleted."
+        "error_delete_with_consumption": "This table has orders or payments and can’t be deleted.",
+        "waiter_label": "Waiter in charge",
+        "waiter_none": "No waiter",
+        "waiter_you": "You",
+        "claim": "Take this table",
+        "release": "Leave this table",
+        "release_confirm": "Leave this table without a waiter?",
+        "assign_label": "Waiter in charge of the table",
+        "filter_label": "Which tables to show",
+        "filter_all": "All",
+        "filter_mine": "My tables",
+        "empty_mine": "No tables in your charge right now.",
+        "msg_claimed": "The table is yours now.",
+        "msg_released": "You left the table. It is free now.",
+        "msg_assigned": "Table waiter updated.",
+        "msg_unassigned": "The table has no waiter now.",
+        "error_already_taken": "Another waiter took this table first."
     },
     "waiters": {
         "title": "Team",
@@ -1067,7 +1083,13 @@
         "table_capacity_label": "Number of tables",
         "table_capacity_hint": "How many tables your dining room has. Comparing it with the tables open in the system, we show customers whether the place is calm or packed. Leave it blank to not show it.",
         "address_located": "Address found on the map: your venue shows up under “Closest”.",
-        "address_not_located": "We haven't found this address on the map yet. Check that it has the street, number and city to show up under “Closest”."
+        "address_not_located": "We haven't found this address on the map yet. Check that it has the street, number and city to show up under “Closest”.",
+        "service_title": "Service",
+        "service_description": "How the team works the floor.",
+        "table_assignment_label": "A waiter in charge of each table",
+        "table_assignment_hint": "Whoever opens a table is in charge of it. Waiters can take free tables and leave their own; you and the managers can change any table’s waiter.",
+        "table_assignment_off_confirm": "Turn it off? Open tables will have no waiter in charge.",
+        "msg_service_saved": "Service settings saved."
     },
     "venue_profile": {
         "edit": "Edit profile",
@@ -1563,6 +1585,7 @@
         "just_now": "just now",
         "minutes_ago_one": "{{count}} min ago",
         "minutes_ago_other": "{{count}} min ago",
-        "answer": "Answered"
+        "answer": "Answered",
+        "only_mine": "Only my tables and those without a waiter"
     }
 }

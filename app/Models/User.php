@@ -40,6 +40,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property string|null $ifood_url
  * @property int|null $price_level
  * @property int|null $table_capacity
+ * @property bool $table_assignment_enabled
  * @property float|null $latitude
  * @property float|null $longitude
  * @property AccountType $account_type
@@ -318,6 +319,7 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             'staff_permissions' => 'array',
             'price_level' => 'integer',
             'table_capacity' => 'integer',
+            'table_assignment_enabled' => 'boolean',
             'latitude' => 'float',
             'longitude' => 'float',
         ];

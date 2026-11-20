@@ -434,7 +434,23 @@
         "msg_order_conflict": "A mesa foi alterada por outra pessoa enquanto você editava. Os itens atuais foram recarregados; confira e salve de novo.",
         "payment_by": "por {{name}}",
         "delete_blocked": "Mesas com consumo ou pagamentos não podem ser excluídas.",
-        "error_delete_with_consumption": "Esta mesa tem consumo ou pagamentos e não pode ser excluída."
+        "error_delete_with_consumption": "Esta mesa tem consumo ou pagamentos e não pode ser excluída.",
+        "waiter_label": "Garçom responsável",
+        "waiter_none": "Sem garçom",
+        "waiter_you": "Você",
+        "claim": "Assumir mesa",
+        "release": "Sair da mesa",
+        "release_confirm": "Deixar esta mesa sem garçom?",
+        "assign_label": "Garçom responsável pela mesa",
+        "filter_label": "Quais mesas mostrar",
+        "filter_all": "Todas",
+        "filter_mine": "Minhas mesas",
+        "empty_mine": "Nenhuma mesa com você agora.",
+        "msg_claimed": "A mesa agora é sua.",
+        "msg_released": "Você saiu da mesa. Ela está livre.",
+        "msg_assigned": "Garçom da mesa atualizado.",
+        "msg_unassigned": "A mesa ficou sem garçom.",
+        "error_already_taken": "Outro garçom assumiu esta mesa primeiro."
     },
     "waiters": {
         "title": "Equipe",
@@ -1067,7 +1083,13 @@
         "table_capacity_label": "Número de mesas",
         "table_capacity_hint": "Quantas mesas o salão tem. Comparando com as mesas abertas no sistema, mostramos aos clientes se a casa está calma ou bombando. Deixe em branco para não mostrar.",
         "address_located": "Endereço encontrado no mapa: o estabelecimento aparece em “Mais próximos”.",
-        "address_not_located": "Ainda não encontramos este endereço no mapa. Confira se tem rua, número e cidade para aparecer em “Mais próximos”."
+        "address_not_located": "Ainda não encontramos este endereço no mapa. Confira se tem rua, número e cidade para aparecer em “Mais próximos”.",
+        "service_title": "Atendimento",
+        "service_description": "Como a equipe se organiza no salão.",
+        "table_assignment_label": "Garçom responsável por mesa",
+        "table_assignment_hint": "Quem abre a mesa fica responsável por ela. Garçons podem assumir mesas livres e sair das suas; você e os gerentes podem trocar o garçom de qualquer mesa.",
+        "table_assignment_off_confirm": "Desligar? As mesas abertas ficam sem garçom responsável.",
+        "msg_service_saved": "Configurações de atendimento salvas."
     },
     "venue_profile": {
         "edit": "Editar perfil",
@@ -1563,6 +1585,7 @@
         "just_now": "agora mesmo",
         "minutes_ago_one": "há {{count}} min",
         "minutes_ago_other": "há {{count}} min",
-        "answer": "Atendida"
+        "answer": "Atendida",
+        "only_mine": "Só minhas mesas e as sem garçom"
     }
 }

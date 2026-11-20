@@ -11,8 +11,11 @@ use App\Models\QueueItem;
 use App\Models\RestaurantTable;
 use App\Models\Sale;
 use App\Models\TableCall;
+use App\Models\User;
 use App\Support\CustomerLink;
 use App\Support\Idempotency;
+use App\Support\TableAssignment;
+use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -41,6 +44,7 @@ class TableController extends Controller
             ->withSum('payments as paid_total', 'amount')
             ->withCount('products')
             ->with([
+                'waiter:id,name',
                 // Thumbnails only: the card shows at most five.
                 'products' => fn ($q) => $q
                     ->select('products.id', 'products.name', 'products.picture')
@@ -55,6 +59,7 @@ class TableController extends Controller
 
         return Inertia::render('restaurant/tables', [
             'tables' => $tables,
+            'assignment' => TableAssignment::context($request->user()),
         ]);
     }
 
@@ -76,6 +81,8 @@ class TableController extends Controller
                 'title' => $request->validated('title'),
                 'access_code' => RestaurantTable::generateUniqueCode(),
             ]);
+            // Whoever on the team opens the table is in charge of it.
+            $table->forceFill(['waiter_id' => TableAssignment::forNewTable($request->user())])->save();
 
             if (is_string($customerToken) && $customerToken !== '') {
                 CustomerLink::consume($customerToken, $table);
@@ -163,7 +170,90 @@ class TableController extends Controller
             'orderVersion' => $this->orderVersion($table->id),
             // Only a table nothing was ordered or paid at can be deleted (destroy()).
             'deletable' => fn () => ! self::hasConsumption($table->id),
+            'assignment' => fn () => $this->assignmentFor($request->user(), $table),
         ]);
+    }
+
+    /** A team member takes a free table. */
+    public function claim(Request $request, RestaurantTable $table): RedirectResponse
+    {
+        $actor = $request->user();
+        $this->ensureAssignable($actor, $table);
+        abort_unless(TableAssignment::canServe($actor), 403);
+
+        Inertia::flash('toast', TableAssignment::claim($table, $actor)
+            ? ['type' => 'success', 'message' => 'tables.msg_claimed']
+            : ['type' => 'error', 'message' => 'tables.error_already_taken']);
+
+        return back();
+    }
+
+    /** The waiter in charge lets go of the table, leaving it free. */
+    public function release(Request $request, RestaurantTable $table): RedirectResponse
+    {
+        $actor = $request->user();
+        $this->ensureAssignable($actor, $table);
+
+        if (TableAssignment::release($table, $actor)) {
+            Inertia::flash('toast', ['type' => 'success', 'message' => 'tables.msg_released']);
+        }
+
+        return back();
+    }
+
+    /** The owner or a manager gives the table to a team member, or frees it (waiter_id null). */
+    public function assignWaiter(Request $request, RestaurantTable $table): RedirectResponse
+    {
+        $actor = $request->user();
+        $this->ensureAssignable($actor, $table);
+        abort_unless(TableAssignment::canAssign($actor), 403);
+
+        $restaurantId = $actor->effectiveRestaurantId();
+        /** @var array{waiter_id: int|null} $data */
+        $data = $request->validate([
+            'waiter_id' => [
+                'present',
+                'nullable',
+                'integer',
+                function (string $attribute, mixed $value, Closure $fail) use ($restaurantId): void {
+                    if ($value !== null && ! TableAssignment::isCandidate($restaurantId, (int) $value)) {
+                        $fail(__('tables.error_not_a_waiter'));
+                    }
+                },
+            ],
+        ]);
+
+        TableAssignment::assign($table, $data['waiter_id'] === null ? null : (int) $data['waiter_id']);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => $data['waiter_id'] === null ? 'tables.msg_unassigned' : 'tables.msg_assigned']);
+
+        return back();
+    }
+
+    /** The restaurant's open table, with the feature on. */
+    private function ensureAssignable(User $actor, RestaurantTable $table): void
+    {
+        abort_unless($table->user_id === $actor->effectiveRestaurantId(), 403);
+        abort_if($table->closed_at !== null, 422, __('tables.error_already_closed'));
+        abort_unless(TableAssignment::enabled($table->user_id), 403);
+    }
+
+    /**
+     * The table's waiter and what the viewer may do about it.
+     *
+     * @return array<string, mixed>
+     */
+    private function assignmentFor(User $actor, RestaurantTable $table): array
+    {
+        $context = TableAssignment::context($actor);
+        $waiter = $table->waiter_id === null ? null : User::find($table->waiter_id, ['id', 'name']);
+
+        return [
+            ...$context,
+            'waiter' => $waiter === null ? null : ['id' => $waiter->id, 'name' => $waiter->name],
+            // Whom the owner or a manager can give the table to.
+            'candidates' => $context['canAssign'] ? TableAssignment::candidates($table->user_id) : [],
+        ];
     }
 
     /**

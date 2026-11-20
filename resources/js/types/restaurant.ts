@@ -161,6 +161,9 @@ export type RestaurantTable = {
     products_count: number;
     order_total: number;
     paid_total: number;
+    /** The team member in charge, when the restaurant assigns waiters to tables. */
+    waiter_id?: number | null;
+    waiter?: { id: number; name: string } | null;
     created_at: string;
     updated_at: string;
 };

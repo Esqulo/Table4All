@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useCanWrite } from '@/hooks/use-permission';
 import { croppedFile, imageSourceUrl } from '@/lib/image-upload';
@@ -52,6 +53,8 @@ type Props = {
     tableCapacity: number | null;
     /** The address was found on the map ("closest first" on the discovery page). */
     addressLocated: boolean;
+    /** Each table has a waiter in charge (taken, released, assigned). */
+    tableAssignmentEnabled: boolean;
     hours: OpeningHourInterval[];
     photos: VenuePhoto[];
     maxPhotos: number;
@@ -83,6 +86,7 @@ export default function Establishment({
     priceLevel,
     tableCapacity,
     addressLocated,
+    tableAssignmentEnabled,
     hours,
     photos,
     maxPhotos,
@@ -127,6 +131,9 @@ export default function Establishment({
                     />
                     <BannerSection bannerUrl={bannerUrl} logoUrl={logoUrl} />
                     <LogoSection logoUrl={logoUrl} />
+                    <ServiceSection
+                        tableAssignmentEnabled={tableAssignmentEnabled}
+                    />
                     <HoursSection initial={hours} />
                     <PhotosSection photos={photos} maxPhotos={maxPhotos} />
                 </fieldset>
@@ -745,6 +752,61 @@ function groupByDay(hours: OpeningHourInterval[]): Interval[][] {
 function flatten(days: Interval[][]): OpeningHourInterval[] {
     return days.flatMap((intervals, weekday) =>
         intervals.map((i) => ({ weekday, ...i })),
+    );
+}
+
+// ─── Service ──────────────────────────────────────────────────────────────────
+
+/** How the floor works. Each switch saves on its own. */
+function ServiceSection({
+    tableAssignmentEnabled,
+}: {
+    tableAssignmentEnabled: boolean;
+}) {
+    const { t } = useTranslation();
+    const [saving, setSaving] = useState(false);
+
+    const toggle = (enabled: boolean) => {
+        if (
+            !enabled &&
+            !confirm(t('establishment.table_assignment_off_confirm'))
+        ) {
+            return;
+        }
+
+        router.put(
+            EstablishmentController.updateService.url(),
+            { table_assignment_enabled: enabled },
+            {
+                preserveScroll: true,
+                onStart: () => setSaving(true),
+                onFinish: () => setSaving(false),
+            },
+        );
+    };
+
+    return (
+        <Section
+            title={t('establishment.service_title')}
+            description={t('establishment.service_description')}
+        >
+            <label className="flex max-w-xl items-start justify-between gap-4">
+                <span className="space-y-1">
+                    <span className="block text-sm font-medium">
+                        {t('establishment.table_assignment_label')}
+                    </span>
+                    <span className="block text-sm text-muted-foreground">
+                        {t('establishment.table_assignment_hint')}
+                    </span>
+                </span>
+                <Switch
+                    checked={tableAssignmentEnabled}
+                    onCheckedChange={toggle}
+                    disabled={saving}
+                    className="mt-0.5"
+                />
+            </label>
+        </Section>
     );
 }
 

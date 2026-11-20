@@ -9,6 +9,7 @@ use App\Models\RestaurantPhoto;
 use App\Models\User;
 use App\Support\ImageOptimizer;
 use App\Support\RestaurantHandle;
+use App\Support\TableAssignment;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -55,6 +56,7 @@ class EstablishmentController extends Controller
             'tableCapacity' => $restaurant->table_capacity,
             // Whether the address was found on the map ("closest first" on the discovery page).
             'addressLocated' => $restaurant->latitude !== null,
+            'tableAssignmentEnabled' => TableAssignment::enabled($restaurant->id),
             'profileBaseUrl' => url('vempro'),
             'hours' => RestaurantOpeningHour::where('user_id', $restaurantId)
                 ->orderBy('weekday')
@@ -123,6 +125,27 @@ class EstablishmentController extends Controller
         }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'establishment.msg_profile_saved']);
+
+        return back();
+    }
+
+    /** How the floor works: whether each table has a waiter in charge (TableAssignment). */
+    public function updateService(Request $request): RedirectResponse
+    {
+        /** @var array{table_assignment_enabled: bool} $data */
+        $data = $request->validate([
+            'table_assignment_enabled' => ['required', 'boolean'],
+        ]);
+
+        $restaurant = $request->user();
+        $restaurant->forceFill(['table_assignment_enabled' => $data['table_assignment_enabled']])->save();
+
+        // Off: nobody is in charge of the open tables any more (turning it back on starts clean).
+        if (! $data['table_assignment_enabled']) {
+            TableAssignment::clearOpen($restaurant->id);
+        }
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'establishment.msg_service_saved']);
 
         return back();
     }

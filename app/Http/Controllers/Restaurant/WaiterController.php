@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\WaiterInvitationMail;
 use App\Models\User;
 use App\Models\WaiterInvitation;
+use App\Support\TableAssignment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -175,6 +176,9 @@ class WaiterController extends Controller
         $actor = $request->user();
         $this->ensureMember($actor, $waiter);
         abort_unless($this->canManage($actor, $waiter), 403);
+
+        // Their open tables are left free for someone else to take.
+        TableAssignment::clearOpen($actor->effectiveRestaurantId(), $waiter->id);
 
         // Back to an ordinary customer account, with nothing left of the job.
         $waiter->forceFill([

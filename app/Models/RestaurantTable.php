@@ -16,6 +16,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $user_id
  * @property int|null $responsible_user_id
+ * @property int|null $waiter_id the team member in charge (App\Support\TableAssignment)
  * @property string $title
  * @property string|null $access_code
  * @property Carbon|string|null $closed_at
@@ -60,6 +61,12 @@ final class RestaurantTable extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function waiter(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'waiter_id');
     }
 
     /** @return HasMany<TablePayment, $this> */
