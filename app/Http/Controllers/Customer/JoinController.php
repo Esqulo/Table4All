@@ -14,6 +14,7 @@ use App\Models\Product;
 use App\Models\QueueItem;
 use App\Models\RestaurantTable;
 use App\Models\Sale;
+use App\Models\TableCall;
 use App\Models\User;
 use App\Support\CustomerLink;
 use App\Support\Idempotency;
@@ -211,6 +212,12 @@ class JoinController extends Controller
                 'min' => ((int) config('payments.min_charge_cents')) / 100,
             ],
             'payments' => fn () => $this->payments($table->id),
+            // The table's open calls to staff: the buttons show they're waiting.
+            'calls' => fn () => TableCall::where('restaurant_table_id', $table->id)
+                ->whereNull('resolved_at')
+                ->pluck('created_at', 'type')
+                ->map(fn ($at) => $at?->toIso8601String())
+                ->all(),
             'myCheckout' => fn () => $this->openCheckout($table->id, $user->id),
             // Asked for by the payment form (partial reload with ?coupon=&amount=).
             'couponQuote' => Inertia::optional(fn () => $this->couponQuote($request, $table)),
@@ -409,6 +416,36 @@ class JoinController extends Controller
         return redirect()->route('customer.table', $code);
     }
 
+    /**
+     * Calls the waiter or asks for the bill. A second tap while the call is open does
+     * nothing (one open call per table and type), so it is safe to retry.
+     */
+    public function call(Request $request, string $code): RedirectResponse
+    {
+        $table = $this->tableForMember($request, $code);
+
+        $validated = $request->validate([
+            'type' => ['required', Rule::in(TableCall::TYPES)],
+        ]);
+
+        TableCall::open($table, $validated['type'], $request->user()->id);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'join_table.call_sent_'.$validated['type']]);
+
+        return redirect()->route('customer.table', $code);
+    }
+
+    /** Anyone at the table takes the call back (they no longer need the waiter). */
+    public function cancelCall(Request $request, string $code, string $type): RedirectResponse
+    {
+        $table = $this->tableForMember($request, $code);
+        abort_unless(in_array($type, TableCall::TYPES, true), 404);
+
+        TableCall::resolve($table->id, TableCall::CANCELLED, $request->user()->id, $type);
+
+        return redirect()->route('customer.table', $code);
+    }
+
     /** An emoji that floats up on the screens of everyone at the table. */
     public function react(Request $request, string $code): RedirectResponse
     {
@@ -429,7 +466,7 @@ class JoinController extends Controller
         $table = RestaurantTable::where('access_code', $code)
             ->whereNull('closed_at')
             ->whereNull('deleted_at')
-            ->firstOrFail(['id', 'responsible_user_id']);
+            ->firstOrFail(['id', 'user_id', 'responsible_user_id']);
 
         abort_unless(TableMembership::isMember($table, $request->user()->id), 403);
 

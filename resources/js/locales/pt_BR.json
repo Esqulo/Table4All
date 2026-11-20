@@ -96,7 +96,8 @@
         "finance": "Financeiro",
         "payouts": "Repasses",
         "incentives": "Incentivos",
-        "rewards": "Recompensas"
+        "rewards": "Recompensas",
+        "calls": "Chamadas"
     },
     "settings": {
         "title": "Configurações",
@@ -598,7 +599,14 @@
         "no_orders_description": "Abra o cardápio e peça direto pelo celular.",
         "see_menu": "Ver cardápio",
         "order_cta": "Fazer pedido",
-        "pay_cta": "Pagar"
+        "pay_cta": "Pagar",
+        "call_waiter": "Chamar o garçom",
+        "call_bill": "Pedir a conta",
+        "call_waiting_waiter": "Garçom chamado",
+        "call_waiting_bill": "Conta pedida",
+        "call_cancel": "Cancelar chamada",
+        "call_sent_waiter": "Chamamos o garçom. Já vem alguém!",
+        "call_sent_bill": "Pedimos a conta. Já vem alguém!"
     },
     "two_factor": {
         "title": "Autenticação de dois fatores",
@@ -1542,6 +1550,19 @@
         "level_write": "Edição",
         "read_only_feature": "Só o dono do restaurante edita esta área.",
         "read_only_notice": "Você tem acesso somente leitura a esta área.",
-        "error_no_permission": "Você não tem permissão para fazer isso."
+        "error_no_permission": "Você não tem permissão para fazer isso.",
+        "feature_calls": "Chamadas"
+    },
+    "calls": {
+        "title": "Chamadas",
+        "description": "Mesas que chamaram o garçom ou pediram a conta, da mais antiga para a mais nova.",
+        "empty": "Nenhuma mesa chamando agora.",
+        "type_waiter": "Chamou o garçom",
+        "type_bill": "Pediu a conta",
+        "remaining": "falta {{amount}}",
+        "just_now": "agora mesmo",
+        "minutes_ago_one": "há {{count}} min",
+        "minutes_ago_other": "há {{count}} min",
+        "answer": "Atendida"
     }
 }

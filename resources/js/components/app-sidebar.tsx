@@ -2,6 +2,7 @@ import { Link, usePage } from '@inertiajs/react';
 import {
     BadgePercent,
     BarChart3,
+    BellRing,
     HandCoins,
     Landmark,
     Inbox,
@@ -30,6 +31,7 @@ import AdminRestaurantController from '@/actions/App/Http/Controllers/Admin/Rest
 import CustomerJoinController from '@/actions/App/Http/Controllers/Customer/JoinController';
 import CustomerRewardController from '@/actions/App/Http/Controllers/Customer/RewardController';
 import DiscoverController from '@/actions/App/Http/Controllers/DiscoverController';
+import CallController from '@/actions/App/Http/Controllers/Restaurant/CallController';
 import CouponController from '@/actions/App/Http/Controllers/Restaurant/CouponController';
 import DashboardController from '@/actions/App/Http/Controllers/Restaurant/DashboardController';
 import DeliveryController from '@/actions/App/Http/Controllers/Restaurant/DeliveryController';
@@ -117,6 +119,13 @@ export function AppSidebar() {
             title: t('nav.coupons'),
             href: CouponController.index.url(),
             icon: BadgePercent,
+        },
+        {
+            feature: 'calls',
+            title: t('nav.calls'),
+            href: CallController.index.url(),
+            icon: BellRing,
+            badge: auth.openCalls ?? 0,
         },
         {
             feature: 'delivery',

@@ -96,7 +96,8 @@
         "finance": "Finance",
         "payouts": "Payouts",
         "incentives": "Incentives",
-        "rewards": "Rewards"
+        "rewards": "Rewards",
+        "calls": "Calls"
     },
     "settings": {
         "title": "Settings",
@@ -598,7 +599,14 @@
         "no_orders_description": "Open the menu and order right from your phone.",
         "see_menu": "See menu",
         "order_cta": "Order",
-        "pay_cta": "Pay"
+        "pay_cta": "Pay",
+        "call_waiter": "Call the waiter",
+        "call_bill": "Ask for the bill",
+        "call_waiting_waiter": "Waiter called",
+        "call_waiting_bill": "Bill requested",
+        "call_cancel": "Cancel call",
+        "call_sent_waiter": "We called the waiter. Someone is on the way!",
+        "call_sent_bill": "We asked for the bill. Someone is on the way!"
     },
     "two_factor": {
         "title": "Two-factor authentication",
@@ -1542,6 +1550,19 @@
         "level_write": "Edit",
         "read_only_feature": "Only the restaurant owner edits this area.",
         "read_only_notice": "You have read-only access to this area.",
-        "error_no_permission": "You don’t have permission to do that."
+        "error_no_permission": "You don’t have permission to do that.",
+        "feature_calls": "Calls"
+    },
+    "calls": {
+        "title": "Calls",
+        "description": "Tables that called the waiter or asked for the bill, oldest first.",
+        "empty": "No table is calling right now.",
+        "type_waiter": "Called the waiter",
+        "type_bill": "Asked for the bill",
+        "remaining": "{{amount}} left",
+        "just_now": "just now",
+        "minutes_ago_one": "{{count}} min ago",
+        "minutes_ago_other": "{{count}} min ago",
+        "answer": "Answered"
     }
 }

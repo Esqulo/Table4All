@@ -4,6 +4,7 @@ import {
     SidebarGroup,
     SidebarGroupLabel,
     SidebarMenu,
+    SidebarMenuBadge,
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
@@ -33,6 +34,11 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                 <span>{item.title}</span>
                             </Link>
                         </SidebarMenuButton>
+                        {!!item.badge && (
+                            <SidebarMenuBadge className="rounded-full bg-destructive px-1.5 text-white peer-data-[active=true]/menu-button:text-white">
+                                {item.badge}
+                            </SidebarMenuBadge>
+                        )}
                     </SidebarMenuItem>
                 ))}
             </SidebarMenu>

@@ -12,6 +12,7 @@ use App\Http\Controllers\Customer\PaymentController as CustomerPaymentController
 use App\Http\Controllers\Customer\RewardController as CustomerRewardController;
 use App\Http\Controllers\DiscoverController;
 use App\Http\Controllers\PostInteractionController;
+use App\Http\Controllers\Restaurant\CallController;
 use App\Http\Controllers\Restaurant\CouponController;
 use App\Http\Controllers\Restaurant\DashboardController;
 use App\Http\Controllers\Restaurant\DeliveryController;
@@ -111,6 +112,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('mesa/{code}/sair', [CustomerJoinController::class, 'leave'])->name('leave');
             Route::post('mesa/{code}/chat', [CustomerJoinController::class, 'sendMessage'])
                 ->middleware('throttle:30,1')->name('chat.send');
+            Route::post('mesa/{code}/chamadas', [CustomerJoinController::class, 'call'])
+                ->middleware('throttle:10,1')->name('calls.store');
+            Route::delete('mesa/{code}/chamadas/{type}', [CustomerJoinController::class, 'cancelCall'])
+                ->whereIn('type', ['waiter', 'bill'])->name('calls.cancel');
             Route::post('mesa/{code}/reacoes', [CustomerJoinController::class, 'react'])
                 ->middleware('throttle:60,1')->name('chat.react');
             // Paying the table in the app (Stripe Checkout).
@@ -154,6 +159,14 @@ Route::middleware(['auth', 'verified', EnsureRestaurantOrWaiter::class])
             Route::patch('mesas/{table}/fechar', [TableController::class, 'close'])
                 ->name('tables.close');
         });
+
+        // Tables calling the waiter or asking for the bill.
+        Route::get('chamadas', [CallController::class, 'index'])
+            ->middleware($feature(StaffFeature::CALLS))
+            ->name('calls.index');
+        Route::patch('chamadas/{call}/atendida', [CallController::class, 'answer'])
+            ->middleware($feature(StaffFeature::CALLS))
+            ->name('calls.answer');
 
         Route::get('entregas', [DeliveryController::class, 'index'])
             ->middleware($feature(StaffFeature::DELIVERY))

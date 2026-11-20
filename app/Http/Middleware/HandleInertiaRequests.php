@@ -2,6 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\Permission;
+use App\Enums\StaffFeature;
+use App\Http\Controllers\Restaurant\CallController;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -44,6 +47,10 @@ class HandleInertiaRequests extends Middleware
                 // sidebar and the read-only screens follow it; the routes enforce it.
                 'permissions' => fn () => $request->user()?->accessMap(),
                 'staffRole' => fn () => $request->user()?->isStaff() ? $request->user()->staffRole()->value : null,
+                // Tables waiting for someone: the sidebar's badge on the calls board (full page loads only).
+                'openCalls' => fn () => $request->user()?->access(StaffFeature::CALLS)->allows(Permission::READ)
+                    ? CallController::openCount($request->user()->effectiveRestaurantId())
+                    : null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             // Language of this response (SetLocale, from the `locale` cookie): the

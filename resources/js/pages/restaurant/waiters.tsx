@@ -409,8 +409,12 @@ function AccessDialog({
 
     return (
         <Dialog open onOpenChange={(open) => !open && !processing && onClose()}>
-            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
-                <DialogHeader>
+            {/* Header and buttons stay put; only the list of areas scrolls. */}
+            <DialogContent
+                showCloseButton={false}
+                className="flex max-h-[90vh] flex-col gap-0 p-0 sm:max-w-xl"
+            >
+                <DialogHeader className="border-b px-6 pt-6 pb-4">
                     <DialogTitle>
                         {t('waiters.access_title', { name: member.name })}
                     </DialogTitle>
@@ -419,7 +423,7 @@ function AccessDialog({
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="space-y-5">
+                <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-4">
                     {canManageManagers && (
                         <div className="space-y-2">
                             <Label id="access-role-label">
@@ -533,7 +537,7 @@ function AccessDialog({
                     </ul>
                 </div>
 
-                <DialogFooter>
+                <DialogFooter className="border-t px-6 py-4">
                     <Button
                         type="button"
                         variant="outline"

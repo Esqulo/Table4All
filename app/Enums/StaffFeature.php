@@ -14,6 +14,8 @@ enum StaffFeature: string
 {
     case TABLES = 'tables';
     case DELIVERY = 'delivery';
+    /** The calls board: tables calling the waiter or asking for the bill. */
+    case CALLS = 'calls';
     case QUEUES = 'queues';
     case PRODUCTS = 'products';
     case MENUS = 'menus';
@@ -51,6 +53,7 @@ enum StaffFeature: string
         return [
             self::TABLES->value => Permission::WRITE->value,
             self::DELIVERY->value => Permission::WRITE->value,
+            self::CALLS->value => Permission::WRITE->value,
             self::PRODUCTS->value => Permission::READ->value,
         ];
     }

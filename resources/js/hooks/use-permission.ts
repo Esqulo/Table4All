@@ -5,6 +5,7 @@ import type { Auth } from '@/types';
 export type StaffFeature =
     | 'tables'
     | 'delivery'
+    | 'calls'
     | 'queues'
     | 'products'
     | 'menus'

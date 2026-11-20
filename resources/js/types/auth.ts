@@ -23,6 +23,8 @@ export type Auth = {
     permissions?: Record<string, 'none' | 'read' | 'write'> | null;
     /** 'waiter' or 'manager' for staff accounts, null otherwise. */
     staffRole?: 'waiter' | 'manager' | null;
+    /** Calls waiting on the calls board (null without access to it). */
+    openCalls?: number | null;
 };
 
 export type TwoFactorSetupData = {

@@ -19,6 +19,8 @@ import {
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import JoinController from '@/actions/App/Http/Controllers/Customer/JoinController';
+import { TableCallButtons } from '@/components/table-call-buttons';
+import type { TableCalls } from '@/components/table-call-buttons';
 import { TableChat } from '@/components/table-chat';
 import type { ChatFeed } from '@/components/table-chat';
 import { PayPanel, PaymentsList } from '@/components/table-payment';
@@ -105,6 +107,8 @@ type Props = {
     payments: TablePaymentEntry[];
     myCheckout: OpenCheckout | null;
     couponQuote?: CouponQuote;
+    /** Open calls to staff (waiter, bill). */
+    calls: TableCalls;
 };
 
 type Tab = 'orders' | 'bill' | 'table';
@@ -142,6 +146,7 @@ export default function CustomerShow({
     payments,
     myCheckout,
     couponQuote,
+    calls,
 }: Props) {
     const { t, i18n } = useTranslation();
     const locale = i18n.language === 'pt_BR' ? 'pt-BR' : 'en-US';
@@ -192,6 +197,7 @@ export default function CustomerShow({
             'payments',
             'myCheckout',
             'onlinePayments',
+            'calls',
         ],
         intervalMs: 20_000,
         enabled: !menuOpen,
@@ -229,6 +235,10 @@ export default function CustomerShow({
                     remaining={remaining}
                     fmt={fmt}
                 />
+
+                <div className="mt-3">
+                    <TableCallButtons code={code} calls={calls} />
+                </div>
 
                 {/* Someone is waiting at the door: needs an answer whatever tab is open. */}
                 {joinRequests.length > 0 && (

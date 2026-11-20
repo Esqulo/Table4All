@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\QueueItem;
 use App\Models\RestaurantTable;
 use App\Models\Sale;
+use App\Models\TableCall;
 use App\Support\CustomerLink;
 use App\Support\Idempotency;
 use Illuminate\Http\RedirectResponse;
@@ -271,6 +272,9 @@ class TableController extends Controller
                 ->whereIn('status', QueueItemStatus::open())
                 ->update(['status' => QueueItemStatus::ABANDONED->value, 'updated_at' => now()]);
 
+            // Nobody is left to answer: the calls board drops the table's calls.
+            TableCall::resolve($locked->id, TableCall::CLOSED);
+
             return true;
         });
 
@@ -298,6 +302,7 @@ class TableController extends Controller
             }
 
             $table->delete();
+            TableCall::resolve($table->id, TableCall::CLOSED);
 
             return true;
         });
