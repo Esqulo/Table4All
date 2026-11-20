@@ -8,12 +8,14 @@ use App\Http\Controllers\Admin\RestaurantController as AdminRestaurantController
 use App\Http\Controllers\AdmissionRequestController;
 use App\Http\Controllers\Customer\JoinController as CustomerJoinController;
 use App\Http\Controllers\Customer\PaymentController as CustomerPaymentController;
+use App\Http\Controllers\Customer\RewardController as CustomerRewardController;
 use App\Http\Controllers\PostInteractionController;
 use App\Http\Controllers\Restaurant\CouponController;
 use App\Http\Controllers\Restaurant\DashboardController;
 use App\Http\Controllers\Restaurant\DeliveryController;
 use App\Http\Controllers\Restaurant\EstablishmentController;
 use App\Http\Controllers\Restaurant\FinanceController;
+use App\Http\Controllers\Restaurant\IncentiveController;
 use App\Http\Controllers\Restaurant\MenuController;
 use App\Http\Controllers\Restaurant\PostController;
 use App\Http\Controllers\Restaurant\ProductController;
@@ -86,6 +88,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('customer.')
         ->middleware(EnsureNotStaff::class)
         ->group(function () {
+            // Rewards: level, loyalty cards, reward coupons, tables and payments.
+            Route::get('recompensas', [CustomerRewardController::class, 'index'])->name('rewards');
             Route::get('mesa', [CustomerJoinController::class, 'index'])->name('join');
             Route::post('mesa/qr', [CustomerJoinController::class, 'createLink'])
                 ->middleware('throttle:10,1')->name('link.create');
@@ -154,6 +158,12 @@ Route::middleware(['auth', 'verified', EnsureRestaurant::class])
     ->name('restaurant.')
     ->group(function () {
         Route::get('painel', [DashboardController::class, 'index'])->name('dashboards.index');
+
+        // Customer incentives the restaurant offers (and pays for), each on or off.
+        Route::get('incentivos', [IncentiveController::class, 'index'])->name('incentives.index');
+        // Declared before incentivos/{incentive}, which would otherwise catch it.
+        Route::put('incentivos/fidelidade/etapas', [IncentiveController::class, 'updateLoyaltyTiers'])->name('incentives.loyalty.tiers');
+        Route::put('incentivos/{incentive}', [IncentiveController::class, 'update'])->name('incentives.update');
 
         // Financial profile: the Stripe account customers' payments go to.
         Route::get('financeiro', [FinanceController::class, 'show'])->name('finance.show');

@@ -15,9 +15,11 @@ use Illuminate\Support\Str;
  * A discount code. user_id is the restaurant that offers it (and pays for the
  * discount); null means a platform coupon, valid at every restaurant and paid
  * by the platform. Codes are stored upper-case and matched that way.
+ * customer_id makes it personal (loyalty rewards): only that customer can use it.
  *
  * @property int $id
  * @property int|null $user_id
+ * @property int|null $customer_id
  * @property string $code
  * @property CouponDiscountType $discount_type
  * @property float $discount_value
@@ -35,6 +37,7 @@ final class Coupon extends Model
 
     protected $fillable = [
         'user_id',
+        'customer_id',
         'code',
         'discount_type',
         'discount_value',
@@ -71,6 +74,12 @@ final class Coupon extends Model
             ->where(fn (Builder $q) => $q->where('user_id', $restaurantId)->orWhereNull('user_id'))
             ->orderByRaw('user_id IS NULL')
             ->first();
+    }
+
+    /** Personal coupons (loyalty rewards) work only for their customer. */
+    public function usableBy(int $userId): bool
+    {
+        return $this->customer_id === null || $this->customer_id === $userId;
     }
 
     public function isPlatform(): bool

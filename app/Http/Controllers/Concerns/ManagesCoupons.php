@@ -31,6 +31,8 @@ trait ManagesCoupons
 
         $coupons = Coupon::query()
             ->when($ownerId === null, fn ($q) => $q->whereNull('user_id'), fn ($q) => $q->where('user_id', $ownerId))
+            // Personal coupons (loyalty rewards) are handed out automatically, not managed here.
+            ->whereNull('customer_id')
             ->withCount(['onlinePayments as uses' => fn ($q) => $q->where('status', OnlinePaymentStatus::PAID->value)])
             ->orderByDesc('id')
             ->get()
@@ -91,6 +93,8 @@ trait ManagesCoupons
     private function authorizeCoupon(Request $request, Coupon $coupon): void
     {
         abort_unless($coupon->user_id === $this->couponOwnerId($request), 403);
+        // A customer's loyalty reward isn't the restaurant's to edit or take back.
+        abort_unless($coupon->customer_id === null, 403);
     }
 
     /**

@@ -228,7 +228,8 @@ final class TableCheckout
     {
         $coupon = Coupon::findForRestaurant($code, $table->user_id);
 
-        if ($coupon === null) {
+        // Someone else's personal coupon is as good as a code that doesn't exist.
+        if ($coupon === null || ! $coupon->usableBy($payer->id)) {
             throw new CheckoutRefused('coupon', 'payments.coupon_invalid');
         }
 

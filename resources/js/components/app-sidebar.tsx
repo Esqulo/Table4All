@@ -17,6 +17,8 @@ import {
     Tag,
     Users,
     UtensilsCrossed,
+    Gift,
+    Trophy,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AdminAdmissionRequestController from '@/actions/App/Http/Controllers/Admin/AdmissionRequestController';
@@ -25,11 +27,13 @@ import AdminCouponController from '@/actions/App/Http/Controllers/Admin/CouponCo
 import AdminPayoutController from '@/actions/App/Http/Controllers/Admin/PayoutController';
 import AdminRestaurantController from '@/actions/App/Http/Controllers/Admin/RestaurantController';
 import CustomerJoinController from '@/actions/App/Http/Controllers/Customer/JoinController';
+import CustomerRewardController from '@/actions/App/Http/Controllers/Customer/RewardController';
 import CouponController from '@/actions/App/Http/Controllers/Restaurant/CouponController';
 import DashboardController from '@/actions/App/Http/Controllers/Restaurant/DashboardController';
 import DeliveryController from '@/actions/App/Http/Controllers/Restaurant/DeliveryController';
 import EstablishmentController from '@/actions/App/Http/Controllers/Restaurant/EstablishmentController';
 import FinanceController from '@/actions/App/Http/Controllers/Restaurant/FinanceController';
+import IncentiveController from '@/actions/App/Http/Controllers/Restaurant/IncentiveController';
 import MenuController from '@/actions/App/Http/Controllers/Restaurant/MenuController';
 import ProductController from '@/actions/App/Http/Controllers/Restaurant/ProductController';
 import QueueController from '@/actions/App/Http/Controllers/Restaurant/QueueController';
@@ -136,6 +140,11 @@ export function AppSidebar() {
                     icon: ConciergeBell,
                 },
                 {
+                    title: t('nav.incentives'),
+                    href: IncentiveController.index.url(),
+                    icon: Gift,
+                },
+                {
                     title: t('nav.establishment'),
                     href: EstablishmentController.edit.url(),
                     icon: Store,
@@ -180,6 +189,11 @@ export function AppSidebar() {
                         title: t('nav.table'),
                         href: CustomerJoinController.index.url(),
                         icon: QrCode,
+                    },
+                    {
+                        title: t('nav.rewards'),
+                        href: CustomerRewardController.index.url(),
+                        icon: Trophy,
                     },
                 ]
               : [

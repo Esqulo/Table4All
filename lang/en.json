@@ -49,5 +49,10 @@
     "payments.coupon_not_combinable": "This coupon can't be combined with others, and this table already used a coupon.",
     "payments.coupon_already_used": "You already used a coupon at this table.",
     "payments.checkout_description": ":table · :restaurant",
-    "coupons.code_taken": "A coupon with this code already exists."
+    "coupons.code_taken": "A coupon with this code already exists.",
+    "loyalty.attribute_tiers": "tiers",
+    "loyalty.attribute_visits": "visits",
+    "loyalty.attribute_discount_type": "discount type",
+    "loyalty.attribute_discount_value": "discount value",
+    "loyalty.attribute_max_discount": "maximum discount"
 }
