@@ -40,6 +40,10 @@ class HandleInertiaRequests extends Middleware
             'name' => config('app.name'),
             'auth' => [
                 'user' => $request->user(),
+                // What the account reaches per feature of its restaurant (none/read/write): the
+                // sidebar and the read-only screens follow it; the routes enforce it.
+                'permissions' => fn () => $request->user()?->accessMap(),
+                'staffRole' => fn () => $request->user()?->isStaff() ? $request->user()->staffRole()->value : null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             // Language of this response (SetLocale, from the `locale` cookie): the

@@ -55,6 +55,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import type { StaffFeature } from '@/hooks/use-permission';
 import { dashboard } from '@/routes';
 import type { Auth, NavItem } from '@/types';
 
@@ -65,6 +66,86 @@ export function AppSidebar() {
     const isRestaurant = auth.user.account_type === 'restaurant';
     const isWaiter = auth.user.account_type === 'waiter';
     const isCustomer = auth.user.account_type === 'customer';
+
+    // The restaurant's screens, each shown when the account may at least read it
+    // (the owner reaches all; staff what was granted to them).
+    const staffNavItems: (NavItem & { feature: StaffFeature })[] = [
+        {
+            feature: 'dashboard',
+            title: t('nav.dashboards'),
+            href: DashboardController.index.url(),
+            icon: BarChart3,
+        },
+        {
+            feature: 'tables',
+            title: t('nav.tables'),
+            href: TableController.index.url(),
+            icon: UtensilsCrossed,
+        },
+        {
+            feature: 'menus',
+            title: t('nav.menus'),
+            href: MenuController.index.url(),
+            icon: ScrollText,
+        },
+        {
+            feature: 'products',
+            title: t('nav.products'),
+            href: ProductController.index.url(),
+            icon: ShoppingBag,
+        },
+        {
+            feature: 'queues',
+            title: t('nav.queues'),
+            href: QueueController.index.url(),
+            icon: ListOrdered,
+        },
+        {
+            feature: 'staff',
+            title: t('nav.waiters'),
+            href: WaiterController.index.url(),
+            icon: Users,
+        },
+        {
+            feature: 'sales',
+            title: t('nav.sales'),
+            href: SaleController.index.url(),
+            icon: Percent,
+        },
+        {
+            feature: 'coupons',
+            title: t('nav.coupons'),
+            href: CouponController.index.url(),
+            icon: BadgePercent,
+        },
+        {
+            feature: 'delivery',
+            title: t('nav.delivery'),
+            href: DeliveryController.index.url(),
+            icon: ConciergeBell,
+        },
+        {
+            feature: 'incentives',
+            title: t('nav.incentives'),
+            href: IncentiveController.index.url(),
+            icon: Gift,
+        },
+        {
+            feature: 'establishment',
+            title: t('nav.establishment'),
+            href: EstablishmentController.edit.url(),
+            icon: Store,
+        },
+        {
+            feature: 'finance',
+            title: t('nav.finance'),
+            href: FinanceController.show.url(),
+            icon: Landmark,
+        },
+    ];
+    const allowedStaffItems: NavItem[] = staffNavItems.filter(
+        (item) => (auth.permissions?.[item.feature] ?? 'none') !== 'none',
+    );
 
     const mainNavItems: NavItem[] = isAdmin
         ? [
@@ -96,66 +177,7 @@ export function AppSidebar() {
           ]
         : isRestaurant
           ? [
-                {
-                    title: t('nav.dashboards'),
-                    href: DashboardController.index.url(),
-                    icon: BarChart3,
-                },
-                {
-                    title: t('nav.tables'),
-                    href: TableController.index.url(),
-                    icon: UtensilsCrossed,
-                },
-                {
-                    title: t('nav.menus'),
-                    href: MenuController.index.url(),
-                    icon: ScrollText,
-                },
-                {
-                    title: t('nav.products'),
-                    href: ProductController.index.url(),
-                    icon: ShoppingBag,
-                },
-                {
-                    title: t('nav.queues'),
-                    href: QueueController.index.url(),
-                    icon: ListOrdered,
-                },
-                {
-                    title: t('nav.waiters'),
-                    href: WaiterController.index.url(),
-                    icon: Users,
-                },
-                {
-                    title: t('nav.sales'),
-                    href: SaleController.index.url(),
-                    icon: Percent,
-                },
-                {
-                    title: t('nav.coupons'),
-                    href: CouponController.index.url(),
-                    icon: BadgePercent,
-                },
-                {
-                    title: t('nav.delivery'),
-                    href: DeliveryController.index.url(),
-                    icon: ConciergeBell,
-                },
-                {
-                    title: t('nav.incentives'),
-                    href: IncentiveController.index.url(),
-                    icon: Gift,
-                },
-                {
-                    title: t('nav.establishment'),
-                    href: EstablishmentController.edit.url(),
-                    icon: Store,
-                },
-                {
-                    title: t('nav.finance'),
-                    href: FinanceController.show.url(),
-                    icon: Landmark,
-                },
+                ...allowedStaffItems,
                 {
                     title: t('nav.feed'),
                     href: SocialFeedController.index.url(),
@@ -163,23 +185,7 @@ export function AppSidebar() {
                 },
             ]
           : isWaiter
-            ? [
-                  {
-                      title: t('nav.tables'),
-                      href: TableController.index.url(),
-                      icon: UtensilsCrossed,
-                  },
-                  {
-                      title: t('nav.products'),
-                      href: ProductController.index.url(),
-                      icon: ShoppingBag,
-                  },
-                  {
-                      title: t('nav.delivery'),
-                      href: DeliveryController.index.url(),
-                      icon: ConciergeBell,
-                  },
-              ]
+            ? allowedStaffItems
             : isCustomer
               ? [
                     {
@@ -224,11 +230,9 @@ export function AppSidebar() {
                                         ? CategoryController.index.url()
                                         : isRestaurant
                                           ? ProductController.index.url()
-                                          : isWaiter
-                                            ? TableController.index.url()
-                                            : isCustomer
-                                              ? SocialFeedController.index.url()
-                                              : dashboard()
+                                          : isCustomer
+                                            ? SocialFeedController.index.url()
+                                            : dashboard()
                                 }
                                 prefetch
                             >

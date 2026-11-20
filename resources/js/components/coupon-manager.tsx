@@ -59,11 +59,14 @@ export function CouponManager({
     actions,
     title,
     description,
+    readOnly = false,
 }: {
     coupons: CouponRow[];
     actions: CouponActions;
     title: string;
     description: string;
+    /** Staff with read-only access: the coupons are listed, nothing can be changed. */
+    readOnly?: boolean;
 }) {
     const { t } = useTranslation();
     const [editing, setEditing] = useState<Editing>(null);
@@ -75,10 +78,12 @@ export function CouponManager({
             <div className="space-y-6 p-6">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                     <Heading title={title} description={description} />
-                    <Button onClick={() => setEditing({ mode: 'create' })}>
-                        <Plus className="h-4 w-4" />
-                        {t('coupons.new')}
-                    </Button>
+                    {!readOnly && (
+                        <Button onClick={() => setEditing({ mode: 'create' })}>
+                            <Plus className="h-4 w-4" />
+                            {t('coupons.new')}
+                        </Button>
+                    )}
                 </div>
 
                 {coupons.length === 0 ? (
@@ -86,18 +91,20 @@ export function CouponManager({
                         {t('coupons.empty')}
                     </p>
                 ) : (
-                    <ul className="divide-y divide-border rounded-xl border border-border">
-                        {coupons.map((coupon) => (
-                            <CouponItem
-                                key={coupon.id}
-                                coupon={coupon}
-                                actions={actions}
-                                onEdit={() =>
-                                    setEditing({ mode: 'edit', coupon })
-                                }
-                            />
-                        ))}
-                    </ul>
+                    <fieldset disabled={readOnly} className="min-w-0">
+                        <ul className="divide-y divide-border rounded-xl border border-border">
+                            {coupons.map((coupon) => (
+                                <CouponItem
+                                    key={coupon.id}
+                                    coupon={coupon}
+                                    actions={actions}
+                                    onEdit={() =>
+                                        setEditing({ mode: 'edit', coupon })
+                                    }
+                                />
+                            ))}
+                        </ul>
+                    </fieldset>
                 )}
             </div>
 

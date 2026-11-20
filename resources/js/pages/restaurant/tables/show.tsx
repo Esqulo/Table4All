@@ -13,11 +13,13 @@ import {
     Smartphone,
     Tag,
     X,
+    Trash2,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import QueueItemController from '@/actions/App/Http/Controllers/Restaurant/QueueItemController';
 import TableController from '@/actions/App/Http/Controllers/Restaurant/TableController';
+import { ReadOnlyNotice } from '@/components/read-only-notice';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -36,6 +38,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { useLiveReload } from '@/hooks/use-live-reload';
+import { useCanWrite } from '@/hooks/use-permission';
 import { formatBRL } from '@/lib/money';
 import { newRequestKey } from '@/lib/request-key';
 import type {
@@ -68,6 +71,8 @@ type Props = {
     activeSales: ActiveSale[];
     queueItems: QueueItem[];
     orderVersion: string;
+    /** Nothing was ordered or paid: the table may be deleted. */
+    deletable?: boolean;
 };
 
 const fmt = (n: number) => formatBRL(n);
@@ -99,8 +104,10 @@ export default function ManageOrder({
     activeSales,
     queueItems,
     orderVersion,
+    deletable = false,
 }: Props) {
     const { t } = useTranslation();
+    const canWrite = useCanWrite('tables');
 
     const buildState = (lines: TableOrderLine[]): OrderState => {
         const state: OrderState = {};
@@ -377,228 +384,325 @@ export default function ManageOrder({
                     </div>
                 </div>
 
-                {/* ── Queue items section ── */}
-                {queueItems.length > 0 && (
-                    <div className="space-y-3">
-                        <p className="text-sm font-semibold">
-                            {t('queues.items_title')}
-                        </p>
-                        <div className="overflow-hidden rounded-xl border border-border">
-                            {queueItems.map((item, idx) => (
-                                <div
-                                    key={item.id}
-                                    className={[
-                                        'flex items-center gap-3 px-4 py-3',
-                                        idx > 0 ? 'border-t border-border' : '',
-                                    ].join(' ')}
-                                >
-                                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
-                                        {item.product.picture_url ? (
-                                            <img
-                                                loading="lazy"
-                                                decoding="async"
-                                                src={item.product.picture_url}
-                                                alt={item.product.name}
-                                                className="h-full w-full object-cover"
-                                            />
-                                        ) : (
-                                            <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                                                <ImageOff className="h-3.5 w-3.5 opacity-40" />
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="min-w-0 flex-1">
-                                        <p className="truncate text-sm font-medium">
-                                            {item.product.name}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {item.queue
-                                                ? `${item.queue.name} · `
-                                                : ''}
-                                            x{item.quantity} · {fmt(item.price)}
-                                        </p>
-                                    </div>
-                                    {item.status === 'pending' &&
-                                    item.queue_id !== null ? (
-                                        <Form
-                                            {...QueueItemController.markDone.form(
-                                                { queueItem: item.id },
-                                            )}
-                                        >
-                                            {({ processing }) => (
-                                                <Button
-                                                    type="submit"
-                                                    size="sm"
-                                                    variant="outline"
-                                                    disabled={processing}
-                                                    className="shrink-0"
-                                                >
-                                                    <ConciergeBell className="mr-1.5 h-3.5 w-3.5" />
-                                                    {t('queues.item_mark_done')}
-                                                </Button>
-                                            )}
-                                        </Form>
-                                    ) : item.status !== 'delivered' ? (
-                                        <Form
-                                            {...QueueItemController.markDelivered.form(
-                                                { queueItem: item.id },
-                                            )}
-                                        >
-                                            {({ processing }) => (
-                                                <Button
-                                                    type="submit"
-                                                    size="sm"
-                                                    disabled={processing}
-                                                    className="shrink-0"
-                                                >
-                                                    {t(
-                                                        'queues.item_mark_delivered',
-                                                    )}
-                                                </Button>
-                                            )}
-                                        </Form>
-                                    ) : null}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
+                <ReadOnlyNotice feature="tables" />
 
-                <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2">
-                    {/* ── Products form ── */}
-                    <div className="space-y-3">
-                        <p className="text-sm font-semibold">
-                            {t('products.title')}
-                        </p>
+                {/* Read-only access: everything below is shown but can't be changed. */}
+                <fieldset disabled={!canWrite} className="min-w-0 space-y-6">
+                    {/* ── Queue items section ── */}
+                    {queueItems.length > 0 && (
                         <div className="space-y-3">
-                            {currentLines.length > 0 ? (
-                                <div className="overflow-hidden rounded-xl border border-border">
-                                    {currentLines.map((line, idx) => {
-                                        const product = products.find(
-                                            (p) => p.id === line.productId,
-                                        );
-                                        const suffix = t(
-                                            `products.price_suffix.${product?.price_type ?? 'unit'}`,
-                                        );
-                                        const key = lineKey(
-                                            line.productId,
-                                            line.price,
-                                        );
-
-                                        return (
-                                            <div
-                                                key={key}
-                                                className={[
-                                                    'flex items-center gap-3 px-4 py-3',
-                                                    idx > 0
-                                                        ? 'border-t border-border'
-                                                        : '',
-                                                ].join(' ')}
+                            <p className="text-sm font-semibold">
+                                {t('queues.items_title')}
+                            </p>
+                            <div className="overflow-hidden rounded-xl border border-border">
+                                {queueItems.map((item, idx) => (
+                                    <div
+                                        key={item.id}
+                                        className={[
+                                            'flex items-center gap-3 px-4 py-3',
+                                            idx > 0
+                                                ? 'border-t border-border'
+                                                : '',
+                                        ].join(' ')}
+                                    >
+                                        <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
+                                            {item.product.picture_url ? (
+                                                <img
+                                                    loading="lazy"
+                                                    decoding="async"
+                                                    src={
+                                                        item.product.picture_url
+                                                    }
+                                                    alt={item.product.name}
+                                                    className="h-full w-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                                                    <ImageOff className="h-3.5 w-3.5 opacity-40" />
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="truncate text-sm font-medium">
+                                                {item.product.name}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {item.queue
+                                                    ? `${item.queue.name} · `
+                                                    : ''}
+                                                x{item.quantity} ·{' '}
+                                                {fmt(item.price)}
+                                            </p>
+                                        </div>
+                                        {item.status === 'pending' &&
+                                        item.queue_id !== null ? (
+                                            <Form
+                                                {...QueueItemController.markDone.form(
+                                                    { queueItem: item.id },
+                                                )}
                                             >
-                                                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
-                                                    {product?.picture_url ? (
-                                                        <img
-                                                            loading="lazy"
-                                                            decoding="async"
-                                                            src={
-                                                                product.picture_url
-                                                            }
-                                                            alt={product.name}
-                                                            className="h-full w-full object-cover"
-                                                        />
-                                                    ) : (
-                                                        <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                                                            <ImageOff className="h-3.5 w-3.5 opacity-40" />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="truncate text-sm font-medium">
-                                                        {product?.name ?? '—'}
-                                                    </p>
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {fmt(line.price)} /{' '}
-                                                        {suffix}
-                                                    </p>
-                                                </div>
-                                                <p className="w-20 shrink-0 text-right text-sm font-semibold tabular-nums">
-                                                    {fmt(
-                                                        line.price *
-                                                            line.quantity,
-                                                    )}
-                                                </p>
-                                                <div className="flex shrink-0 items-center gap-1">
+                                                {({ processing }) => (
                                                     <Button
-                                                        type="button"
+                                                        type="submit"
+                                                        size="sm"
                                                         variant="outline"
-                                                        size="icon"
-                                                        className="h-7 w-7"
-                                                        onClick={() =>
-                                                            adjust(key, -1)
-                                                        }
+                                                        disabled={processing}
+                                                        className="shrink-0"
                                                     >
-                                                        <Minus className="h-3 w-3" />
+                                                        <ConciergeBell className="mr-1.5 h-3.5 w-3.5" />
+                                                        {t(
+                                                            'queues.item_mark_done',
+                                                        )}
                                                     </Button>
-                                                    <span className="w-6 text-center text-sm tabular-nums">
-                                                        {line.quantity}
-                                                    </span>
+                                                )}
+                                            </Form>
+                                        ) : item.status !== 'delivered' ? (
+                                            <Form
+                                                {...QueueItemController.markDelivered.form(
+                                                    { queueItem: item.id },
+                                                )}
+                                            >
+                                                {({ processing }) => (
                                                     <Button
-                                                        type="button"
-                                                        variant="outline"
-                                                        size="icon"
-                                                        className="h-7 w-7"
-                                                        onClick={() => {
-                                                            const currentPrice =
-                                                                effectivePriceFor(
-                                                                    line.productId,
-                                                                );
+                                                        type="submit"
+                                                        size="sm"
+                                                        disabled={processing}
+                                                        className="shrink-0"
+                                                    >
+                                                        {t(
+                                                            'queues.item_mark_delivered',
+                                                        )}
+                                                    </Button>
+                                                )}
+                                            </Form>
+                                        ) : null}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
-                                                            if (
-                                                                currentPrice !==
-                                                                line.price
-                                                            ) {
-                                                                // Redirect the addition to the current-price line.
-                                                                const targetKey =
-                                                                    lineKey(
-                                                                        line.productId,
-                                                                        currentPrice,
-                                                                    );
-                                                                setOrderState(
-                                                                    (prev) => ({
-                                                                        ...prev,
-                                                                        [targetKey]:
-                                                                            {
-                                                                                productId:
-                                                                                    line.productId,
-                                                                                price: currentPrice,
-                                                                                quantity:
-                                                                                    (prev[
-                                                                                        targetKey
-                                                                                    ]
-                                                                                        ?.quantity ??
-                                                                                        0) +
-                                                                                    1,
-                                                                            },
-                                                                    }),
-                                                                );
-                                                            } else {
-                                                                adjust(key, +1);
+                    <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2">
+                        {/* ── Products form ── */}
+                        <div className="space-y-3">
+                            <p className="text-sm font-semibold">
+                                {t('products.title')}
+                            </p>
+                            <div className="space-y-3">
+                                {currentLines.length > 0 ? (
+                                    <div className="overflow-hidden rounded-xl border border-border">
+                                        {currentLines.map((line, idx) => {
+                                            const product = products.find(
+                                                (p) => p.id === line.productId,
+                                            );
+                                            const suffix = t(
+                                                `products.price_suffix.${product?.price_type ?? 'unit'}`,
+                                            );
+                                            const key = lineKey(
+                                                line.productId,
+                                                line.price,
+                                            );
+
+                                            return (
+                                                <div
+                                                    key={key}
+                                                    className={[
+                                                        'flex items-center gap-3 px-4 py-3',
+                                                        idx > 0
+                                                            ? 'border-t border-border'
+                                                            : '',
+                                                    ].join(' ')}
+                                                >
+                                                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
+                                                        {product?.picture_url ? (
+                                                            <img
+                                                                loading="lazy"
+                                                                decoding="async"
+                                                                src={
+                                                                    product.picture_url
+                                                                }
+                                                                alt={
+                                                                    product.name
+                                                                }
+                                                                className="h-full w-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                                                                <ImageOff className="h-3.5 w-3.5 opacity-40" />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="truncate text-sm font-medium">
+                                                            {product?.name ??
+                                                                '—'}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {fmt(line.price)} /{' '}
+                                                            {suffix}
+                                                        </p>
+                                                    </div>
+                                                    <p className="w-20 shrink-0 text-right text-sm font-semibold tabular-nums">
+                                                        {fmt(
+                                                            line.price *
+                                                                line.quantity,
+                                                        )}
+                                                    </p>
+                                                    <div className="flex shrink-0 items-center gap-1">
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="icon"
+                                                            className="h-7 w-7"
+                                                            onClick={() =>
+                                                                adjust(key, -1)
                                                             }
-                                                        }}
-                                                    >
-                                                        <Plus className="h-3 w-3" />
-                                                    </Button>
+                                                        >
+                                                            <Minus className="h-3 w-3" />
+                                                        </Button>
+                                                        <span className="w-6 text-center text-sm tabular-nums">
+                                                            {line.quantity}
+                                                        </span>
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="icon"
+                                                            className="h-7 w-7"
+                                                            onClick={() => {
+                                                                const currentPrice =
+                                                                    effectivePriceFor(
+                                                                        line.productId,
+                                                                    );
+
+                                                                if (
+                                                                    currentPrice !==
+                                                                    line.price
+                                                                ) {
+                                                                    // Redirect the addition to the current-price line.
+                                                                    const targetKey =
+                                                                        lineKey(
+                                                                            line.productId,
+                                                                            currentPrice,
+                                                                        );
+                                                                    setOrderState(
+                                                                        (
+                                                                            prev,
+                                                                        ) => ({
+                                                                            ...prev,
+                                                                            [targetKey]:
+                                                                                {
+                                                                                    productId:
+                                                                                        line.productId,
+                                                                                    price: currentPrice,
+                                                                                    quantity:
+                                                                                        (prev[
+                                                                                            targetKey
+                                                                                        ]
+                                                                                            ?.quantity ??
+                                                                                            0) +
+                                                                                        1,
+                                                                                },
+                                                                        }),
+                                                                    );
+                                                                } else {
+                                                                    adjust(
+                                                                        key,
+                                                                        +1,
+                                                                    );
+                                                                }
+                                                            }}
+                                                        >
+                                                            <Plus className="h-3 w-3" />
+                                                        </Button>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        );
-                                    })}
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border py-8 text-muted-foreground">
+                                        <ShoppingCart className="h-7 w-7 opacity-30" />
+                                        <p className="text-sm">
+                                            {t('tables.order_empty')}
+                                        </p>
+                                    </div>
+                                )}
+
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full"
+                                    onClick={() => setAddProductsOpen(true)}
+                                >
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    {t('tables.add_products')}
+                                </Button>
+
+                                <div className="flex items-center justify-between rounded-xl border border-border px-5 py-3">
+                                    <span className="text-sm text-muted-foreground">
+                                        {t('tables.order_total')}
+                                    </span>
+                                    <span className="text-lg font-bold tabular-nums">
+                                        {currentLines.length > 0
+                                            ? fmt(productTotal)
+                                            : '—'}
+                                    </span>
+                                </div>
+
+                                <Button
+                                    type="button"
+                                    onClick={handleSaveOrder}
+                                    disabled={!isDirty || autoSubmitting}
+                                    variant="outline"
+                                    className="w-full"
+                                >
+                                    {t('tables.save_order')}
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* ── Payments section ── */}
+                        <div className="space-y-3">
+                            <p className="text-sm font-semibold">
+                                {t('tables.payments_title')}
+                            </p>
+
+                            {table.payments.length > 0 ? (
+                                <div className="overflow-hidden rounded-xl border border-border">
+                                    {table.payments.map((payment, idx) => (
+                                        <PaymentRow
+                                            key={payment.id}
+                                            payment={payment}
+                                            idx={idx}
+                                        />
+                                    ))}
                                 </div>
                             ) : (
-                                <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border py-8 text-muted-foreground">
-                                    <ShoppingCart className="h-7 w-7 opacity-30" />
-                                    <p className="text-sm">
-                                        {t('tables.order_empty')}
-                                    </p>
+                                <p className="rounded-xl border border-dashed border-border px-5 py-4 text-sm text-muted-foreground">
+                                    {t('tables.payments_empty')}
+                                </p>
+                            )}
+
+                            {table.payments.length > 0 && (
+                                <div className="space-y-1 rounded-xl border border-border px-5 py-3 text-sm">
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">
+                                            {t('tables.payment_total_paid')}
+                                        </span>
+                                        <span className="font-semibold text-green-600 tabular-nums">
+                                            {fmt(paymentTotal)}
+                                        </span>
+                                    </div>
+                                    {remaining > 0 && (
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">
+                                                {t('tables.payment_remaining')}
+                                            </span>
+                                            <span className="font-semibold text-destructive tabular-nums">
+                                                {fmt(remaining)}
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
@@ -606,130 +710,75 @@ export default function ManageOrder({
                                 type="button"
                                 variant="outline"
                                 className="w-full"
-                                onClick={() => setAddProductsOpen(true)}
+                                onClick={() => setAddPaymentOpen(true)}
                             >
                                 <Plus className="mr-2 h-4 w-4" />
-                                {t('tables.add_products')}
-                            </Button>
-
-                            <div className="flex items-center justify-between rounded-xl border border-border px-5 py-3">
-                                <span className="text-sm text-muted-foreground">
-                                    {t('tables.order_total')}
-                                </span>
-                                <span className="text-lg font-bold tabular-nums">
-                                    {currentLines.length > 0
-                                        ? fmt(productTotal)
-                                        : '—'}
-                                </span>
-                            </div>
-
-                            <Button
-                                type="button"
-                                onClick={handleSaveOrder}
-                                disabled={!isDirty || autoSubmitting}
-                                variant="outline"
-                                className="w-full"
-                            >
-                                {t('tables.save_order')}
+                                {t('tables.payment_add')}
                             </Button>
                         </div>
                     </div>
+                    {/* ── end grid ── */}
 
-                    {/* ── Payments section ── */}
-                    <div className="space-y-3">
-                        <p className="text-sm font-semibold">
-                            {t('tables.payments_title')}
-                        </p>
-
-                        {table.payments.length > 0 ? (
-                            <div className="overflow-hidden rounded-xl border border-border">
-                                {table.payments.map((payment, idx) => (
-                                    <PaymentRow
-                                        key={payment.id}
-                                        payment={payment}
-                                        idx={idx}
-                                    />
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="rounded-xl border border-dashed border-border px-5 py-4 text-sm text-muted-foreground">
-                                {t('tables.payments_empty')}
+                    {/* ── Close table ── */}
+                    <div className="space-y-2 border-t border-border pt-4">
+                        {!canClose && productTotal > 0 && (
+                            <p className="text-xs text-muted-foreground">
+                                {t('tables.close_table_hint')}
                             </p>
                         )}
-
-                        {table.payments.length > 0 && (
-                            <div className="space-y-1 rounded-xl border border-border px-5 py-3 text-sm">
-                                <div className="flex justify-between">
-                                    <span className="text-muted-foreground">
-                                        {t('tables.payment_total_paid')}
-                                    </span>
-                                    <span className="font-semibold text-green-600 tabular-nums">
-                                        {fmt(paymentTotal)}
-                                    </span>
-                                </div>
-                                {remaining > 0 && (
-                                    <div className="flex justify-between">
-                                        <span className="text-muted-foreground">
-                                            {t('tables.payment_remaining')}
-                                        </span>
-                                        <span className="font-semibold text-destructive tabular-nums">
-                                            {fmt(remaining)}
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        <Button
-                            type="button"
-                            variant="outline"
-                            className="w-full"
-                            onClick={() => setAddPaymentOpen(true)}
+                        <Form
+                            {...TableController.close.form({ table: table.id })}
+                            onBefore={() =>
+                                confirm(
+                                    queueItems.length > 0
+                                        ? t(
+                                              'tables.close_table_confirm_undelivered',
+                                              {
+                                                  count: queueItems.reduce(
+                                                      (n, i) => n + i.quantity,
+                                                      0,
+                                                  ),
+                                              },
+                                          )
+                                        : t('tables.close_table_confirm'),
+                                )
+                            }
                         >
-                            <Plus className="mr-2 h-4 w-4" />
-                            {t('tables.payment_add')}
-                        </Button>
+                            {({ processing }) => (
+                                <Button
+                                    type="submit"
+                                    disabled={!canClose || processing}
+                                    className="w-full"
+                                >
+                                    <X className="mr-2 h-4 w-4" />
+                                    {t('tables.close_table')}
+                                </Button>
+                            )}
+                        </Form>
                     </div>
-                </div>
-                {/* ── end grid ── */}
 
-                {/* ── Close table ── */}
-                <div className="space-y-2 border-t border-border pt-4">
-                    {!canClose && productTotal > 0 && (
-                        <p className="text-xs text-muted-foreground">
-                            {t('tables.close_table_hint')}
-                        </p>
+                    {/* Only a table nothing was ordered or paid at can be deleted. */}
+                    {canWrite && deletable && (
+                        <Form
+                            {...TableController.destroy.form({
+                                table: table.id,
+                            })}
+                            onBefore={() => confirm(t('tables.delete_confirm'))}
+                        >
+                            {({ processing }) => (
+                                <Button
+                                    type="submit"
+                                    variant="ghost"
+                                    disabled={processing}
+                                    className="w-full text-destructive hover:text-destructive"
+                                >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    {t('tables.delete')}
+                                </Button>
+                            )}
+                        </Form>
                     )}
-                    <Form
-                        {...TableController.close.form({ table: table.id })}
-                        onBefore={() =>
-                            confirm(
-                                queueItems.length > 0
-                                    ? t(
-                                          'tables.close_table_confirm_undelivered',
-                                          {
-                                              count: queueItems.reduce(
-                                                  (n, i) => n + i.quantity,
-                                                  0,
-                                              ),
-                                          },
-                                      )
-                                    : t('tables.close_table_confirm'),
-                            )
-                        }
-                    >
-                        {({ processing }) => (
-                            <Button
-                                type="submit"
-                                disabled={!canClose || processing}
-                                className="w-full"
-                            >
-                                <X className="mr-2 h-4 w-4" />
-                                {t('tables.close_table')}
-                            </Button>
-                        )}
-                    </Form>
-                </div>
+                </fieldset>
             </div>
         </>
     );

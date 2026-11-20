@@ -5,6 +5,7 @@ import SaleController from '@/actions/App/Http/Controllers/Restaurant/SaleContro
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useCanWrite } from '@/hooks/use-permission';
 import type { Sale } from '@/types';
 
 type Props = {
@@ -45,6 +46,7 @@ function formatCurrency(value: number) {
 
 export default function Sales({ sales }: Props) {
     const { t } = useTranslation();
+    const canWrite = useCanWrite('sales');
 
     return (
         <>
@@ -53,12 +55,14 @@ export default function Sales({ sales }: Props) {
             <div className="space-y-6 p-6">
                 <div className="flex items-center justify-between">
                     <Heading title={t('sales.title')} />
-                    <Button asChild>
-                        <Link href={SaleController.create.url()}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            {t('sales.new')}
-                        </Link>
-                    </Button>
+                    {canWrite && (
+                        <Button asChild>
+                            <Link href={SaleController.create.url()}>
+                                <Plus className="mr-2 h-4 w-4" />
+                                {t('sales.new')}
+                            </Link>
+                        </Button>
+                    )}
                 </div>
 
                 {sales.length === 0 ? (
@@ -89,6 +93,7 @@ function formatDatetime(iso: string) {
 
 function SaleRow({ sale }: { sale: Sale }) {
     const { t } = useTranslation();
+    const canWrite = useCanWrite('sales');
     const active = isActiveNow(sale);
 
     const discount =
@@ -154,30 +159,32 @@ function SaleRow({ sale }: { sale: Sale }) {
                 </div>
             </div>
 
-            <div className="flex shrink-0 items-center gap-1">
-                <Button variant="ghost" size="icon" asChild>
-                    <Link href={SaleController.edit.url({ sale: sale.id })}>
-                        <Pencil className="h-4 w-4" />
-                    </Link>
-                </Button>
+            {canWrite && (
+                <div className="flex shrink-0 items-center gap-1">
+                    <Button variant="ghost" size="icon" asChild>
+                        <Link href={SaleController.edit.url({ sale: sale.id })}>
+                            <Pencil className="h-4 w-4" />
+                        </Link>
+                    </Button>
 
-                <Form
-                    {...SaleController.destroy.form({ sale: sale.id })}
-                    onBefore={() => confirm(t('sales.delete_confirm'))}
-                >
-                    {({ processing }) => (
-                        <Button
-                            type="submit"
-                            variant="ghost"
-                            size="icon"
-                            disabled={processing}
-                            className="text-destructive hover:text-destructive"
-                        >
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
-                    )}
-                </Form>
-            </div>
+                    <Form
+                        {...SaleController.destroy.form({ sale: sale.id })}
+                        onBefore={() => confirm(t('sales.delete_confirm'))}
+                    >
+                        {({ processing }) => (
+                            <Button
+                                type="submit"
+                                variant="ghost"
+                                size="icon"
+                                disabled={processing}
+                                className="text-destructive hover:text-destructive"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        )}
+                    </Form>
+                </div>
+            )}
         </div>
     );
 }

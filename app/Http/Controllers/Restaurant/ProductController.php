@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Restaurant;
 
+use App\Enums\Permission;
+use App\Enums\StaffFeature;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Restaurant\ProductRequest;
 use App\Models\Category;
@@ -26,7 +28,7 @@ class ProductController extends Controller
 
         return Inertia::render('restaurant/products', [
             'products' => $products,
-            'canManage' => $user->account_type->value === 'restaurant',
+            'canManage' => $user->access(StaffFeature::PRODUCTS) === Permission::WRITE,
         ]);
     }
 
@@ -34,14 +36,14 @@ class ProductController extends Controller
     {
         return Inertia::render('restaurant/products/create', [
             'categories' => Category::orderBy('name')->get(['id', 'name']),
-            'queues' => RestaurantQueue::where('user_id', $request->user()->id)->orderBy('name')->get(['id', 'name']),
+            'queues' => RestaurantQueue::where('user_id', $request->user()->effectiveRestaurantId())->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
     public function store(ProductRequest $request): RedirectResponse
     {
         $data = $request->safe()->except('picture');
-        $data['user_id'] = $request->user()->id;
+        $data['user_id'] = $request->user()->effectiveRestaurantId();
 
         if ($request->hasFile('picture')) {
             $data['picture'] = ImageOptimizer::storeUpload($request->file('picture'), 'products');
@@ -56,18 +58,18 @@ class ProductController extends Controller
 
     public function edit(Request $request, Product $product): Response
     {
-        abort_unless($product->user_id === $request->user()->id, 403);
+        abort_unless($product->user_id === $request->user()->effectiveRestaurantId(), 403);
 
         return Inertia::render('restaurant/products/edit', [
             'product' => $product,
             'categories' => Category::orderBy('name')->get(['id', 'name']),
-            'queues' => RestaurantQueue::where('user_id', $request->user()->id)->orderBy('name')->get(['id', 'name']),
+            'queues' => RestaurantQueue::where('user_id', $request->user()->effectiveRestaurantId())->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
     public function update(ProductRequest $request, Product $product): RedirectResponse
     {
-        abort_unless($product->user_id === $request->user()->id, 403);
+        abort_unless($product->user_id === $request->user()->effectiveRestaurantId(), 403);
 
         $data = $request->safe()->except('picture');
 
@@ -88,7 +90,7 @@ class ProductController extends Controller
     /** Swap only the picture, straight from the product list, without resending the other fields. */
     public function updatePicture(Request $request, Product $product): RedirectResponse
     {
-        abort_unless($product->user_id === $request->user()->id, 403);
+        abort_unless($product->user_id === $request->user()->effectiveRestaurantId(), 403);
 
         $request->validate([
             'picture' => ['required', 'image', 'max:2048'],
@@ -110,7 +112,7 @@ class ProductController extends Controller
 
     public function destroy(Request $request, Product $product): RedirectResponse
     {
-        abort_unless($product->user_id === $request->user()->id, 403);
+        abort_unless($product->user_id === $request->user()->effectiveRestaurantId(), 403);
 
         $product->delete();
 

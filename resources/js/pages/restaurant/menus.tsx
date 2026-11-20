@@ -6,6 +6,7 @@ import MenuController from '@/actions/App/Http/Controllers/Restaurant/MenuContro
 import Heading from '@/components/heading';
 import { QRCustomizerDialog } from '@/components/qr-customizer';
 import { Button } from '@/components/ui/button';
+import { useCanWrite } from '@/hooks/use-permission';
 import type { Menu } from '@/types';
 
 type QRMenu = Pick<Menu, 'id' | 'name'> & { url: string };
@@ -16,6 +17,7 @@ type Props = {
 
 export default function Menus({ menus }: Props) {
     const { t } = useTranslation();
+    const canWrite = useCanWrite('menus');
     const [qrMenu, setQrMenu] = useState<QRMenu | null>(null);
 
     return (
@@ -25,12 +27,14 @@ export default function Menus({ menus }: Props) {
             <div className="space-y-6 p-6">
                 <div className="flex items-center justify-between">
                     <Heading title={t('menus.title')} />
-                    <Button asChild>
-                        <Link href={MenuController.create.url()}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            {t('menus.new')}
-                        </Link>
-                    </Button>
+                    {canWrite && (
+                        <Button asChild>
+                            <Link href={MenuController.create.url()}>
+                                <Plus className="mr-2 h-4 w-4" />
+                                {t('menus.new')}
+                            </Link>
+                        </Button>
+                    )}
                 </div>
 
                 {menus.length === 0 ? (

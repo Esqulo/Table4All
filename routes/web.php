@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\StaffFeature;
 use App\Http\Controllers\Admin\AdmissionRequestController as AdminAdmissionRequestController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CouponController as AdminCouponController;
@@ -32,6 +33,7 @@ use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\TableJoinController;
 use App\Http\Controllers\WaiterInvitationController;
 use App\Http\Middleware\EnsureAdmin;
+use App\Http\Middleware\EnsureFeatureAccess;
 use App\Http\Middleware\EnsureNotStaff;
 use App\Http\Middleware\EnsureRestaurant;
 use App\Http\Middleware\EnsureRestaurantOrWaiter;
@@ -134,55 +136,128 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('comments.destroy');
 });
 
-// Tables (full CRUD) + product listing: accessible by restaurant and waiter
+// The restaurant's back office. The owner reaches everything; each staff member (waiter
+// or manager) only the features granted to them, read-only or with writing
+// (EnsureFeatureAccess: pages need read access, changes and create/edit forms need write).
 Route::middleware(['auth', 'verified', EnsureRestaurantOrWaiter::class])
     ->prefix('restaurant')
     ->name('restaurant.')
     ->group(function () {
-        Route::get('entregas', [DeliveryController::class, 'index'])->name('delivery.index');
-        Route::resource('mesas', TableController::class)
-            ->names('tables')
-            ->parameters(['mesas' => 'table']);
-        Route::post('mesas/{table}/pagamentos', [TableController::class, 'addPayment'])
-            ->name('tables.add-payment');
-        Route::patch('mesas/{table}/fechar', [TableController::class, 'close'])
-            ->name('tables.close');
-        Route::get('produtos', [ProductController::class, 'index'])
-            ->name('products.index');
-        Route::patch('queue-items/{queueItem}/pronto', [QueueItemController::class, 'markDone'])
-            ->name('queue-items.mark-done');
+        $feature = fn (StaffFeature|string $f): string => EnsureFeatureAccess::class.':'.($f instanceof StaffFeature ? $f->value : $f);
+
+        Route::middleware($feature(StaffFeature::TABLES))->group(function () {
+            Route::resource('mesas', TableController::class)
+                ->names('tables')
+                ->parameters(['mesas' => 'table']);
+            Route::post('mesas/{table}/pagamentos', [TableController::class, 'addPayment'])
+                ->name('tables.add-payment');
+            Route::patch('mesas/{table}/fechar', [TableController::class, 'close'])
+                ->name('tables.close');
+        });
+
+        Route::get('entregas', [DeliveryController::class, 'index'])
+            ->middleware($feature(StaffFeature::DELIVERY))
+            ->name('delivery.index');
         Route::patch('queue-items/{queueItem}/entregue', [QueueItemController::class, 'markDelivered'])
+            ->middleware($feature(StaffFeature::DELIVERY))
             ->name('queue-items.mark-delivered');
+        // The kitchen marks items ready on its queue; the delivery board can too.
+        Route::patch('queue-items/{queueItem}/pronto', [QueueItemController::class, 'markDone'])
+            ->middleware($feature('queues|delivery'))
+            ->name('queue-items.mark-done');
+
+        Route::middleware($feature(StaffFeature::PRODUCTS))->group(function () {
+            Route::get('produtos', [ProductController::class, 'index'])->name('products.index');
+            Route::post('produtos/{product}/foto', [ProductController::class, 'updatePicture'])
+                ->name('products.picture.update');
+            Route::resource('produtos', ProductController::class)
+                ->except(['show', 'index'])
+                ->names('products')
+                ->parameters(['produtos' => 'product']);
+        });
+
+        Route::resource('filas', QueueController::class)
+            ->middleware($feature(StaffFeature::QUEUES))
+            ->names('queues')
+            ->parameters(['filas' => 'queue']);
+
+        Route::middleware($feature(StaffFeature::MENUS))->group(function () {
+            Route::resource('cardapio', MenuController::class)
+                ->only(['index', 'create', 'store'])
+                ->names('menus')
+                ->parameters(['cardapio' => 'menu']);
+            Route::get('cardapio/{menu}/imprimir', [MenuController::class, 'printMenu'])
+                ->name('menus.print');
+            Route::put('cardapio/{menu}/layout', [MenuController::class, 'updateLayout'])
+                ->name('menus.layout.update');
+        });
+
+        Route::resource('promocoes', SaleController::class)
+            ->middleware($feature(StaffFeature::SALES))
+            ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
+            ->names('sales')
+            ->parameters(['promocoes' => 'sale']);
+
+        Route::resource('cupons', CouponController::class)
+            ->middleware($feature(StaffFeature::COUPONS))
+            ->only(['index', 'store', 'update', 'destroy'])
+            ->names('coupons')
+            ->parameters(['cupons' => 'coupon']);
+
+        // Customer incentives the restaurant offers (and pays for), each on or off.
+        Route::middleware($feature(StaffFeature::INCENTIVES))->group(function () {
+            Route::get('incentivos', [IncentiveController::class, 'index'])->name('incentives.index');
+            // Declared before incentivos/{incentive}, which would otherwise catch it.
+            Route::put('incentivos/fidelidade/etapas', [IncentiveController::class, 'updateLoyaltyTiers'])->name('incentives.loyalty.tiers');
+            Route::put('incentivos/{incentive}', [IncentiveController::class, 'update'])->name('incentives.update');
+        });
+
+        // Read-only for staff (StaffFeature::staffCeiling()).
+        Route::get('painel', [DashboardController::class, 'index'])
+            ->middleware($feature(StaffFeature::DASHBOARD))
+            ->name('dashboards.index');
+        Route::get('financeiro', [FinanceController::class, 'show'])
+            ->middleware($feature(StaffFeature::FINANCE))
+            ->name('finance.show');
+        Route::get('estabelecimento', [EstablishmentController::class, 'edit'])
+            ->middleware($feature(StaffFeature::ESTABLISHMENT))
+            ->name('establishment.edit');
+
+        // The team: the owner, and managers for the waiters (WaiterController checks who).
+        // cancelInvitation must be declared before the resource so it's matched first.
+        Route::middleware($feature(StaffFeature::STAFF))->group(function () {
+            Route::delete('garcons/convites/{invitation}', [WaiterController::class, 'cancelInvitation'])
+                ->name('waiters.cancel-invitation');
+            Route::resource('garcons', WaiterController::class)
+                ->only(['index', 'store', 'update', 'destroy'])
+                ->names('waiters')
+                ->parameters(['garcons' => 'waiter']);
+        });
     });
 
-// Restaurant-only routes: waiters management, menus, product CRUD
+// Owner only: the venue itself, its finances and posting in its name.
 Route::middleware(['auth', 'verified', EnsureRestaurant::class])
     ->prefix('restaurant')
     ->name('restaurant.')
     ->group(function () {
-        Route::get('painel', [DashboardController::class, 'index'])->name('dashboards.index');
-
-        // Customer incentives the restaurant offers (and pays for), each on or off.
-        Route::get('incentivos', [IncentiveController::class, 'index'])->name('incentives.index');
-        // Declared before incentivos/{incentive}, which would otherwise catch it.
-        Route::put('incentivos/fidelidade/etapas', [IncentiveController::class, 'updateLoyaltyTiers'])->name('incentives.loyalty.tiers');
-        Route::put('incentivos/{incentive}', [IncentiveController::class, 'update'])->name('incentives.update');
-
         // Financial profile: the Stripe account customers' payments go to.
-        Route::get('financeiro', [FinanceController::class, 'show'])->name('finance.show');
         Route::post('financeiro/stripe', [FinanceController::class, 'connect'])
             ->middleware('throttle:10,1')
             ->name('finance.connect');
         Route::get('financeiro/stripe/atualizar', [FinanceController::class, 'refresh'])->name('finance.refresh');
         Route::get('financeiro/stripe/retorno', [FinanceController::class, 'back'])->name('finance.return');
-        Route::resource('cupons', CouponController::class)
-            ->only(['index', 'store', 'update', 'destroy'])
-            ->names('coupons')
-            ->parameters(['cupons' => 'coupon']);
 
-        // Venue settings: opening hours, photos, logo and banner
-        Route::get('estabelecimento', [EstablishmentController::class, 'edit'])->name('establishment.edit');
+        // Venue settings: public profile, opening hours, photos, logo and banner
         Route::put('estabelecimento/perfil', [EstablishmentController::class, 'updateProfile'])->name('establishment.profile.update');
+        Route::put('estabelecimento/horarios', [EstablishmentController::class, 'updateHours'])->name('establishment.hours.update');
+        Route::post('estabelecimento/logo', [EstablishmentController::class, 'updateLogo'])->name('establishment.logo.update');
+        Route::delete('estabelecimento/logo', [EstablishmentController::class, 'destroyLogo'])->name('establishment.logo.destroy');
+        Route::post('estabelecimento/banner', [EstablishmentController::class, 'updateBanner'])->name('establishment.banner.update');
+        Route::delete('estabelecimento/banner', [EstablishmentController::class, 'destroyBanner'])->name('establishment.banner.destroy');
+        Route::post('estabelecimento/fotos', [EstablishmentController::class, 'storePhotos'])->name('establishment.photos.store');
+        Route::put('estabelecimento/fotos/ordem', [EstablishmentController::class, 'reorderPhotos'])->name('establishment.photos.reorder');
+        Route::delete('estabelecimento/fotos/{photo}', [EstablishmentController::class, 'destroyPhoto'])->name('establishment.photos.destroy');
+
         // Social posts on the public profile
         Route::post('publicacoes', [PostController::class, 'store'])
             ->middleware('throttle:20,1')
@@ -193,43 +268,6 @@ Route::middleware(['auth', 'verified', EnsureRestaurant::class])
             ->middleware('throttle:10,1')
             ->name('stories.store');
         Route::delete('hoje-tem/{story}', [StoryController::class, 'destroy'])->name('stories.destroy');
-        Route::put('estabelecimento/horarios', [EstablishmentController::class, 'updateHours'])->name('establishment.hours.update');
-        Route::post('estabelecimento/logo', [EstablishmentController::class, 'updateLogo'])->name('establishment.logo.update');
-        Route::delete('estabelecimento/logo', [EstablishmentController::class, 'destroyLogo'])->name('establishment.logo.destroy');
-        Route::post('estabelecimento/banner', [EstablishmentController::class, 'updateBanner'])->name('establishment.banner.update');
-        Route::delete('estabelecimento/banner', [EstablishmentController::class, 'destroyBanner'])->name('establishment.banner.destroy');
-        Route::post('estabelecimento/fotos', [EstablishmentController::class, 'storePhotos'])->name('establishment.photos.store');
-        Route::put('estabelecimento/fotos/ordem', [EstablishmentController::class, 'reorderPhotos'])->name('establishment.photos.reorder');
-        Route::delete('estabelecimento/fotos/{photo}', [EstablishmentController::class, 'destroyPhoto'])->name('establishment.photos.destroy');
-
-        // cancelInvitation must be declared before the resource so it's matched first
-        Route::delete('garcons/convites/{invitation}', [WaiterController::class, 'cancelInvitation'])
-            ->name('waiters.cancel-invitation');
-        Route::resource('garcons', WaiterController::class)
-            ->only(['index', 'store', 'destroy'])
-            ->names('waiters')
-            ->parameters(['garcons' => 'waiter']);
-        Route::resource('cardapio', MenuController::class)
-            ->only(['index', 'create', 'store'])
-            ->names('menus')
-            ->parameters(['cardapio' => 'menu']);
-        Route::get('cardapio/{menu}/imprimir', [MenuController::class, 'printMenu'])
-            ->name('menus.print');
-        Route::put('cardapio/{menu}/layout', [MenuController::class, 'updateLayout'])
-            ->name('menus.layout.update');
-        Route::post('produtos/{product}/foto', [ProductController::class, 'updatePicture'])
-            ->name('products.picture.update');
-        Route::resource('produtos', ProductController::class)
-            ->except(['show', 'index'])
-            ->names('products')
-            ->parameters(['produtos' => 'product']);
-        Route::resource('filas', QueueController::class)
-            ->names('queues')
-            ->parameters(['filas' => 'queue']);
-        Route::resource('promocoes', SaleController::class)
-            ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
-            ->names('sales')
-            ->parameters(['promocoes' => 'sale']);
     });
 
 Route::middleware(['auth', 'verified', EnsureAdmin::class])

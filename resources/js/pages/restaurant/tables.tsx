@@ -14,6 +14,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { useLiveReload } from '@/hooks/use-live-reload';
+import { useCanWrite } from '@/hooks/use-permission';
 import { formatBRL } from '@/lib/money';
 import type { RestaurantTable } from '@/types';
 
@@ -23,6 +24,7 @@ type Props = {
 
 export default function Tables({ tables }: Props) {
     const { t } = useTranslation();
+    const canWrite = useCanWrite('tables');
 
     // Totals and item counts change as orders are delivered and paid.
     useLiveReload({ only: ['tables'], intervalMs: 20_000 });
@@ -34,12 +36,14 @@ export default function Tables({ tables }: Props) {
             <div className="space-y-6 p-6">
                 <div className="flex items-center justify-between">
                     <Heading title={t('tables.title')} />
-                    <Button asChild>
-                        <Link href={TableController.create.url()}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            {t('tables.new')}
-                        </Link>
-                    </Button>
+                    {canWrite && (
+                        <Button asChild>
+                            <Link href={TableController.create.url()}>
+                                <Plus className="mr-2 h-4 w-4" />
+                                {t('tables.new')}
+                            </Link>
+                        </Button>
+                    )}
                 </div>
 
                 {tables.length === 0 ? (
@@ -101,6 +105,7 @@ function TableQrDialog({
 
 function TableCard({ table }: { table: RestaurantTable }) {
     const { t } = useTranslation();
+    const canWrite = useCanWrite('tables');
     const [qrOpen, setQrOpen] = useState(false);
 
     // Computed server-side from the prices snapshotted at order time.
@@ -217,19 +222,23 @@ function TableCard({ table }: { table: RestaurantTable }) {
                         </Link>
                     </Button>
 
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        asChild
-                        className="w-full"
-                    >
-                        <Link
-                            href={TableController.edit.url({ table: table.id })}
+                    {canWrite && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                            className="w-full"
                         >
-                            <Pencil className="mr-1 h-3.5 w-3.5" />
-                            {t('tables.edit')}
-                        </Link>
-                    </Button>
+                            <Link
+                                href={TableController.edit.url({
+                                    table: table.id,
+                                })}
+                            >
+                                <Pencil className="mr-1 h-3.5 w-3.5" />
+                                {t('tables.edit')}
+                            </Link>
+                        </Button>
+                    )}
                 </div>
             </div>
         </>

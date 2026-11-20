@@ -1,16 +1,37 @@
 export type PriceType = 'unit' | 'kg' | '100g' | 'liter' | 'portion';
 
+export type StaffRole = 'waiter' | 'manager';
+
+export type PermissionLevel = 'none' | 'read' | 'write';
+
+/** A member of the restaurant's team, as the team page lists it. */
 export type Waiter = {
     id: number;
     name: string;
     email: string;
+    role: StaffRole;
+    /** What was chosen per feature (the editor's values). */
+    permissions: Record<string, PermissionLevel>;
+    /** What it amounts to with the role (a manager reads everything). */
+    access: Record<string, PermissionLevel>;
+    /** The viewer may change this member's access or remove them. */
+    manageable: boolean;
+    is_self: boolean;
     created_at: string;
 };
 
 export type WaiterInvitation = {
     id: number;
     email: string;
+    role: StaffRole;
+    cancellable: boolean;
     created_at: string;
+};
+
+/** A feature whose access is granted per member, and the most staff can have there. */
+export type StaffFeatureInfo = {
+    key: string;
+    ceiling: PermissionLevel;
 };
 
 export type Category = {

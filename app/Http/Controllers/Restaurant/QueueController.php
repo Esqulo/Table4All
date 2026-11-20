@@ -16,7 +16,7 @@ class QueueController extends Controller
 {
     public function index(Request $request): Response
     {
-        $queues = RestaurantQueue::where('user_id', $request->user()->id)
+        $queues = RestaurantQueue::where('user_id', $request->user()->effectiveRestaurantId())
             ->orderBy('name')
             ->withCount('products')
             ->get();
@@ -34,7 +34,7 @@ class QueueController extends Controller
     public function store(QueueRequest $request): RedirectResponse
     {
         RestaurantQueue::create([
-            'user_id' => $request->user()->id,
+            'user_id' => $request->user()->effectiveRestaurantId(),
             'name' => $request->validated('name'),
         ]);
 
@@ -45,7 +45,7 @@ class QueueController extends Controller
 
     public function show(Request $request, RestaurantQueue $queue): Response
     {
-        abort_unless($queue->user_id === $request->user()->id, 403);
+        abort_unless($queue->user_id === $request->user()->effectiveRestaurantId(), 403);
 
         $items = QueueItem::where('queue_id', $queue->id)
             // Items of closed or deleted tables are no longer owed to anyone.
@@ -66,7 +66,7 @@ class QueueController extends Controller
 
     public function edit(Request $request, RestaurantQueue $queue): Response
     {
-        abort_unless($queue->user_id === $request->user()->id, 403);
+        abort_unless($queue->user_id === $request->user()->effectiveRestaurantId(), 403);
 
         return Inertia::render('restaurant/queues/edit', [
             'queue' => $queue,
@@ -75,7 +75,7 @@ class QueueController extends Controller
 
     public function update(QueueRequest $request, RestaurantQueue $queue): RedirectResponse
     {
-        abort_unless($queue->user_id === $request->user()->id, 403);
+        abort_unless($queue->user_id === $request->user()->effectiveRestaurantId(), 403);
 
         $queue->update(['name' => $request->validated('name')]);
 
@@ -86,7 +86,7 @@ class QueueController extends Controller
 
     public function destroy(Request $request, RestaurantQueue $queue): RedirectResponse
     {
-        abort_unless($queue->user_id === $request->user()->id, 403);
+        abort_unless($queue->user_id === $request->user()->effectiveRestaurantId(), 403);
 
         // Deleting it would orphan the work in progress: those orders would lose their
         // kitchen and land on the delivery board as if they were ready.

@@ -11,6 +11,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $restaurant_id
  * @property string $email
+ * @property string $role StaffRole value the new account starts with
  * @property string $token
  * @property Carbon|null $accepted_at
  * @property Carbon|null $created_at
@@ -18,7 +19,7 @@ use Illuminate\Support\Carbon;
  */
 final class WaiterInvitation extends Model
 {
-    protected $fillable = ['restaurant_id', 'email', 'token', 'accepted_at'];
+    protected $fillable = ['restaurant_id', 'email', 'role', 'token', 'accepted_at'];
 
     /** @return array<string, string> */
     protected function casts(): array

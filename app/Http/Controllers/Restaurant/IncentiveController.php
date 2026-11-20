@@ -22,7 +22,7 @@ class IncentiveController extends Controller
 {
     public function index(Request $request): Response
     {
-        $restaurantId = $request->user()->id;
+        $restaurantId = $request->user()->effectiveRestaurantId();
         $enabledSince = Incentives::enabledSince(Incentive::LOYALTY, [$restaurantId]);
 
         $rewards = DB::table('loyalty_rewards')
@@ -68,7 +68,7 @@ class IncentiveController extends Controller
     {
         $enabled = $request->validate(['enabled' => ['required', 'boolean']])['enabled'];
 
-        Incentives::set($request->user()->id, $incentive, (bool) $enabled);
+        Incentives::set($request->user()->effectiveRestaurantId(), $incentive, (bool) $enabled);
 
         Inertia::flash('toast', [
             'type' => 'success',
@@ -84,7 +84,7 @@ class IncentiveController extends Controller
      */
     public function updateLoyaltyTiers(LoyaltyTiersRequest $request): RedirectResponse
     {
-        $restaurantId = $request->user()->id;
+        $restaurantId = $request->user()->effectiveRestaurantId();
         $now = now();
 
         $rows = collect($request->tiers())

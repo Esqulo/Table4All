@@ -13,7 +13,7 @@ class CouponController extends Controller
 
     protected function couponOwnerId(Request $request): ?int
     {
-        return $request->user()->id;
+        return $request->user()->effectiveRestaurantId();
     }
 
     protected function couponPage(): string

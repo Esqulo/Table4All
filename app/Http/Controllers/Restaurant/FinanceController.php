@@ -25,7 +25,8 @@ class FinanceController extends Controller
 
     public function show(Request $request): Response
     {
-        $user = $request->user();
+        // Managers may look (read-only); the account shown is always the restaurant's.
+        $user = $request->user()->restaurantAccount();
 
         // Until Stripe enables payments, look again on each visit (Stripe may finish
         // its review after the owner came back from onboarding).

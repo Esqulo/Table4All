@@ -15,7 +15,7 @@ class SaleController extends Controller
 {
     public function index(Request $request): Response
     {
-        $sales = Sale::where('user_id', $request->user()->id)
+        $sales = Sale::where('user_id', $request->user()->effectiveRestaurantId())
             ->with('product:id,name,price,price_type')
             ->orderBy('type')
             ->orderBy('start_time')
@@ -29,7 +29,7 @@ class SaleController extends Controller
 
     public function create(Request $request): Response
     {
-        $products = Product::where('user_id', $request->user()->id)
+        $products = Product::where('user_id', $request->user()->effectiveRestaurantId())
             ->orderBy('name')
             ->get(['id', 'name', 'price', 'price_type']);
 
@@ -45,7 +45,7 @@ class SaleController extends Controller
 
         Sale::create([
             ...$data,
-            'user_id' => $request->user()->id,
+            'user_id' => $request->user()->effectiveRestaurantId(),
         ]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'sales.msg_created']);
@@ -55,9 +55,9 @@ class SaleController extends Controller
 
     public function edit(Request $request, Sale $sale): Response
     {
-        abort_unless($sale->user_id === $request->user()->id, 403);
+        abort_unless($sale->user_id === $request->user()->effectiveRestaurantId(), 403);
 
-        $products = Product::where('user_id', $request->user()->id)
+        $products = Product::where('user_id', $request->user()->effectiveRestaurantId())
             ->orderBy('name')
             ->get(['id', 'name', 'price', 'price_type']);
 
@@ -69,7 +69,7 @@ class SaleController extends Controller
 
     public function update(SaleRequest $request, Sale $sale): RedirectResponse
     {
-        abort_unless($sale->user_id === $request->user()->id, 403);
+        abort_unless($sale->user_id === $request->user()->effectiveRestaurantId(), 403);
 
         $data = $request->validated();
         $data = $this->normalizeByType($data);
@@ -101,7 +101,7 @@ class SaleController extends Controller
 
     public function destroy(Request $request, Sale $sale): RedirectResponse
     {
-        abort_unless($sale->user_id === $request->user()->id, 403);
+        abort_unless($sale->user_id === $request->user()->effectiveRestaurantId(), 403);
 
         $sale->delete();
 

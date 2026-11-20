@@ -431,7 +431,9 @@
         "msg_deleted": "Mesa excluída com sucesso.",
         "msg_products_updated": "Produtos da mesa atualizados com sucesso.",
         "msg_order_conflict": "A mesa foi alterada por outra pessoa enquanto você editava. Os itens atuais foram recarregados; confira e salve de novo.",
-        "payment_by": "por {{name}}"
+        "payment_by": "por {{name}}",
+        "delete_blocked": "Mesas com consumo ou pagamentos não podem ser excluídas.",
+        "error_delete_with_consumption": "Esta mesa tem consumo ou pagamentos e não pode ser excluída."
     },
     "waiters": {
         "title": "Equipe",
@@ -450,7 +452,23 @@
         "msg_invite_cancelled": "Convite cancelado.",
         "msg_deleted": "Pessoa removida da equipe.",
         "error_already_waiter": "Este e-mail já faz parte da equipe deste restaurante.",
-        "error_email_taken": "Já existe uma conta com este e-mail."
+        "error_email_taken": "Já existe uma conta com este e-mail.",
+        "description": "Convide pessoas e escolha, para cada uma, o que pode ver e o que pode editar.",
+        "role_label": "Função",
+        "role_waiter": "Garçom",
+        "role_manager": "Gerente",
+        "role_waiter_hint": "Vê e edita só o que for liberado abaixo.",
+        "role_manager_hint": "Vê todas as áreas do estabelecimento e gerencia os garçons. Edita só onde for liberado abaixo. Nunca altera o estabelecimento, o financeiro nem publica em nome do restaurante.",
+        "you": "(você)",
+        "edit_access": "Permissões",
+        "remove": "Remover da equipe",
+        "cancel_invite": "Cancelar convite",
+        "no_access": "Sem acesso a nenhuma área.",
+        "access_title": "Permissões de {{name}}",
+        "access_description": "Para cada área: sem acesso, só leitura ou edição.",
+        "access_save": "Salvar permissões",
+        "access_cancel": "Cancelar",
+        "msg_permissions_saved": "Permissões atualizadas."
     },
     "sales": {
         "title": "Promoções",
@@ -1505,5 +1523,25 @@
             "summary_other": "{{count}} visitas: {{value}}",
             "restarts": "depois da última, a barra recomeça"
         }
+    },
+    "staff": {
+        "feature_tables": "Mesas",
+        "feature_delivery": "Entregas",
+        "feature_queues": "Filas da cozinha",
+        "feature_products": "Produtos",
+        "feature_menus": "Cardápio",
+        "feature_sales": "Promoções",
+        "feature_coupons": "Cupons",
+        "feature_incentives": "Incentivos",
+        "feature_dashboard": "Painel",
+        "feature_finance": "Financeiro",
+        "feature_establishment": "Estabelecimento",
+        "feature_staff": "Equipe",
+        "level_none": "Sem acesso",
+        "level_read": "Só leitura",
+        "level_write": "Edição",
+        "read_only_feature": "Só o dono do restaurante edita esta área.",
+        "read_only_notice": "Você tem acesso somente leitura a esta área.",
+        "error_no_permission": "Você não tem permissão para fazer isso."
     }
 }

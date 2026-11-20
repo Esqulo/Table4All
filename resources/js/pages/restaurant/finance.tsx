@@ -1,4 +1,4 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, usePage } from '@inertiajs/react';
 import {
     AlertCircle,
     CheckCircle2,
@@ -12,6 +12,7 @@ import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatBRL } from '@/lib/money';
+import type { Auth } from '@/types';
 
 type Account = {
     connected: boolean;
@@ -53,6 +54,9 @@ export default function Finance({
     const { t, i18n } = useTranslation();
     const locale = i18n.language === 'pt_BR' ? 'pt-BR' : 'en-US';
     const fmt = (n: number) => formatBRL(n, locale);
+    // Managers may look at the finances; only the owner connects the Stripe account.
+    const isOwner =
+        usePage<{ auth: Auth }>().props.auth.user.account_type === 'restaurant';
 
     const state = account.charges_enabled
         ? 'active'
@@ -92,7 +96,7 @@ export default function Finance({
                     </div>
 
                     <div className="flex flex-wrap gap-2">
-                        {state !== 'active' && (
+                        {isOwner && state !== 'active' && (
                             <Form {...FinanceController.connect.form()}>
                                 {({ processing }) => (
                                     <Button type="submit" disabled={processing}>

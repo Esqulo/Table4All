@@ -54,6 +54,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useCanWrite } from '@/hooks/use-permission';
 import { formatBRL } from '@/lib/money';
 import type { Category, Menu, Product } from '@/types';
 
@@ -429,6 +430,7 @@ export default function PrintMenu({
     products,
 }: Props) {
     const { t } = useTranslation();
+    const canWrite = useCanWrite('menus');
 
     const [layout, setLayout] = useState<MenuLayout>(() =>
         reconcile(savedLayout, categories, products, menu.name),
@@ -742,19 +744,21 @@ export default function PrintMenu({
                                 {t('menus.print_reset')}
                             </span>
                         </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={handleSave}
-                            disabled={!dirty || saving}
-                        >
-                            {saving ? (
-                                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-                            ) : (
-                                <Save className="mr-1.5 h-4 w-4" />
-                            )}
-                            {t('menus.print_save')}
-                        </Button>
+                        {canWrite && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleSave}
+                                disabled={!dirty || saving}
+                            >
+                                {saving ? (
+                                    <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Save className="mr-1.5 h-4 w-4" />
+                                )}
+                                {t('menus.print_save')}
+                            </Button>
+                        )}
                         <Button
                             size="sm"
                             onClick={handlePrint}

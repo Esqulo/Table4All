@@ -5,6 +5,7 @@ import QueueController from '@/actions/App/Http/Controllers/Restaurant/QueueCont
 import QueueItemController from '@/actions/App/Http/Controllers/Restaurant/QueueItemController';
 import { Button } from '@/components/ui/button';
 import { useLiveReload } from '@/hooks/use-live-reload';
+import { useCanWrite } from '@/hooks/use-permission';
 import type { QueueItem, RestaurantQueue } from '@/types';
 
 type Props = {
@@ -118,6 +119,9 @@ QueueShow.layout = {
 
 function PendingCard({ item, pos }: { item: QueueItem; pos: number }) {
     const { t } = useTranslation();
+    const canQueues = useCanWrite('queues');
+    const canDelivery = useCanWrite('delivery');
+    const canMarkDone = canQueues || canDelivery;
 
     return (
         <div className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
@@ -162,23 +166,25 @@ function PendingCard({ item, pos }: { item: QueueItem; pos: number }) {
 
             {/* Action */}
             <div className="px-4 pb-4">
-                <Form
-                    {...QueueItemController.markDone.form({
-                        queueItem: item.id,
-                    })}
-                >
-                    {({ processing }) => (
-                        <Button
-                            type="submit"
-                            variant="outline"
-                            disabled={processing}
-                            className="h-11 w-full text-base"
-                        >
-                            <ConciergeBell className="mr-2 h-4 w-4" />
-                            {t('queues.item_mark_done')}
-                        </Button>
-                    )}
-                </Form>
+                {canMarkDone && (
+                    <Form
+                        {...QueueItemController.markDone.form({
+                            queueItem: item.id,
+                        })}
+                    >
+                        {({ processing }) => (
+                            <Button
+                                type="submit"
+                                variant="outline"
+                                disabled={processing}
+                                className="h-11 w-full text-base"
+                            >
+                                <ConciergeBell className="mr-2 h-4 w-4" />
+                                {t('queues.item_mark_done')}
+                            </Button>
+                        )}
+                    </Form>
+                )}
             </div>
         </div>
     );
@@ -186,6 +192,7 @@ function PendingCard({ item, pos }: { item: QueueItem; pos: number }) {
 
 function DoneCard({ item, pos }: { item: QueueItem; pos: number }) {
     const { t } = useTranslation();
+    const canDeliver = useCanWrite('delivery');
 
     return (
         <div className="flex items-center gap-4 overflow-hidden rounded-2xl border border-border bg-card px-5 py-4 shadow-sm">
@@ -221,22 +228,24 @@ function DoneCard({ item, pos }: { item: QueueItem; pos: number }) {
             </div>
 
             {/* Action */}
-            <Form
-                {...QueueItemController.markDelivered.form({
-                    queueItem: item.id,
-                })}
-            >
-                {({ processing }) => (
-                    <Button
-                        type="submit"
-                        disabled={processing}
-                        className="h-10 shrink-0 px-4"
-                    >
-                        <CheckCircle2 className="mr-1.5 h-4 w-4" />
-                        {t('queues.item_mark_delivered')}
-                    </Button>
-                )}
-            </Form>
+            {canDeliver && (
+                <Form
+                    {...QueueItemController.markDelivered.form({
+                        queueItem: item.id,
+                    })}
+                >
+                    {({ processing }) => (
+                        <Button
+                            type="submit"
+                            disabled={processing}
+                            className="h-10 shrink-0 px-4"
+                        >
+                            <CheckCircle2 className="mr-1.5 h-4 w-4" />
+                            {t('queues.item_mark_delivered')}
+                        </Button>
+                    )}
+                </Form>
+            )}
         </div>
     );
 }

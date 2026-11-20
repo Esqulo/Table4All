@@ -12,6 +12,7 @@ import DeliveryController from '@/actions/App/Http/Controllers/Restaurant/Delive
 import QueueItemController from '@/actions/App/Http/Controllers/Restaurant/QueueItemController';
 import { Button } from '@/components/ui/button';
 import { useLiveReload } from '@/hooks/use-live-reload';
+import { useCanWrite } from '@/hooks/use-permission';
 
 type DeliveryItem = {
     id: number;
@@ -45,6 +46,7 @@ function waitingLabel(iso: string): string {
 
 export default function DeliveryIndex({ items }: Props) {
     const { t } = useTranslation();
+    const canWrite = useCanWrite('delivery');
 
     // Waiters act on this board, so keep it close to real time (see docs/performance.md).
     useLiveReload({ only: ['items'], intervalMs: 10_000 });
@@ -184,23 +186,29 @@ export default function DeliveryIndex({ items }: Props) {
                                                 </div>
                                             </div>
 
-                                            <Form
-                                                {...QueueItemController.markDelivered.form(
-                                                    { queueItem: item.id },
-                                                )}
-                                            >
-                                                {({ processing }) => (
-                                                    <Button
-                                                        type="submit"
-                                                        size="sm"
-                                                        disabled={processing}
-                                                        className="shrink-0 gap-1.5"
-                                                    >
-                                                        <Check className="h-3.5 w-3.5" />
-                                                        {t('delivery.deliver')}
-                                                    </Button>
-                                                )}
-                                            </Form>
+                                            {canWrite && (
+                                                <Form
+                                                    {...QueueItemController.markDelivered.form(
+                                                        { queueItem: item.id },
+                                                    )}
+                                                >
+                                                    {({ processing }) => (
+                                                        <Button
+                                                            type="submit"
+                                                            size="sm"
+                                                            disabled={
+                                                                processing
+                                                            }
+                                                            className="shrink-0 gap-1.5"
+                                                        >
+                                                            <Check className="h-3.5 w-3.5" />
+                                                            {t(
+                                                                'delivery.deliver',
+                                                            )}
+                                                        </Button>
+                                                    )}
+                                                </Form>
+                                            )}
                                         </div>
                                     ))}
                                 </div>

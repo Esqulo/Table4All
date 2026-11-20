@@ -431,7 +431,9 @@
         "msg_deleted": "Table deleted successfully.",
         "msg_products_updated": "Table products updated successfully.",
         "msg_order_conflict": "This table was changed by someone else while you were editing. The current items were reloaded; review them and save again.",
-        "payment_by": "by {{name}}"
+        "payment_by": "by {{name}}",
+        "delete_blocked": "Tables with orders or payments can’t be deleted.",
+        "error_delete_with_consumption": "This table has orders or payments and can’t be deleted."
     },
     "waiters": {
         "title": "Team",
@@ -450,7 +452,23 @@
         "msg_invite_cancelled": "Invitation cancelled.",
         "msg_deleted": "Removed from the team.",
         "error_already_waiter": "This email is already on this restaurant's team.",
-        "error_email_taken": "An account with this email already exists."
+        "error_email_taken": "An account with this email already exists.",
+        "description": "Invite people and choose, for each one, what they can see and what they can edit.",
+        "role_label": "Role",
+        "role_waiter": "Waiter",
+        "role_manager": "Manager",
+        "role_waiter_hint": "Sees and edits only what is granted below.",
+        "role_manager_hint": "Sees every area of the venue and manages the waiters. Edits only where granted below. Never changes the venue, its finances, nor posts in the restaurant’s name.",
+        "you": "(you)",
+        "edit_access": "Permissions",
+        "remove": "Remove from the team",
+        "cancel_invite": "Cancel invitation",
+        "no_access": "No access to any area.",
+        "access_title": "{{name}}’s permissions",
+        "access_description": "For each area: no access, read-only or editing.",
+        "access_save": "Save permissions",
+        "access_cancel": "Cancel",
+        "msg_permissions_saved": "Permissions updated."
     },
     "sales": {
         "title": "Sales",
@@ -1505,5 +1523,25 @@
             "summary_other": "{{count}} visits: {{value}}",
             "restarts": "after the last one, the bar starts over"
         }
+    },
+    "staff": {
+        "feature_tables": "Tables",
+        "feature_delivery": "Deliveries",
+        "feature_queues": "Kitchen queues",
+        "feature_products": "Products",
+        "feature_menus": "Menus",
+        "feature_sales": "Promotions",
+        "feature_coupons": "Coupons",
+        "feature_incentives": "Incentives",
+        "feature_dashboard": "Dashboard",
+        "feature_finance": "Finance",
+        "feature_establishment": "Venue",
+        "feature_staff": "Team",
+        "level_none": "No access",
+        "level_read": "Read-only",
+        "level_write": "Edit",
+        "read_only_feature": "Only the restaurant owner edits this area.",
+        "read_only_notice": "You have read-only access to this area.",
+        "error_no_permission": "You don’t have permission to do that."
     }
 }

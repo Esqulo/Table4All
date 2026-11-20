@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import IncentiveController from '@/actions/App/Http/Controllers/Restaurant/IncentiveController';
 import Heading from '@/components/heading';
 import TierEditor from '@/components/loyalty/tier-editor';
+import { ReadOnlyNotice } from '@/components/read-only-notice';
+import { useCanWrite } from '@/hooks/use-permission';
 import { formatBRL } from '@/lib/money';
 import { cn } from '@/lib/utils';
 import type { IncentiveSetting } from '@/types';
@@ -182,6 +184,7 @@ export default function Incentives({
     incentives: IncentiveSetting[];
 }) {
     const { t } = useTranslation();
+    const canWrite = useCanWrite('incentives');
 
     return (
         <>
@@ -192,12 +195,15 @@ export default function Incentives({
                     title={t('incentives.title')}
                     description={t('incentives.description')}
                 />
-                {incentives.map((incentive) => (
-                    <LoyaltyIncentive
-                        key={incentive.key}
-                        incentive={incentive}
-                    />
-                ))}
+                <ReadOnlyNotice feature="incentives" />
+                <fieldset disabled={!canWrite} className="min-w-0 space-y-6">
+                    {incentives.map((incentive) => (
+                        <LoyaltyIncentive
+                            key={incentive.key}
+                            incentive={incentive}
+                        />
+                    ))}
+                </fieldset>
             </div>
         </>
     );

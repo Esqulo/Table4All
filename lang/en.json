@@ -54,5 +54,6 @@
     "loyalty.attribute_visits": "visits",
     "loyalty.attribute_discount_type": "discount type",
     "loyalty.attribute_discount_value": "discount value",
-    "loyalty.attribute_max_discount": "maximum discount"
+    "loyalty.attribute_max_discount": "maximum discount",
+    "staff.error_above_limit": "You can’t grant more than your own access."
 }

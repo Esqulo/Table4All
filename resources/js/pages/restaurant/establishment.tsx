@@ -19,6 +19,7 @@ import EstablishmentController from '@/actions/App/Http/Controllers/Restaurant/E
 import Heading from '@/components/heading';
 import { ImageCropper } from '@/components/image-cropper';
 import InputError from '@/components/input-error';
+import { ReadOnlyNotice } from '@/components/read-only-notice';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -32,6 +33,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useCanWrite } from '@/hooks/use-permission';
 import { croppedFile, imageSourceUrl } from '@/lib/image-upload';
 import type { OpeningHourInterval, PriceLevel, VenuePhoto } from '@/types';
 
@@ -86,6 +88,7 @@ export default function Establishment({
     maxPhotos,
 }: Props) {
     const { t } = useTranslation();
+    const canWrite = useCanWrite('establishment');
     const profileUrl = handle ? `${profileBaseUrl}/${handle}` : null;
 
     return (
@@ -108,20 +111,25 @@ export default function Establishment({
                     )}
                 </div>
 
-                <ProfileSection
-                    handle={handle}
-                    profilePublic={profilePublic}
-                    profileBaseUrl={profileBaseUrl}
-                    address={address}
-                    ifoodUrl={ifoodUrl}
-                    priceLevel={priceLevel}
-                    tableCapacity={tableCapacity}
-                    addressLocated={addressLocated}
-                />
-                <BannerSection bannerUrl={bannerUrl} logoUrl={logoUrl} />
-                <LogoSection logoUrl={logoUrl} />
-                <HoursSection initial={hours} />
-                <PhotosSection photos={photos} maxPhotos={maxPhotos} />
+                <ReadOnlyNotice feature="establishment" />
+
+                {/* Staff may look at the venue's settings; only the owner changes them. */}
+                <fieldset disabled={!canWrite} className="min-w-0 space-y-6">
+                    <ProfileSection
+                        handle={handle}
+                        profilePublic={profilePublic}
+                        profileBaseUrl={profileBaseUrl}
+                        address={address}
+                        ifoodUrl={ifoodUrl}
+                        priceLevel={priceLevel}
+                        tableCapacity={tableCapacity}
+                        addressLocated={addressLocated}
+                    />
+                    <BannerSection bannerUrl={bannerUrl} logoUrl={logoUrl} />
+                    <LogoSection logoUrl={logoUrl} />
+                    <HoursSection initial={hours} />
+                    <PhotosSection photos={photos} maxPhotos={maxPhotos} />
+                </fieldset>
             </div>
         </>
     );

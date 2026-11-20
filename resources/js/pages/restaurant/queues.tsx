@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import QueueController from '@/actions/App/Http/Controllers/Restaurant/QueueController';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
+import { useCanWrite } from '@/hooks/use-permission';
 import type { RestaurantQueue } from '@/types';
 
 type Props = {
@@ -12,6 +13,7 @@ type Props = {
 
 export default function Queues({ queues }: Props) {
     const { t } = useTranslation();
+    const canWrite = useCanWrite('queues');
 
     return (
         <>
@@ -20,12 +22,14 @@ export default function Queues({ queues }: Props) {
             <div className="space-y-6 p-6">
                 <div className="flex items-center justify-between">
                     <Heading title={t('queues.title')} />
-                    <Button asChild>
-                        <Link href={QueueController.create.url()}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            {t('queues.new')}
-                        </Link>
-                    </Button>
+                    {canWrite && (
+                        <Button asChild>
+                            <Link href={QueueController.create.url()}>
+                                <Plus className="mr-2 h-4 w-4" />
+                                {t('queues.new')}
+                            </Link>
+                        </Button>
+                    )}
                 </div>
 
                 {queues.length === 0 ? (
@@ -46,6 +50,7 @@ export default function Queues({ queues }: Props) {
 
 function QueueRow({ queue }: { queue: RestaurantQueue }) {
     const { t } = useTranslation();
+    const canWrite = useCanWrite('queues');
 
     return (
         <div className="flex items-center justify-between gap-4 px-4 py-3">
@@ -65,30 +70,36 @@ function QueueRow({ queue }: { queue: RestaurantQueue }) {
                         {t('queues.view_kitchen')}
                     </Link>
                 </Button>
-                <Button variant="outline" size="sm" asChild>
-                    <Link href={QueueController.edit.url({ queue: queue.id })}>
-                        <Pencil className="mr-1 h-3.5 w-3.5" />
-                        {t('queues.edit')}
-                    </Link>
-                </Button>
-
-                <Form
-                    {...QueueController.destroy.form({ queue: queue.id })}
-                    onBefore={() => confirm(t('queues.delete_confirm'))}
-                >
-                    {({ processing }) => (
-                        <Button
-                            type="submit"
-                            variant="outline"
-                            size="sm"
-                            disabled={processing}
-                            className="text-destructive hover:text-destructive"
+                {canWrite && (
+                    <Button variant="outline" size="sm" asChild>
+                        <Link
+                            href={QueueController.edit.url({ queue: queue.id })}
                         >
-                            <Trash2 className="mr-1 h-3.5 w-3.5" />
-                            {t('queues.delete')}
-                        </Button>
-                    )}
-                </Form>
+                            <Pencil className="mr-1 h-3.5 w-3.5" />
+                            {t('queues.edit')}
+                        </Link>
+                    </Button>
+                )}
+
+                {canWrite && (
+                    <Form
+                        {...QueueController.destroy.form({ queue: queue.id })}
+                        onBefore={() => confirm(t('queues.delete_confirm'))}
+                    >
+                        {({ processing }) => (
+                            <Button
+                                type="submit"
+                                variant="outline"
+                                size="sm"
+                                disabled={processing}
+                                className="text-destructive hover:text-destructive"
+                            >
+                                <Trash2 className="mr-1 h-3.5 w-3.5" />
+                                {t('queues.delete')}
+                            </Button>
+                        )}
+                    </Form>
+                )}
             </div>
         </div>
     );

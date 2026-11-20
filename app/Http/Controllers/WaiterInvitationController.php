@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\AccountType;
+use App\Enums\StaffFeature;
+use App\Enums\StaffRole;
 use App\Models\User;
 use App\Models\WaiterInvitation;
 use Illuminate\Http\RedirectResponse;
@@ -52,9 +54,14 @@ class WaiterInvitationController extends Controller
             'account_type' => AccountType::WAITER,
             'restaurant_id' => $invitation->restaurant_id,
         ]);
-        // The invitation link proved the address. Not mass-assignable, hence forceFill:
-        // passing it to create() silently dropped it.
-        $user->forceFill(['email_verified_at' => now()])->save();
+        // The invitation link proved the address; the role comes from the invitation and the
+        // access per feature starts at the waiter defaults (the restaurant adjusts it later).
+        // Not mass-assignable, hence forceFill: passing them to create() silently drops them.
+        $user->forceFill([
+            'email_verified_at' => now(),
+            'staff_role' => StaffRole::tryFrom($invitation->role) ?? StaffRole::WAITER,
+            'staff_permissions' => StaffFeature::waiterDefaults(),
+        ])->save();
 
         $invitation->update(['accepted_at' => now()]);
 

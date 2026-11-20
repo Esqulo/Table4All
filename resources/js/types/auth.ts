@@ -19,6 +19,10 @@ export type User = {
 
 export type Auth = {
     user: User;
+    /** Access per restaurant feature (null for accounts outside a restaurant's team). */
+    permissions?: Record<string, 'none' | 'read' | 'write'> | null;
+    /** 'waiter' or 'manager' for staff accounts, null otherwise. */
+    staffRole?: 'waiter' | 'manager' | null;
 };
 
 export type TwoFactorSetupData = {

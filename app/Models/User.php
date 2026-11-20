@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use App\Enums\AccountType;
+use App\Enums\Permission;
+use App\Enums\StaffFeature;
+use App\Enums\StaffRole;
 use App\Jobs\GeocodeRestaurant;
 use App\Support\RestaurantHandle;
 use Database\Factories\UserFactory;
@@ -41,6 +44,8 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property float|null $longitude
  * @property AccountType $account_type
  * @property int|null $restaurant_id
+ * @property StaffRole|null $staff_role
+ * @property array<string, string>|null $staff_permissions
  * @property string|null $stripe_account_id
  * @property bool $stripe_charges_enabled
  * @property bool $stripe_details_submitted
@@ -105,6 +110,93 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 
         return $this->profile_public
             || ($viewer !== null && $viewer->account_type === AccountType::RESTAURANT && $viewer->id === $this->id);
+    }
+
+    /** A member of a restaurant's team (waiter or manager), still linked to it. */
+    public function isStaff(): bool
+    {
+        return $this->account_type === AccountType::WAITER && $this->restaurant_id !== null;
+    }
+
+    /** Waiter unless made a manager; accounts from before roles existed are waiters. */
+    public function staffRole(): StaffRole
+    {
+        return $this->staff_role ?? StaffRole::WAITER;
+    }
+
+    public function isManager(): bool
+    {
+        return $this->isStaff() && $this->staffRole() === StaffRole::MANAGER;
+    }
+
+    /**
+     * What was granted to this staff member per feature, before the role is applied.
+     * Null (never set) means the waiter defaults.
+     *
+     * @return array<string, string>
+     */
+    public function grantedPermissions(): array
+    {
+        return $this->staff_permissions ?? StaffFeature::waiterDefaults();
+    }
+
+    /**
+     * How far this account can go in a feature of its restaurant: the owner writes
+     * everywhere; staff get what was granted, managers at least reading everything,
+     * never above the feature's ceiling for staff; anyone else nothing.
+     */
+    public function access(StaffFeature $feature): Permission
+    {
+        if ($this->account_type === AccountType::RESTAURANT) {
+            return Permission::WRITE;
+        }
+
+        if (! $this->isStaff()) {
+            return Permission::NONE;
+        }
+
+        $manager = $this->staffRole() === StaffRole::MANAGER;
+
+        if ($feature === StaffFeature::STAFF) {
+            return $manager ? Permission::WRITE : Permission::NONE;
+        }
+
+        $granted = Permission::tryFrom((string) ($this->grantedPermissions()[$feature->value] ?? '')) ?? Permission::NONE;
+
+        if ($manager) {
+            $granted = Permission::max($granted, Permission::READ);
+        }
+
+        return Permission::min($granted, $feature->staffCeiling());
+    }
+
+    /**
+     * access() for every feature, for the browser (sidebar, read-only screens).
+     *
+     * @return array<string, string>
+     */
+    public function accessMap(): array
+    {
+        $map = [];
+
+        foreach (StaffFeature::cases() as $feature) {
+            $map[$feature->value] = $this->access($feature)->value;
+        }
+
+        return $map;
+    }
+
+    /** The restaurant account this one works for: itself for the owner, the owner for staff. */
+    public function restaurantAccount(): User
+    {
+        if ($this->account_type === AccountType::RESTAURANT) {
+            return $this;
+        }
+
+        /** @var User $owner */
+        $owner = $this->restaurant()->firstOrFail();
+
+        return $owner;
     }
 
     public function effectiveRestaurantId(): int
@@ -222,6 +314,8 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             'stripe_charges_enabled' => 'boolean',
             'stripe_details_submitted' => 'boolean',
             'platform_pays_stripe_fees' => 'boolean',
+            'staff_role' => StaffRole::class,
+            'staff_permissions' => 'array',
             'price_level' => 'integer',
             'table_capacity' => 'integer',
             'latitude' => 'float',

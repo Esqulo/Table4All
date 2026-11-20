@@ -40,19 +40,21 @@ class EstablishmentController extends Controller
 
     public function edit(Request $request): Response
     {
-        $restaurantId = $request->user()->effectiveRestaurantId();
+        // Staff with access look at the restaurant's settings, read-only (only the owner saves).
+        $restaurant = $request->user()->restaurantAccount();
+        $restaurantId = $restaurant->id;
 
         return Inertia::render('restaurant/establishment', [
-            'logoUrl' => $request->user()->logo_url,
-            'bannerUrl' => $request->user()->banner_url,
-            'handle' => $request->user()->handle,
-            'profilePublic' => $request->user()->profile_public,
-            'address' => $request->user()->address,
-            'ifoodUrl' => $request->user()->ifood_url,
-            'priceLevel' => $request->user()->price_level,
-            'tableCapacity' => $request->user()->table_capacity,
+            'logoUrl' => $restaurant->logo_url,
+            'bannerUrl' => $restaurant->banner_url,
+            'handle' => $restaurant->handle,
+            'profilePublic' => $restaurant->profile_public,
+            'address' => $restaurant->address,
+            'ifoodUrl' => $restaurant->ifood_url,
+            'priceLevel' => $restaurant->price_level,
+            'tableCapacity' => $restaurant->table_capacity,
             // Whether the address was found on the map ("closest first" on the discovery page).
-            'addressLocated' => $request->user()->latitude !== null,
+            'addressLocated' => $restaurant->latitude !== null,
             'profileBaseUrl' => url('vempro'),
             'hours' => RestaurantOpeningHour::where('user_id', $restaurantId)
                 ->orderBy('weekday')

@@ -160,7 +160,22 @@ class TableController extends Controller
             'queueItems' => $queueItems,
             // Lets the client prove which version of the order it edited (see syncOrder).
             'orderVersion' => $this->orderVersion($table->id),
+            // Only a table nothing was ordered or paid at can be deleted (destroy()).
+            'deletable' => fn () => ! self::hasConsumption($table->id),
         ]);
+    }
+
+    /**
+     * Whether anything was ordered or paid at the table: such a table is part of the
+     * restaurant's records and is never deleted, by anyone. Staff-entered lines,
+     * customers' orders (queued or not), payments and online checkouts all count.
+     */
+    private static function hasConsumption(int $tableId): bool
+    {
+        return DB::table('restaurant_table_product')->where('restaurant_table_id', $tableId)->exists()
+            || DB::table('queue_items')->where('restaurant_table_id', $tableId)->exists()
+            || DB::table('table_payments')->where('restaurant_table_id', $tableId)->exists()
+            || DB::table('online_payments')->where('restaurant_table_id', $tableId)->exists();
     }
 
     public function edit(Request $request, RestaurantTable $table): Response
@@ -274,7 +289,24 @@ class TableController extends Controller
     {
         abort_unless($table->user_id === $request->user()->effectiveRestaurantId(), 403);
 
-        $table->delete();
+        // Locked like every change to the order, so nothing is ordered or paid while deleting.
+        $deleted = DB::transaction(function () use ($table): bool {
+            RestaurantTable::whereKey($table->id)->lockForUpdate()->first();
+
+            if (self::hasConsumption($table->id)) {
+                return false;
+            }
+
+            $table->delete();
+
+            return true;
+        });
+
+        if (! $deleted) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => 'tables.error_delete_with_consumption']);
+
+            return back(fallback: route('restaurant.tables.show', $table));
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'tables.msg_deleted']);
 
