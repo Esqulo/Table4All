@@ -612,7 +612,7 @@ class CustomerAndDashboardTest extends TestCase
 
         $this->actingAs($restaurant)->get(route('restaurant.dashboards.index'))
             ->assertInertia(fn (Assert $page) => $page
-                ->where('period', 30)
+                ->where('filters.period', '30')
                 ->where('summary.total_revenue', 30)
                 ->where('summary.tables_closed', 1)
                 ->where('summary.items_sold', 3)
@@ -630,7 +630,8 @@ class CustomerAndDashboardTest extends TestCase
                 ->where('summary.total_revenue', 0)
                 ->where('summary.tables_closed', 0)
                 ->where('summary.avg_table_revenue', 0)
-                ->has('revenue_by_day', 0)
+                ->has('timeline', 30)
+                ->where('timeline.0.revenue', 0)
             );
     }
 
@@ -640,11 +641,11 @@ class CustomerAndDashboardTest extends TestCase
 
         foreach (['365', 'abc', '-7'] as $period) {
             $this->actingAs($restaurant)->get(route('restaurant.dashboards.index', ['period' => $period]))
-                ->assertInertia(fn (Assert $page) => $page->where('period', 30));
+                ->assertInertia(fn (Assert $page) => $page->where('filters.period', '30'));
         }
 
         $this->actingAs($restaurant)->get(route('restaurant.dashboards.index', ['period' => 7]))
-            ->assertInertia(fn (Assert $page) => $page->where('period', 7));
+            ->assertInertia(fn (Assert $page) => $page->where('filters.period', '7'));
     }
 
     public function test_late_night_sales_count_on_the_local_day(): void
@@ -658,8 +659,9 @@ class CustomerAndDashboardTest extends TestCase
 
         $this->actingAs($restaurant)->get(route('restaurant.dashboards.index'))
             ->assertInertia(fn (Assert $page) => $page
-                ->has('revenue_by_day', 1)
-                ->where('revenue_by_day.0.date', '2026-11-20')
+                ->where('timeline.28.bucket', '2026-11-20')
+                ->where('timeline.28.revenue', 10)
+                ->where('timeline.29.revenue', 0)
             );
     }
 
