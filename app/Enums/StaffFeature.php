@@ -18,6 +18,11 @@ enum StaffFeature: string
     case CALLS = 'calls';
     case QUEUES = 'queues';
     case PRODUCTS = 'products';
+    /**
+     * Marking products sold out ("esgotado") and back, without editing them: the kitchen
+     * or the floor knows first when something runs out. Writing products covers it too.
+     */
+    case AVAILABILITY = 'availability';
     case MENUS = 'menus';
     case SALES = 'sales';
     case COUPONS = 'coupons';
@@ -55,6 +60,7 @@ enum StaffFeature: string
             self::DELIVERY->value => Permission::WRITE->value,
             self::CALLS->value => Permission::WRITE->value,
             self::PRODUCTS->value => Permission::READ->value,
+            self::AVAILABILITY->value => Permission::WRITE->value,
         ];
     }
 

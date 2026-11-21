@@ -158,6 +158,12 @@ Route::middleware(['auth', 'verified', EnsureRestaurantOrWaiter::class])
                 ->name('tables.add-payment');
             Route::patch('mesas/{table}/fechar', [TableController::class, 'close'])
                 ->name('tables.close');
+            // A customer changes tables (some items move) or two groups join (one table goes).
+            Route::post('mesas/{table}/transferir', [TableController::class, 'transferItems'])
+                ->name('tables.transfer');
+            Route::post('mesas/{table}/juntar', [TableController::class, 'merge'])
+                ->withTrashed()
+                ->name('tables.merge');
             // Staff take the service fee off a table's bill (or put it back).
             Route::patch('mesas/{table}/taxa-servico', [TableController::class, 'waiveServiceFee'])
                 ->name('tables.service-fee');
@@ -191,8 +197,15 @@ Route::middleware(['auth', 'verified', EnsureRestaurantOrWaiter::class])
             ->middleware($feature('queues|delivery'))
             ->name('queue-items.mark-done');
 
+        // Staff who only mark products sold out (availability) see the list too, read-only.
+        Route::get('produtos', [ProductController::class, 'index'])
+            ->middleware($feature('products|availability'))
+            ->name('products.index');
+        Route::patch('produtos/{product}/esgotado', [ProductController::class, 'soldOut'])
+            ->middleware($feature('products|availability'))
+            ->name('products.sold-out');
+
         Route::middleware($feature(StaffFeature::PRODUCTS))->group(function () {
-            Route::get('produtos', [ProductController::class, 'index'])->name('products.index');
             Route::post('produtos/{product}/foto', [ProductController::class, 'updatePicture'])
                 ->name('products.picture.update');
             Route::resource('produtos', ProductController::class)

@@ -71,7 +71,10 @@ export function AppSidebar() {
 
     // The restaurant's screens, each shown when the account may at least read it
     // (the owner reaches all; staff what was granted to them).
-    const staffNavItems: (NavItem & { feature: StaffFeature })[] = [
+    // An item shows when the account reaches any of its features.
+    const staffNavItems: (NavItem & {
+        feature: StaffFeature | StaffFeature[];
+    })[] = [
         {
             feature: 'dashboard',
             title: t('nav.dashboards'),
@@ -91,7 +94,8 @@ export function AppSidebar() {
             icon: ScrollText,
         },
         {
-            feature: 'products',
+            // Staff who only mark products sold out reach the list too.
+            feature: ['products', 'availability'],
             title: t('nav.products'),
             href: ProductController.index.url(),
             icon: ShoppingBag,
@@ -152,8 +156,10 @@ export function AppSidebar() {
             icon: Landmark,
         },
     ];
-    const allowedStaffItems: NavItem[] = staffNavItems.filter(
-        (item) => (auth.permissions?.[item.feature] ?? 'none') !== 'none',
+    const allowedStaffItems: NavItem[] = staffNavItems.filter((item) =>
+        (Array.isArray(item.feature) ? item.feature : [item.feature]).some(
+            (feature) => (auth.permissions?.[feature] ?? 'none') !== 'none',
+        ),
     );
 
     const mainNavItems: NavItem[] = isAdmin

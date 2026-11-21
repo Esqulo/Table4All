@@ -1,7 +1,9 @@
 import { Head } from '@inertiajs/react';
 import { ImageOff } from 'lucide-react';
 import { useState } from 'react';
+import { SoldOutBadge } from '@/components/sold-out-badge';
 import { formatBRL } from '@/lib/money';
+import { cn } from '@/lib/utils';
 import type { Category, Menu, Product } from '@/types';
 
 type Restaurant = {
@@ -125,7 +127,12 @@ function ProductCard({ product }: { product: Product }) {
     };
 
     return (
-        <div className="flex gap-3 rounded-xl border border-border bg-card p-3">
+        <div
+            className={cn(
+                'flex gap-3 rounded-xl border border-border bg-card p-3',
+                product.sold_out_at && 'opacity-60',
+            )}
+        >
             <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-muted">
                 {product.picture_url ? (
                     <img
@@ -144,7 +151,10 @@ function ProductCard({ product }: { product: Product }) {
 
             <div className="flex min-w-0 flex-1 flex-col justify-between">
                 <div>
-                    <p className="leading-snug font-medium">{product.name}</p>
+                    <p className="flex flex-wrap items-center gap-x-2 gap-y-1 leading-snug font-medium">
+                        {product.name}
+                        {product.sold_out_at && <SoldOutBadge />}
+                    </p>
                     {product.description && (
                         <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
                             {product.description}

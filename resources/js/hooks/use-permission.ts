@@ -8,6 +8,7 @@ export type StaffFeature =
     | 'calls'
     | 'queues'
     | 'products'
+    | 'availability'
     | 'menus'
     | 'sales'
     | 'coupons'

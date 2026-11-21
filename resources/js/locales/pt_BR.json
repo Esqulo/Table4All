@@ -332,7 +332,12 @@
         "msg_updated": "Produto atualizado com sucesso.",
         "msg_deleted": "Produto excluído com sucesso.",
         "picture_edit_hint": "Clique para alterar a foto",
-        "msg_picture_updated": "Foto atualizada com sucesso."
+        "msg_picture_updated": "Foto atualizada com sucesso.",
+        "sold_out": "Esgotado",
+        "mark_sold_out": "Marcar como esgotado",
+        "mark_available": "Disponível de novo",
+        "msg_sold_out": "Produto marcado como esgotado.",
+        "msg_available": "Produto disponível de novo."
     },
     "queues": {
         "msg_has_open_items": "Esta fila tem pedidos em preparo ou aguardando entrega. Conclua-os antes de excluí-la.",
@@ -460,7 +465,35 @@
         "msg_service_fee_restored": "Taxa de serviço cobrada de novo nesta mesa.",
         "item_add_another": "Outra observação",
         "item_notes_placeholder": "Observação (ex.: sem cebola, ao ponto)",
-        "item_notes_label": "Observação para {{product}}"
+        "item_notes_label": "Observação para {{product}}",
+        "error_sold_out": "Um dos produtos esgotou e não pode ser lançado. Nada foi salvo.",
+        "transfer_button": "Transferir / juntar",
+        "transfer_title": "Trocar de mesa",
+        "transfer_description": "Leve itens para outra mesa quando o cliente troca de lugar, ou junte esta mesa com outra quando os grupos se juntam.",
+        "transfer_mode_items": "Transferir itens",
+        "transfer_mode_merge": "Juntar mesas",
+        "transfer_to_label": "Para a mesa",
+        "merge_into_label": "Juntar com a mesa",
+        "transfer_pick_table": "Escolha a mesa",
+        "transfer_no_targets": "Não há outra mesa aberta.",
+        "transfer_nothing": "Nada para transferir nesta mesa.",
+        "transfer_pick_items": "Itens",
+        "transfer_select_all": "Selecionar tudo",
+        "transfer_of_one": "{{count}} na mesa",
+        "transfer_of_other": "{{count}} na mesa",
+        "transfer_preparing": "Em preparo",
+        "transfer_awaiting_delivery": "Aguardando entrega",
+        "transfer_submit_zero": "Transferir",
+        "transfer_submit_one": "Transferir {{count}} item",
+        "transfer_submit_other": "Transferir {{count}} itens",
+        "merge_submit": "Juntar mesas",
+        "merge_confirm": "Juntar {{from}} com {{to}}? Tudo de {{from}} vai para {{to}}, {{from}} deixa de existir e a conversa das duas mesas recomeça do zero.",
+        "merge_explanation": "Itens servidos, pedidos em preparo, pagamentos e clientes de {{from}} vão para {{to}}, e {{from}} deixa de existir. {{to}} continua com o mesmo código, garçom e taxa de serviço. A conversa das duas mesas recomeça do zero.",
+        "msg_items_transferred": "Itens transferidos.",
+        "msg_tables_merged": "Mesas juntadas.",
+        "error_transfer_closed": "Uma das mesas foi fechada. Nada foi movido.",
+        "error_transfer_stale": "Os itens mudaram enquanto você escolhia. Nada foi movido; confira e tente de novo.",
+        "error_merge_payment": "Um cliente está pagando esta mesa pelo app. Espere o pagamento terminar para juntar."
     },
     "waiters": {
         "title": "Equipe",
@@ -1603,7 +1636,8 @@
         "read_only_feature": "Só o dono do restaurante edita esta área.",
         "read_only_notice": "Você tem acesso somente leitura a esta área.",
         "error_no_permission": "Você não tem permissão para fazer isso.",
-        "feature_calls": "Chamadas"
+        "feature_calls": "Chamadas",
+        "feature_availability": "Esgotados"
     },
     "calls": {
         "title": "Chamadas",

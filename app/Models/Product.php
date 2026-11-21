@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\Permission;
 use App\Enums\PriceType;
+use App\Enums\StaffFeature;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -22,6 +24,7 @@ use Illuminate\Support\Facades\Storage;
  * @property string|null $picture
  * @property float $price
  * @property PriceType $price_type
+ * @property Carbon|null $sold_out_at when it sold out ("esgotado"); null while available
  * @property-read string|null $picture_url
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -53,6 +56,21 @@ final class Product extends Model
         );
     }
 
+    public function isSoldOut(): bool
+    {
+        return $this->sold_out_at !== null;
+    }
+
+    /**
+     * Whether the account may mark products sold out and back: product writers, and staff
+     * granted availability (who can't otherwise edit products).
+     */
+    public static function canToggleSoldOut(User $user): bool
+    {
+        return $user->access(StaffFeature::PRODUCTS) === Permission::WRITE
+            || $user->access(StaffFeature::AVAILABILITY) === Permission::WRITE;
+    }
+
     /** @return BelongsTo<Category, $this> */
     public function category(): BelongsTo
     {
@@ -76,6 +94,7 @@ final class Product extends Model
         return [
             'price' => 'float',
             'price_type' => PriceType::class,
+            'sold_out_at' => 'datetime',
         ];
     }
 }

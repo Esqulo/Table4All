@@ -106,5 +106,7 @@
     "loyalty.attribute_discount_value": "valor do desconto",
     "loyalty.attribute_max_discount": "desconto máximo",
     "staff.error_above_limit": "Você não pode liberar mais do que o seu próprio acesso.",
-    "tables.error_not_a_waiter": "Escolha alguém da equipe que trabalha nas mesas."
+    "tables.error_not_a_waiter": "Escolha alguém da equipe que trabalha nas mesas.",
+    "join_table.error_sold_out": "Esgotou: :products. Tire do pedido para continuar.",
+    "tables.error_transfer_target": "Escolha outra mesa aberta deste restaurante."
 }

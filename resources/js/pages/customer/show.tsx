@@ -18,8 +18,10 @@ import {
 } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import JoinController from '@/actions/App/Http/Controllers/Customer/JoinController';
 import { ItemNote } from '@/components/item-note';
+import { SoldOutBadge } from '@/components/sold-out-badge';
 import { TableCallButtons } from '@/components/table-call-buttons';
 import type { TableCalls } from '@/components/table-call-buttons';
 import { TableChat } from '@/components/table-chat';
@@ -56,6 +58,8 @@ type MenuItem = {
     price: number;
     price_type: string;
     has_queue: boolean;
+    /** Esgotado: shown, but can't be ordered. */
+    sold_out: boolean;
     picture_url: string | null;
 };
 
@@ -886,6 +890,14 @@ function MenuDialog({
             {
                 preserveScroll: true,
                 onSuccess: () => close(),
+                // Something sold out meanwhile: say what and show it on the menu,
+                // keeping the cart so the customer only takes it out.
+                onError: (errors) => {
+                    if (errors.items) {
+                        toast.error(errors.items);
+                        router.reload({ only: ['menu'] });
+                    }
+                },
                 onFinish: () => setSubmitting(false),
             },
         );
@@ -1087,10 +1099,13 @@ function Stepper({
     quantity,
     onIncrement,
     onDecrement,
+    canIncrement = true,
 }: {
     quantity: number;
     onIncrement: () => void;
     onDecrement: () => void;
+    /** False for a product that sold out: it can only come out of the cart. */
+    canIncrement?: boolean;
 }) {
     return (
         <div className="flex shrink-0 items-center gap-1.5">
@@ -1107,7 +1122,8 @@ function Stepper({
             <button
                 type="button"
                 onClick={onIncrement}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity hover:opacity-90 active:scale-95"
+                disabled={!canIncrement}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity hover:opacity-90 active:scale-95 disabled:opacity-30"
             >
                 <Plus className="h-3.5 w-3.5" />
             </button>
@@ -1147,7 +1163,10 @@ function ReviewRow({
             <div className="flex items-center gap-3">
                 <ProductThumb item={item} size="h-12 w-12" />
                 <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{item.name}</p>
+                    <p className="flex items-center gap-2 text-sm font-medium">
+                        <span className="truncate">{item.name}</span>
+                        {item.sold_out && <SoldOutBadge />}
+                    </p>
                     <p className="text-xs font-semibold text-primary tabular-nums">
                         {fmt(item.price * quantity)}
                     </p>
@@ -1156,6 +1175,7 @@ function ReviewRow({
                     quantity={quantity}
                     onIncrement={onIncrement}
                     onDecrement={onDecrement}
+                    canIncrement={!item.sold_out}
                 />
             </div>
             <Input
@@ -1186,10 +1206,18 @@ function MenuRow({
     onDecrement: () => void;
 }) {
     return (
-        <div className="flex items-center gap-3 px-4 py-3">
+        <div
+            className={cn(
+                'flex items-center gap-3 px-4 py-3',
+                item.sold_out && quantity === 0 && 'opacity-60',
+            )}
+        >
             <ProductThumb item={item} size="h-12 w-12" />
             <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{item.name}</p>
+                <p className="flex items-center gap-2 text-sm font-medium">
+                    <span className="truncate">{item.name}</span>
+                    {item.sold_out && <SoldOutBadge />}
+                </p>
                 {item.description && (
                     <p className="truncate text-xs text-muted-foreground">
                         {item.description}
@@ -1204,18 +1232,21 @@ function MenuRow({
             </div>
 
             {quantity === 0 ? (
-                <button
-                    type="button"
-                    onClick={onIncrement}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity hover:opacity-90 active:scale-95"
-                >
-                    <Plus className="h-4 w-4" />
-                </button>
+                item.sold_out ? null : (
+                    <button
+                        type="button"
+                        onClick={onIncrement}
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity hover:opacity-90 active:scale-95"
+                    >
+                        <Plus className="h-4 w-4" />
+                    </button>
+                )
             ) : (
                 <Stepper
                     quantity={quantity}
                     onIncrement={onIncrement}
                     onDecrement={onDecrement}
+                    canIncrement={!item.sold_out}
                 />
             )}
         </div>

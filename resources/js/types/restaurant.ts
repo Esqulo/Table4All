@@ -69,6 +69,8 @@ export type Product = {
     picture_url: string | null;
     price: number;
     price_type: PriceType;
+    /** When it sold out ("esgotado"); null while it can be ordered. */
+    sold_out_at?: string | null;
     created_at: string;
     updated_at: string;
 };

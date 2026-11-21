@@ -1,6 +1,7 @@
 import { Form, Head, Link, router } from '@inertiajs/react';
 import {
     ArrowLeft,
+    ArrowRightLeft,
     Banknote,
     ConciergeBell,
     CreditCard,
@@ -21,6 +22,8 @@ import QueueItemController from '@/actions/App/Http/Controllers/Restaurant/Queue
 import TableController from '@/actions/App/Http/Controllers/Restaurant/TableController';
 import { ItemNote } from '@/components/item-note';
 import { ReadOnlyNotice } from '@/components/read-only-notice';
+import { SoldOutBadge } from '@/components/sold-out-badge';
+import { TableTransferDialog } from '@/components/table-transfer-dialog';
 import {
     AssignWaiterSelect,
     ClaimReleaseButton,
@@ -60,7 +63,13 @@ import type {
 
 type AvailableProduct = Pick<
     Product,
-    'id' | 'name' | 'picture_url' | 'price' | 'price_type' | 'queue_id'
+    | 'id'
+    | 'name'
+    | 'picture_url'
+    | 'price'
+    | 'price_type'
+    | 'queue_id'
+    | 'sold_out_at'
 > & {
     queue: { id: number; name: string } | null;
 };
@@ -84,6 +93,8 @@ type Props = {
     deletable?: boolean;
     /** The service fee copied from the restaurant when the table opened; null for none. */
     serviceFee?: ServiceFeeTerms | null;
+    /** The other open tables: where items can go, or this table can join. */
+    transferTargets?: { id: number; title: string }[];
     /** The waiter in charge and what the viewer may do about it. */
     assignment?: AssignmentContext & {
         waiter: TableWaiter;
@@ -122,6 +133,7 @@ export default function ManageOrder({
     orderVersion,
     deletable = false,
     serviceFee = null,
+    transferTargets = [],
     assignment,
 }: Props) {
     const { t } = useTranslation();
@@ -162,6 +174,7 @@ export default function ManageOrder({
     const [addPaymentOpen, setAddPaymentOpen] = useState(false);
     const [autoSubmitting, setAutoSubmitting] = useState(false);
     const [togglingFee, setTogglingFee] = useState(false);
+    const [transferOpen, setTransferOpen] = useState(false);
 
     const effectivePriceFor = (productId: number): number => {
         const sale = activeSales.find((s) => s.product_id === productId);
@@ -344,10 +357,15 @@ export default function ManageOrder({
             'activeSales',
             'orderVersion',
             'serviceFee',
+            'transferTargets',
         ],
         intervalMs: 15_000,
         enabled:
-            !isDirty && !autoSubmitting && !addProductsOpen && !addPaymentOpen,
+            !isDirty &&
+            !autoSubmitting &&
+            !addProductsOpen &&
+            !addPaymentOpen &&
+            !transferOpen,
     });
 
     const currentLines = Object.values(orderState).filter(
@@ -394,6 +412,17 @@ export default function ManageOrder({
                 onClose={() => setAddProductsOpen(false)}
             />
 
+            {canWrite && (
+                <TableTransferDialog
+                    open={transferOpen}
+                    onClose={() => setTransferOpen(false)}
+                    table={table}
+                    targets={transferTargets}
+                    orderLines={orderLines}
+                    queueItems={queueItems}
+                />
+            )}
+
             <AddPaymentDialog
                 open={addPaymentOpen}
                 table={table}
@@ -416,6 +445,22 @@ export default function ManageOrder({
                             {t('tables.manage_products')}
                         </p>
                     </div>
+                    {canWrite && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="ml-auto"
+                            // Moves what was saved: unsaved edits come first.
+                            disabled={isDirty || autoSubmitting}
+                            onClick={() => setTransferOpen(true)}
+                        >
+                            <ArrowRightLeft className="h-4 w-4 sm:mr-1.5" />
+                            <span className="hidden sm:inline">
+                                {t('tables.transfer_button')}
+                            </span>
+                        </Button>
+                    )}
                 </div>
 
                 {assignment?.enabled && (
@@ -1248,6 +1293,8 @@ function AddProductsDialog({
                                 0,
                             );
                             const hasQueue = product.queue_id !== null;
+                            // Sold out: shown so the waiter knows, but can't be launched.
+                            const soldOut = Boolean(product.sold_out_at);
                             const suffix = t(
                                 `products.price_suffix.${product.price_type}`,
                             );
@@ -1280,8 +1327,11 @@ function AddProductsDialog({
                                             )}
                                         </div>
                                         <div className="min-w-0 flex-1">
-                                            <p className="truncate text-sm font-medium">
-                                                {product.name}
+                                            <p className="flex items-center gap-2 text-sm font-medium">
+                                                <span className="truncate">
+                                                    {product.name}
+                                                </span>
+                                                {soldOut && <SoldOutBadge />}
                                             </p>
                                             <p className="text-xs text-muted-foreground">
                                                 {onSale ? (
@@ -1310,6 +1360,7 @@ function AddProductsDialog({
                                                 type="button"
                                                 size="sm"
                                                 variant="outline"
+                                                disabled={soldOut}
                                                 onClick={() =>
                                                     addEntry(product.id)
                                                 }

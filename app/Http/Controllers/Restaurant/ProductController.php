@@ -29,6 +29,7 @@ class ProductController extends Controller
         return Inertia::render('restaurant/products', [
             'products' => $products,
             'canManage' => $user->access(StaffFeature::PRODUCTS) === Permission::WRITE,
+            'canToggleSoldOut' => Product::canToggleSoldOut($user),
         ]);
     }
 
@@ -106,6 +107,36 @@ class ProductController extends Controller
         }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'products.msg_picture_updated']);
+
+        return back();
+    }
+
+    /**
+     * Marks the product sold out, or available again. Setting the state it already has
+     * changes nothing, so a retried or double-tapped request is harmless and keeps the
+     * time it first sold out.
+     */
+    public function soldOut(Request $request, Product $product): RedirectResponse
+    {
+        abort_unless($product->user_id === $request->user()->effectiveRestaurantId(), 403);
+
+        /** @var array{sold_out: bool} $data */
+        $data = $request->validate([
+            'sold_out' => ['required', 'boolean'],
+        ]);
+
+        $query = Product::whereKey($product->id);
+
+        if ($data['sold_out']) {
+            $query->whereNull('sold_out_at')->update(['sold_out_at' => now()]);
+        } else {
+            $query->whereNotNull('sold_out_at')->update(['sold_out_at' => null]);
+        }
+
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => $data['sold_out'] ? 'products.msg_sold_out' : 'products.msg_available',
+        ]);
 
         return back();
     }

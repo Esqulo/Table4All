@@ -56,5 +56,7 @@
     "loyalty.attribute_discount_value": "discount value",
     "loyalty.attribute_max_discount": "maximum discount",
     "staff.error_above_limit": "You can’t grant more than your own access.",
-    "tables.error_not_a_waiter": "Pick someone on the team who works the tables."
+    "tables.error_not_a_waiter": "Pick someone on the team who works the tables.",
+    "join_table.error_sold_out": "Sold out: :products. Take it out of your order to continue.",
+    "tables.error_transfer_target": "Pick another open table of this restaurant."
 }

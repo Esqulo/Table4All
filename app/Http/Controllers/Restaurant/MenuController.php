@@ -155,7 +155,7 @@ class MenuController extends Controller
     {
         $products = Product::where('user_id', $menu->user_id)
             ->orderBy('name')
-            ->get(['id', 'category_id', 'name', 'description', 'picture', 'price', 'price_type']);
+            ->get(['id', 'category_id', 'name', 'description', 'picture', 'price', 'price_type', 'sold_out_at']);
 
         $categories = Category::whereIn('id', $products->pluck('category_id')->filter()->unique())
             ->orderBy('name')

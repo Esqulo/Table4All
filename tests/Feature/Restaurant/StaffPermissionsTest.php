@@ -54,7 +54,7 @@ class StaffPermissionsTest extends TestCase
      */
     private function levels(array $overrides = [], string $default = 'none'): array
     {
-        $all = ['tables', 'delivery', 'calls', 'queues', 'products', 'menus', 'sales', 'coupons', 'incentives', 'dashboard', 'finance', 'establishment'];
+        $all = ['tables', 'delivery', 'calls', 'queues', 'products', 'availability', 'menus', 'sales', 'coupons', 'incentives', 'dashboard', 'finance', 'establishment'];
 
         return [...array_fill_keys($all, $default), ...$overrides];
     }

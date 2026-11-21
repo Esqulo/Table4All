@@ -33,7 +33,7 @@ class TableJoinController extends Controller
         $products = Product::where('user_id', $table->user_id)
             ->with('category:id,name')
             ->orderBy('name')
-            ->get(['id', 'category_id', 'name', 'description', 'picture', 'price', 'price_type'])
+            ->get(['id', 'category_id', 'name', 'description', 'picture', 'price', 'price_type', 'sold_out_at'])
             ->map(fn ($p) => [
                 'id' => $p->id,
                 'category_id' => $p->category_id,
@@ -42,6 +42,7 @@ class TableJoinController extends Controller
                 'description' => $p->description,
                 'price' => (float) $p->price,
                 'price_type' => $p->price_type,
+                'sold_out_at' => $p->sold_out_at?->toIso8601String(),
                 'picture_url' => $p->picture ? Storage::disk('public')->url($p->picture) : null,
             ]);
 

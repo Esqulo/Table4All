@@ -75,6 +75,26 @@ class RushResilienceTest extends TestCase
         $this->assertSame(2, (int) QueueItem::sole()->quantity);
     }
 
+    public function test_item_transfer_resent_with_the_same_key_moves_the_items_once(): void
+    {
+        $other = RestaurantTable::create(['user_id' => $this->restaurant->id, 'title' => 'Mesa 2', 'access_code' => '654321']);
+        DB::table('restaurant_table_product')->insert([
+            'restaurant_table_id' => $this->table->id, 'product_id' => $this->beer->id, 'price' => 10, 'quantity' => 4,
+        ]);
+        $payload = [
+            'to_table_id' => $other->id,
+            'lines' => [['product_id' => $this->beer->id, 'price' => 10, 'quantity' => 2]],
+            'request_key' => 'transfer-abc',
+        ];
+
+        $this->actingAs($this->restaurant)->post(route('restaurant.tables.transfer', $this->table), $payload)->assertRedirect();
+        $this->actingAs($this->restaurant)->post(route('restaurant.tables.transfer', $this->table), $payload)->assertRedirect();
+
+        $quantity = fn (RestaurantTable $t): int => (int) DB::table('restaurant_table_product')->where('restaurant_table_id', $t->id)->sum('quantity');
+        $this->assertSame(2, $quantity($this->table));
+        $this->assertSame(2, $quantity($other));
+    }
+
     public function test_customer_orders_with_different_keys_are_both_recorded(): void
     {
         $customer = User::factory()->create();

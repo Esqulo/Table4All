@@ -1,11 +1,21 @@
 import { Form, Head, Link, router } from '@inertiajs/react';
-import { Camera, ImageOff, Loader2, Pencil, Plus, Trash2 } from 'lucide-react';
+import {
+    Ban,
+    Camera,
+    CircleCheck,
+    ImageOff,
+    Loader2,
+    Pencil,
+    Plus,
+    Trash2,
+} from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import ProductController from '@/actions/App/Http/Controllers/Restaurant/ProductController';
 import Heading from '@/components/heading';
 import { ImageCropper } from '@/components/image-cropper';
+import { SoldOutBadge } from '@/components/sold-out-badge';
 import { Button } from '@/components/ui/button';
 import { croppedFile, imageSourceUrl } from '@/lib/image-upload';
 import { formatBRL } from '@/lib/money';
@@ -14,9 +24,15 @@ import type { Product } from '@/types';
 type Props = {
     products: Product[];
     canManage?: boolean;
+    /** May mark products sold out and back (products or availability permission). */
+    canToggleSoldOut?: boolean;
 };
 
-export default function Products({ products, canManage = true }: Props) {
+export default function Products({
+    products,
+    canManage = true,
+    canToggleSoldOut = canManage,
+}: Props) {
     const { t } = useTranslation();
 
     return (
@@ -47,6 +63,7 @@ export default function Products({ products, canManage = true }: Props) {
                                 key={product.id}
                                 product={product}
                                 canManage={canManage}
+                                canToggleSoldOut={canToggleSoldOut}
                             />
                         ))}
                     </div>
@@ -59,11 +76,26 @@ export default function Products({ products, canManage = true }: Props) {
 function ProductCard({
     product,
     canManage,
+    canToggleSoldOut,
 }: {
     product: Product;
     canManage: boolean;
+    canToggleSoldOut: boolean;
 }) {
     const { t } = useTranslation();
+    const [toggling, setToggling] = useState(false);
+    const soldOut = Boolean(product.sold_out_at);
+
+    const toggleSoldOut = () =>
+        router.patch(
+            ProductController.soldOut.url({ product: product.id }),
+            { sold_out: !soldOut },
+            {
+                preserveScroll: true,
+                onStart: () => setToggling(true),
+                onFinish: () => setToggling(false),
+            },
+        );
 
     const priceFormatted = formatBRL(product.price);
 
@@ -85,7 +117,10 @@ function ProductCard({
                         {product.category.name}
                     </span>
                 )}
-                <p className="leading-tight font-medium">{product.name}</p>
+                <p className="flex flex-wrap items-center gap-x-2 gap-y-1 leading-tight font-medium">
+                    {product.name}
+                    {soldOut && <SoldOutBadge />}
+                </p>
                 {product.description && (
                     <p className="line-clamp-2 text-xs text-muted-foreground">
                         {product.description}
@@ -98,6 +133,28 @@ function ProductCard({
                     </span>
                 </p>
             </div>
+
+            {canToggleSoldOut && (
+                <div className="border-t border-border px-4 pt-3">
+                    <Button
+                        type="button"
+                        variant={soldOut ? 'default' : 'outline'}
+                        size="sm"
+                        className="w-full"
+                        disabled={toggling}
+                        onClick={toggleSoldOut}
+                    >
+                        {soldOut ? (
+                            <CircleCheck className="mr-1 h-3.5 w-3.5" />
+                        ) : (
+                            <Ban className="mr-1 h-3.5 w-3.5" />
+                        )}
+                        {soldOut
+                            ? t('products.mark_available')
+                            : t('products.mark_sold_out')}
+                    </Button>
+                </div>
+            )}
 
             {canManage && (
                 <div className="flex gap-2 border-t border-border px-4 py-3">

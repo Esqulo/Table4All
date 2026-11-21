@@ -28,6 +28,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -121,7 +122,7 @@ class JoinController extends Controller
             return Product::where('user_id', $table->user_id)
                 ->with('category:id,name')
                 ->orderBy('name')
-                ->get(['id', 'category_id', 'name', 'description', 'picture', 'price', 'price_type', 'queue_id'])
+                ->get(['id', 'category_id', 'name', 'description', 'picture', 'price', 'price_type', 'queue_id', 'sold_out_at'])
                 ->map(fn ($p) => [
                     'id' => $p->id,
                     'category_id' => $p->category_id,
@@ -131,6 +132,7 @@ class JoinController extends Controller
                     'price' => (float) ($activeSales[$p->id] ?? $p->price),
                     'price_type' => $p->price_type,
                     'has_queue' => $p->queue_id !== null,
+                    'sold_out' => $p->sold_out_at !== null,
                     'picture_url' => $p->picture ? Storage::disk('public')->url($p->picture) : null,
                 ])
                 ->all();
@@ -361,8 +363,18 @@ class JoinController extends Controller
         $productIds = array_column($validated['items'], 'product_id');
         $products = Product::where('user_id', $table->user_id)
             ->whereIn('id', $productIds)
-            ->get(['id', 'queue_id', 'price'])
+            ->get(['id', 'name', 'queue_id', 'price', 'sold_out_at'])
             ->keyBy('id');
+
+        // Something sold out while the customer was choosing: say what, and order nothing,
+        // so they can change the cart instead of finding out from the waiter.
+        $soldOut = $products->filter(fn (Product $p): bool => $p->isSoldOut());
+
+        if ($soldOut->isNotEmpty()) {
+            throw ValidationException::withMessages([
+                'items' => __('join_table.error_sold_out', ['products' => $soldOut->pluck('name')->implode(', ')]),
+            ]);
+        }
         $activeSales = Sale::activePriceMap($table->user_id);
         $userId = $request->user()->id;
         $now = now();

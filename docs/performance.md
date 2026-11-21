@@ -124,6 +124,14 @@ venue (around 40 open tables and 150 products):
 - A payment is confirmed by whichever arrives first (the return URL, the webhook, or `payments:reconcile` every minute) and is recorded once: the `online_payments` row is locked and only a non-paid row is turned into `table_payments`. `request_key` makes a double-tapped "Pay" reopen the same checkout.
 - Transfers the platform owes a restaurant (a platform coupon, Stripe's fee for sponsored restaurants) use a Stripe idempotency key per payment, so retrying them is safe.
 
+### 2026-11-20: moving items and merging tables
+- A write that touches **two** tables (`App\Support\TableTransfer`: moving items when a customer changes tables, merging two tables) locks **both** `restaurant_tables` rows in one transaction, **lowest id first**. Two transfers between the same tables in opposite directions then wait for each other instead of deadlocking, and deliveries, order saves, payments and closing (which lock the same rows) never see half a move. Any future two-table write must lock in the same order.
+- Everything is checked under the lock before anything is written, so a move is all or nothing: if the units or items asked for are gone (delivered, edited or moved meanwhile), nothing moves and the screen is told.
+- `restaurant_table_product` has no id column and its unique key doesn't match `NULL` customers, so the moved rows are addressed by `ctid` (stable while the table row is locked) and a destination line grows on one row only.
+- Moving items carries a `request_key` (a resent request would move more units). A resent merge finds the old table already gone (soft-deleted) and just follows to the merged one.
+- A merge doesn't carry the chat over: both tables' messages and reactions are deleted, so the merged group starts a fresh conversation.
+- A merge waits while the table being merged has an online payment in flight, so Stripe's confirmation is never credited to a table that no longer exists.
+
 ### Known gaps / next steps
 - **Polling vs push.** Polling is simple and robust on bad networks, but with many screens open it costs one request per screen every few seconds. If load grows, move the kitchen and delivery boards to WebSockets (Laravel Reverb) and keep polling as the fallback.
 - **Sessions and cache on the database.** Every request writes the session row. Fine for one venue; for multi-venue hosting, move sessions and cache to Redis.
