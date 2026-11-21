@@ -140,7 +140,9 @@ export function ReactionBar({
     };
 
     return (
-        <div className="space-y-2">
+        // Inside the post footer's flex row: shrink to the card instead of pushing past it, and take
+        // the whole row while the picker is open (the comments link wraps below) so it isn't squeezed.
+        <div className={cn('min-w-0 space-y-2', open && 'basis-full')}>
             <div className="flex flex-wrap items-center gap-1.5">
                 {state.summary.map((r) => {
                     const mine = r.emoji === state.mine;
@@ -207,7 +209,7 @@ export function ReactionBar({
             </div>
 
             {open && (
-                <div className="space-y-3 rounded-xl border bg-card p-3 shadow-sm">
+                <div className="min-w-0 space-y-3 rounded-xl border bg-card p-2 shadow-sm sm:p-3">
                     <div className="flex justify-between gap-1">
                         {suggested.map((emoji) => (
                             <EmojiButton
@@ -219,7 +221,7 @@ export function ReactionBar({
                             />
                         ))}
                     </div>
-                    <div className="grid grid-cols-8 gap-1 border-t border-dashed pt-3">
+                    <div className="grid grid-cols-[repeat(auto-fill,minmax(2.25rem,1fr))] justify-items-center gap-1 border-t border-dashed pt-3">
                         {MORE_EMOJI.map((emoji) => (
                             <EmojiButton
                                 key={emoji}
@@ -273,7 +275,10 @@ function EmojiButton({
             aria-pressed={selected}
             className={cn(
                 'flex items-center justify-center rounded-lg transition-transform hover:scale-110 hover:bg-muted',
-                large ? 'size-12 text-3xl' : 'size-9 text-xl',
+                // The suggested row shrinks on very narrow phones; the grid picks its column count instead.
+                large
+                    ? 'aspect-square max-w-12 min-w-0 flex-1 text-2xl sm:text-3xl'
+                    : 'size-9 text-xl',
                 selected && 'bg-primary/15 ring-2 ring-primary',
             )}
         >

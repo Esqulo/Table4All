@@ -10,6 +10,11 @@ import { defineConfig } from 'vite';
 // listen on all interfaces, and the browser (on the host) reaches HMR via
 // localhost:5173. File-change events don't cross the Windows bind mount, so poll.
 const inDocker = process.env.VITE_IN_DOCKER === 'true';
+// Host the *browser* uses to reach the dev server. Defaults to localhost; set
+// VITE_DEV_HOST to this machine's LAN IP (e.g. in .env.docker.local) to open the
+// app from a phone on the same network, which otherwise asks its own localhost
+// for the JS/CSS and renders a broken, unstyled page.
+const devHost = process.env.VITE_DEV_HOST || 'localhost';
 
 export default defineConfig({
     server: inDocker
@@ -18,7 +23,8 @@ export default defineConfig({
               port: 5173,
               strictPort: true,
               cors: true,
-              hmr: { host: 'localhost' },
+              origin: `http://${devHost}:5173`,
+              hmr: { host: devHost },
               watch: { usePolling: true },
           }
         : undefined,
