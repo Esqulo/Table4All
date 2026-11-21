@@ -1,0 +1,22 @@
+# HTTPS edge for production (docker-compose.prod.yml). nginx inside the app container
+# already compresses responses and sets cache headers, so Caddy only adds TLS.
+
+{$SITE_ADDRESS} {
+	header Strict-Transport-Security "max-age=31536000"
+
+	# Marco Civil da Internet, Art. 15: keep access logs (IP, date, time, URL) for
+	# 6 months, no less, then delete them (docs/privacy.md).
+	log {
+		output file /var/log/caddy/access.log {
+			roll_size 100MiB
+			roll_keep 1000
+			roll_keep_for 4392h
+		}
+	}
+
+	reverse_proxy app:80
+}
+
+www.{$SITE_ADDRESS} {
+	redir https://{$SITE_ADDRESS}{uri} permanent
+}

@@ -1,0 +1,48 @@
+# Production on a single VPS: the base stack plus Caddy in front for HTTPS.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.docker up -d --build
+#
+# (On the server, a `.env` with COMPOSE_FILE=docker-compose.yml:docker-compose.prod.yml
+# lets a plain `docker compose up -d --build` do the same; see README "Deploy to a VPS".)
+#
+# Only Caddy is published. Docker publishes ports around the host firewall (ufw), so the
+# app and Postgres ports of the base file are removed: Caddy reaches the app over the
+# Docker network, and Postgres is reached with `docker compose exec db psql`.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  app:
+    ports: !reset []
+
+  db:
+    ports: !reset []
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      # Bare domain, e.g. table4all.com.br. The certificate is issued on its own once the
+      # domain's DNS points at this server; www.<domain> redirects to it.
+      SITE_ADDRESS: ${SITE_ADDRESS:?Set SITE_ADDRESS in .env.docker}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+      - caddy_logs:/var/log/caddy
+    depends_on:
+      - app
+    logging: *logging
+
+volumes:
+  caddy_data:
+  caddy_config:
+  # Access logs, kept 6 months (Marco Civil da Internet, Art. 15; docs/privacy.md).
+  caddy_logs:

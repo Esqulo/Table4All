@@ -38,3 +38,6 @@ docker-compose*.yml
 
 *.md
 !README.md
+
+# Database dumps on the server (docker/backup.sh)
+backups

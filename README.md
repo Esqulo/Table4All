@@ -145,6 +145,23 @@ docker compose -f docker-compose.yml --env-file .env.docker logs -f app
 docker compose -f docker-compose.yml --env-file .env.docker down
 ```
 
+### Deploy to a VPS (HTTPS)
+
+`docker-compose.prod.yml` adds Caddy in front (automatic Let's Encrypt certificate, HSTS, `www.` redirect, access logs kept 6 months) and removes the published app and Postgres ports, so only 80/443 reach the internet. The server keeps its config in `/opt/table4all`:
+
+- `.env.docker`: the production config (`APP_URL=https://<domain>`, `SITE_ADDRESS=<domain>`, a strong `DB_PASSWORD`, `APP_KEY`, real SMTP settings, since sign-up needs e-mail verification, and the `LEGAL_*` fields), plus `COMPOSE_FILE=docker-compose.yml:docker-compose.prod.yml`.
+- `.env`: a symlink to `.env.docker`, so a plain `docker compose …` on the server picks up both files and the variables.
+
+Deploy the committed `HEAD` (everything except the config, `backups/` and the volumes is replaced):
+
+```bash
+git archive --format=tar.gz HEAD | ssh <host> 'cd /opt/table4all \
+  && find . -mindepth 1 -maxdepth 1 ! -name .env ! -name .env.docker ! -name backups -exec rm -rf {} + \
+  && tar -xzf - && docker compose up -d --build && docker image prune -f'
+```
+
+Create the first platform admin with `docker compose exec app php artisan app:make-admin <email>`. `docker/backup.sh` dumps the database to `backups/` and keeps 30 days; run it daily from root's crontab (`0 6 * * * /opt/table4all/docker/backup.sh`).
+
 ## Testing & code quality
 
 ```bash
