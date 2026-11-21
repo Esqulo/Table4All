@@ -38,6 +38,7 @@ use App\Http\Middleware\EnsureFeatureAccess;
 use App\Http\Middleware\EnsureNotStaff;
 use App\Http\Middleware\EnsureRestaurant;
 use App\Http\Middleware\EnsureRestaurantOrWaiter;
+use App\Http\Middleware\ThrottleTableCodes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -72,7 +73,10 @@ foreach (['/vempro', '/painel'] as $formerFeedUrl) {
 Route::post('/stripe/webhook', StripeWebhookController::class)->name('stripe.webhook');
 
 Route::get('/mesa', [TableJoinController::class, 'index'])->name('table.join');
-Route::get('/mesa/{code}', [TableJoinController::class, 'show'])->name('table.show');
+// Wrong table codes are limited (ThrottleTableCodes): they are short enough to guess.
+Route::get('/mesa/{code}', [TableJoinController::class, 'show'])
+    ->middleware(ThrottleTableCodes::class)
+    ->name('table.show');
 
 // Public waiter invitation acceptance
 Route::get('/garcom/aceitar/{token}', [WaiterInvitationController::class, 'show'])
@@ -92,7 +96,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('customer')
         ->name('customer.')
-        ->middleware(EnsureNotStaff::class)
+        // ThrottleTableCodes limits wrong codes on the mesa/{code} routes (only those carry one).
+        ->middleware([EnsureNotStaff::class, ThrottleTableCodes::class])
         ->group(function () {
             // Rewards: level, loyalty cards, reward coupons, tables and payments.
             Route::get('recompensas', [CustomerRewardController::class, 'index'])->name('rewards');

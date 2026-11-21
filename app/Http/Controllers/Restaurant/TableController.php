@@ -38,6 +38,8 @@ class TableController extends Controller
 
     private const SYNC_SOLD_OUT = 'sold_out';
 
+    private const SYNC_CLOSED = 'closed';
+
     public function index(Request $request): Response
     {
         // Totals come from the snapshotted order prices (never the current product
@@ -417,7 +419,11 @@ class TableController extends Controller
         if ($result !== self::SYNC_SAVED) {
             Inertia::flash('toast', [
                 'type' => 'error',
-                'message' => $result === self::SYNC_SOLD_OUT ? 'tables.error_sold_out' : 'tables.msg_order_conflict',
+                'message' => match ($result) {
+                    self::SYNC_SOLD_OUT => 'tables.error_sold_out',
+                    self::SYNC_CLOSED => 'tables.error_order_closed',
+                    default => 'tables.msg_order_conflict',
+                },
             ]);
 
             return to_route('restaurant.tables.show', $table);
@@ -578,7 +584,13 @@ class TableController extends Controller
      * Changes nothing and says why when the order changed since the client
      * loaded it (a delivery was marked or another waiter saved), so a stale
      * screen can't overwrite lines it never saw; or when it would add units of a
-     * sold-out product (lowering or keeping what was already served is fine).
+     * sold-out product (lowering or keeping what was already served is fine), or
+     * when the table was closed meanwhile (its bill is final).
+     *
+     * Prices are never taken from the client: the price it sends only identifies
+     * a line already on the bill (same product at two prices are two lines).
+     * Anything new (a line the table doesn't have, an item for the kitchen) is
+     * priced here, at the product's price or its active promotion.
      *
      * @return self::SYNC_*
      */
@@ -586,9 +598,9 @@ class TableController extends Controller
     {
         $ownerId = $request->user()->effectiveRestaurantId();
         /** @var array<int, array<string, mixed>> $submitted */
-        $submitted = $request->input('products', []);
+        $submitted = $request->validated('products') ?? [];
         /** @var array<int, array<string, mixed>> $queueAdditions */
-        $queueAdditions = $request->input('queue_additions', []);
+        $queueAdditions = $request->validated('queue_additions') ?? [];
 
         $referencedIds = array_map('intval', array_merge(
             array_column($submitted, 'product_id'),
@@ -596,8 +608,16 @@ class TableController extends Controller
         ));
         $ownedProducts = Product::where('user_id', $ownerId)
             ->whereIn('id', $referencedIds)
-            ->get(['id', 'queue_id', 'sold_out_at'])
+            ->get(['id', 'price', 'queue_id', 'sold_out_at'])
             ->keyBy('id');
+
+        // What a new unit of each product costs right now (promotion first), as the
+        // customer's own order does (Customer\JoinController::order).
+        $activeSales = Sale::activePriceMap($ownerId);
+        /** @var array<int, float> $currentPrices */
+        $currentPrices = $ownedProducts
+            ->map(fn (Product $p): float => (float) ($activeSales[$p->id] ?? $p->price))
+            ->all();
 
         /** @var array<string, array{product_id: int, price: float, quantity: int}> $desired */
         $desired = [];
@@ -631,7 +651,7 @@ class TableController extends Controller
                 'queue_id' => $product->queue_id,
                 'quantity' => $qty,
                 'notes' => QueueItem::cleanNotes($item['notes'] ?? null),
-                'price' => (float) ($item['price'] ?? 0),
+                'price' => $currentPrices[$product->id],
                 'status' => QueueItemStatus::PENDING->value,
                 'created_at' => $now,
                 'updated_at' => $now,
@@ -648,9 +668,14 @@ class TableController extends Controller
             }
         }
 
-        return DB::transaction(function () use ($table, $desired, $queueRows, $clientVersion, $soldOut): string {
-            // Serializes with QueueItemController::markDelivered and other saves on this table.
-            RestaurantTable::whereKey($table->id)->lockForUpdate()->first(['id']);
+        return DB::transaction(function () use ($table, $desired, $queueRows, $clientVersion, $soldOut, $currentPrices): string {
+            // Serializes with QueueItemController::markDelivered, closing and other saves on this table.
+            $locked = RestaurantTable::whereKey($table->id)->lockForUpdate()->first(['id', 'closed_at']);
+
+            // A closed table's bill was paid as it stood: nothing is added or taken off it.
+            if ($locked === null || $locked->closed_at !== null) {
+                return self::SYNC_CLOSED;
+            }
 
             if (is_string($clientVersion) && $clientVersion !== $this->orderVersion($table->id)) {
                 return self::SYNC_CONFLICT;
@@ -682,6 +707,20 @@ class TableController extends Controller
                 ->orderByDesc('ordered_by_user_id')
                 ->get(['product_id', 'ordered_by_user_id', 'price', 'quantity'])
                 ->groupBy(fn ($row) => self::lineKey((int) $row->product_id, (float) $row->price));
+
+            // The price sent only points at a line the table already has. Any other line is
+            // new and is billed at the current price, never at one the client made up.
+            $priced = [];
+            foreach ($desired as $key => $line) {
+                if (! $current->has($key)) {
+                    $line['price'] = $currentPrices[$line['product_id']];
+                    $key = self::lineKey($line['product_id'], $line['price']);
+                }
+
+                $priced[$key] ??= ['product_id' => $line['product_id'], 'price' => $line['price'], 'quantity' => 0];
+                $priced[$key]['quantity'] += $line['quantity'];
+            }
+            $desired = $priced;
 
             foreach ($current as $key => $rows) {
                 $this->applyLineQuantity($table->id, $rows, $desired[$key]['quantity'] ?? 0);

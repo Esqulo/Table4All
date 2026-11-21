@@ -182,6 +182,9 @@ class TableManagementTest extends TestCase
         $restaurant = $this->restaurant();
         $table = $this->openTable($restaurant);
         $product = $this->product($restaurant);
+        // One unit at full price, one served during a promotion (the bill already has both).
+        $this->billLine($table, $product, 1, 10);
+        $this->billLine($table, $product, 1, 7.5);
 
         $this->actingAs($restaurant)->patch(route('restaurant.tables.update', $table), [
             'products' => [

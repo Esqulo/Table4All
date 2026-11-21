@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\ThrottleTableCodes;
 use App\Models\Product;
 use App\Models\RestaurantTable;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -16,7 +18,7 @@ class TableJoinController extends Controller
         return Inertia::render('table/join');
     }
 
-    public function show(string $code): Response|RedirectResponse
+    public function show(Request $request, string $code): Response|RedirectResponse
     {
         $table = RestaurantTable::where('access_code', $code)
             ->whereNull('closed_at')
@@ -25,6 +27,7 @@ class TableJoinController extends Controller
             ->first();
 
         if (! $table) {
+            ThrottleTableCodes::miss($request);
             Inertia::flash('toast', ['type' => 'error', 'message' => 'join_table.invalid_code']);
 
             return redirect()->route('table.join');

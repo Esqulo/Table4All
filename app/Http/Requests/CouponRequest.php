@@ -17,7 +17,8 @@ class CouponRequest extends FormRequest
     /** The restaurant that owns the coupon; null for the platform's (admin routes). */
     public function ownerId(): ?int
     {
-        return $this->routeIs('admin.*') ? null : $this->user()?->id;
+        // The restaurant's id for its staff too (effectiveRestaurantId), as the controller stores it.
+        return $this->routeIs('admin.*') ? null : $this->user()?->effectiveRestaurantId();
     }
 
     public function authorize(): bool

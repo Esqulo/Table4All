@@ -8,6 +8,7 @@ use App\Enums\PaymentMethod;
 use App\Enums\QueueItemStatus;
 use App\Enums\TableCustomerStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\ThrottleTableCodes;
 use App\Models\Coupon;
 use App\Models\OnlinePayment;
 use App\Models\Product;
@@ -86,6 +87,7 @@ class JoinController extends Controller
             ->first(['id', 'user_id', 'title', 'responsible_user_id', ...ServiceFee::COLUMNS, 'service_fee_waived']);
 
         if (! $table) {
+            ThrottleTableCodes::miss($request);
             Inertia::flash('toast', ['type' => 'error', 'message' => 'join_table.invalid_code']);
 
             return redirect()->route('customer.join');

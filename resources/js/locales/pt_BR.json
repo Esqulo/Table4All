@@ -467,6 +467,7 @@
         "item_notes_placeholder": "Observação (ex.: sem cebola, ao ponto)",
         "item_notes_label": "Observação para {{product}}",
         "error_sold_out": "Um dos produtos esgotou e não pode ser lançado. Nada foi salvo.",
+        "error_order_closed": "Esta mesa já foi fechada; a conta não pode mais ser alterada. Nada foi salvo.",
         "transfer_button": "Transferir / juntar",
         "transfer_title": "Trocar de mesa",
         "transfer_description": "Leve itens para outra mesa quando o cliente troca de lugar, ou junte esta mesa com outra quando os grupos se juntam.",

@@ -29,7 +29,7 @@ class ProductRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'category_id' => ['nullable', 'integer', 'exists:categories,id'],
             // Only the restaurant's own queues: otherwise its orders would show up in another kitchen.
-            'queue_id' => ['nullable', 'integer', Rule::exists('restaurant_queues', 'id')->where('user_id', $this->user()?->id)],
+            'queue_id' => ['nullable', 'integer', Rule::exists('restaurant_queues', 'id')->where('user_id', $this->user()?->effectiveRestaurantId())],
             'description' => ['nullable', 'string', 'max:2000'],
             'price' => ['required', 'numeric', 'min:0.01', 'max:99999.99'],
             'price_type' => ['required', new Enum(PriceType::class)],

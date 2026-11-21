@@ -467,6 +467,7 @@
         "item_notes_placeholder": "Note (e.g. no onions, medium rare)",
         "item_notes_label": "Note for {{product}}",
         "error_sold_out": "One of the products is sold out and can't be launched. Nothing was saved.",
+        "error_order_closed": "This table is already closed; its bill can no longer be changed. Nothing was saved.",
         "transfer_button": "Transfer / merge",
         "transfer_title": "Change tables",
         "transfer_description": "Move items to another table when a customer changes seats, or merge this table into another when groups join.",

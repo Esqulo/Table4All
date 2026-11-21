@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\PasswordValidationRules;
 use App\Enums\AccountType;
 use App\Enums\StaffFeature;
 use App\Enums\StaffRole;
@@ -15,6 +16,8 @@ use Inertia\Response;
 
 class WaiterInvitationController extends Controller
 {
+    use PasswordValidationRules;
+
     public function show(string $token): Response
     {
         $invitation = WaiterInvitation::pending()
@@ -43,7 +46,8 @@ class WaiterInvitationController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            // The same strength rules as signing up (stricter in production).
+            'password' => $this->passwordRules(),
             'password_confirmation' => ['required'],
         ]);
 

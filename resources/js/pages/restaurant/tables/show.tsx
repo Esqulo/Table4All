@@ -206,9 +206,9 @@ export default function ManageOrder({
     // Receives the confirmed items from the dialog, each stamped with its effective price.
     const handleAddProducts = (items: AddedItem[]) => {
         const merged = { ...orderState };
+        // No price: the server prices what goes to the kitchen (product or promotion).
         const queueAdditions: {
             product_id: number;
-            price: number;
             quantity: number;
             notes: string | null;
         }[] = [];
@@ -223,7 +223,6 @@ export default function ManageOrder({
             if (product?.queue_id) {
                 queueAdditions.push({
                     product_id: item.productId,
-                    price: item.price,
                     quantity: item.quantity,
                     notes: item.notes,
                 });
@@ -268,9 +267,9 @@ export default function ManageOrder({
             price: number;
             quantity: number;
         }[] = [];
+        // No price: the server prices what goes to the kitchen (product or promotion).
         const queueAdditions: {
             product_id: number;
-            price: number;
             quantity: number;
         }[] = [];
 
@@ -293,10 +292,8 @@ export default function ManageOrder({
                 }
 
                 if (delta > 0) {
-                    const currentPrice = effectivePriceFor(line.productId);
                     queueAdditions.push({
                         product_id: line.productId,
-                        price: currentPrice,
                         quantity: delta,
                     });
                 }
