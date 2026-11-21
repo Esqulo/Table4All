@@ -1,9 +1,15 @@
 <?php
 
 use App\Enums\StaffFeature;
+use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdmissionRequestController as AdminAdmissionRequestController;
+use App\Http\Controllers\Admin\Auth\InvitationController as AdminInvitationController;
+use App\Http\Controllers\Admin\Auth\LoginController as AdminLoginController;
+use App\Http\Controllers\Admin\Auth\TwoFactorSetupController as AdminTwoFactorSetupController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CouponController as AdminCouponController;
+use App\Http\Controllers\Admin\FeeTierController;
+use App\Http\Controllers\Admin\OverviewController;
 use App\Http\Controllers\Admin\PayoutController as AdminPayoutController;
 use App\Http\Controllers\Admin\RestaurantController as AdminRestaurantController;
 use App\Http\Controllers\AdmissionRequestController;
@@ -315,24 +321,58 @@ Route::middleware(['auth', 'verified', EnsureRestaurant::class])
         Route::delete('hoje-tem/{story}', [StoryController::class, 'destroy'])->name('stories.destroy');
     });
 
+// The admins' own sign-in, apart from everyone else's: password, then the authenticator code.
+Route::middleware('guest')->prefix('admin')->name('admin.')->group(function () {
+    Route::get('entrar', [AdminLoginController::class, 'show'])->name('login');
+    Route::post('entrar', [AdminLoginController::class, 'store'])->middleware('throttle:20,1')->name('login.store');
+    Route::get('entrar/codigo', [AdminLoginController::class, 'showCode'])->name('login.code');
+    Route::post('entrar/codigo', [AdminLoginController::class, 'verifyCode'])->middleware('throttle:20,1')->name('login.code.store');
+    // Accepting an invitation to become an admin.
+    Route::get('convite/{token}', [AdminInvitationController::class, 'show'])->name('invitation.show');
+    Route::post('convite/{token}', [AdminInvitationController::class, 'store'])->middleware('throttle:10,1')->name('invitation.accept');
+});
+
+// Setting up the authenticator app: the only admin screen reached before it's done.
+Route::middleware(['auth', 'verified', EnsureAdmin::class.':setup'])
+    ->prefix('admin/autenticador')
+    ->name('admin.two-factor.')
+    ->group(function () {
+        Route::get('/', [AdminTwoFactorSetupController::class, 'show'])->name('setup');
+        Route::post('/', [AdminTwoFactorSetupController::class, 'store'])->middleware('throttle:10,1')->name('confirm');
+        Route::get('codigos', [AdminTwoFactorSetupController::class, 'recoveryCodes'])->name('recovery-codes');
+    });
+
 Route::middleware(['auth', 'verified', EnsureAdmin::class])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+        // The platform at a glance: people (only counted), restaurants, orders and payments.
+        Route::get('painel', [OverviewController::class, 'index'])->name('overview');
+        Route::redirect('/', '/admin/painel');
+
         Route::resource('categorias', CategoryController::class)
             ->only(['index', 'store', 'destroy'])
             ->names('categories')
             ->parameters(['categorias' => 'category']);
         Route::resource('restaurantes', AdminRestaurantController::class)
-            ->only(['index', 'update'])
+            ->only(['index', 'store', 'show', 'update'])
             ->names('restaurants')
             ->parameters(['restaurantes' => 'restaurant']);
+        // Commercial plans: the platform's commission on online payments.
+        Route::resource('planos', FeeTierController::class)
+            ->only(['index', 'store', 'update', 'destroy'])
+            ->names('tiers')
+            ->parameters(['planos' => 'feeTier']);
         Route::get('repasses', [AdminPayoutController::class, 'index'])->name('payouts.index');
         Route::post('repasses', [AdminPayoutController::class, 'store'])->name('payouts.store');
         Route::resource('cupons', AdminCouponController::class)
             ->only(['index', 'store', 'update', 'destroy'])
             ->names('coupons')
             ->parameters(['cupons' => 'coupon']);
+        // The platform's admins and invitations for new ones.
+        Route::get('administradores', [AdminUserController::class, 'index'])->name('admins.index');
+        Route::post('administradores', [AdminUserController::class, 'store'])->middleware('throttle:10,1')->name('admins.store');
+        Route::delete('administradores/convites/{invitation}', [AdminUserController::class, 'destroyInvitation'])->name('admins.invitations.destroy');
         Route::resource('solicitacoes', AdminAdmissionRequestController::class)
             ->only(['index', 'update'])
             ->names('admission-requests')

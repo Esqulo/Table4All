@@ -39,6 +39,7 @@ type OnlinePaymentRow = {
 type Props = {
     account: Account;
     tier: string;
+    tierName: string;
     feePercent: number;
     platformPaysStripeFees: boolean;
     payments: OnlinePaymentRow[];
@@ -46,7 +47,7 @@ type Props = {
 
 export default function Finance({
     account,
-    tier,
+    tierName,
     feePercent,
     platformPaysStripeFees,
     payments,
@@ -133,9 +134,7 @@ export default function Finance({
                                 {t('finance.plan')}
                             </dt>
                             <dd className="flex items-center gap-2 font-semibold">
-                                {t(`payments.tiers.${tier}`, {
-                                    defaultValue: tier,
-                                })}
+                                {tierName}
                                 <Badge variant="secondary">
                                     {t('finance.fee_percent', {
                                         percent:

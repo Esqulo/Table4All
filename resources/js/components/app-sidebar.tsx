@@ -21,11 +21,17 @@ import {
     UtensilsCrossed,
     Gift,
     Trophy,
+    Gauge,
+    Layers,
+    ShieldCheck,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import AdminUserController from '@/actions/App/Http/Controllers/Admin/AdminUserController';
 import AdminAdmissionRequestController from '@/actions/App/Http/Controllers/Admin/AdmissionRequestController';
 import CategoryController from '@/actions/App/Http/Controllers/Admin/CategoryController';
 import AdminCouponController from '@/actions/App/Http/Controllers/Admin/CouponController';
+import FeeTierController from '@/actions/App/Http/Controllers/Admin/FeeTierController';
+import OverviewController from '@/actions/App/Http/Controllers/Admin/OverviewController';
 import AdminPayoutController from '@/actions/App/Http/Controllers/Admin/PayoutController';
 import AdminRestaurantController from '@/actions/App/Http/Controllers/Admin/RestaurantController';
 import CustomerJoinController from '@/actions/App/Http/Controllers/Customer/JoinController';
@@ -165,6 +171,11 @@ export function AppSidebar() {
     const mainNavItems: NavItem[] = isAdmin
         ? [
               {
+                  title: t('nav.admin_overview'),
+                  href: OverviewController.index.url(),
+                  icon: Gauge,
+              },
+              {
                   title: t('nav.categories'),
                   href: CategoryController.index.url(),
                   icon: Tag,
@@ -180,6 +191,11 @@ export function AppSidebar() {
                   icon: Store,
               },
               {
+                  title: t('nav.tiers'),
+                  href: FeeTierController.index.url(),
+                  icon: Layers,
+              },
+              {
                   title: t('nav.coupons'),
                   href: AdminCouponController.index.url(),
                   icon: BadgePercent,
@@ -188,6 +204,11 @@ export function AppSidebar() {
                   title: t('nav.payouts'),
                   href: AdminPayoutController.index.url(),
                   icon: HandCoins,
+              },
+              {
+                  title: t('nav.admins'),
+                  href: AdminUserController.index.url(),
+                  icon: ShieldCheck,
               },
           ]
         : isRestaurant
@@ -242,7 +263,7 @@ export function AppSidebar() {
                             <Link
                                 href={
                                     isAdmin
-                                        ? CategoryController.index.url()
+                                        ? OverviewController.index.url()
                                         : isRestaurant
                                           ? ProductController.index.url()
                                           : isCustomer

@@ -16,13 +16,18 @@ class DashboardTest extends TestCase
         $response->assertRedirect(route('login'));
     }
 
-    public function test_staff_accounts_can_visit_the_dashboard()
+    public function test_restaurants_can_visit_the_dashboard()
     {
-        foreach (['restaurant', 'admin'] as $type) {
-            $this->actingAs(User::factory()->create(['account_type' => $type]))
-                ->get(route('dashboard'))
-                ->assertOk();
-        }
+        $this->actingAs(User::factory()->create(['account_type' => 'restaurant']))
+            ->get(route('dashboard'))
+            ->assertOk();
+    }
+
+    public function test_admins_land_on_the_platform_overview()
+    {
+        $this->actingAs(User::factory()->admin()->create())
+            ->get(route('dashboard'))
+            ->assertRedirect(route('admin.overview'));
     }
 
     public function test_customers_land_on_the_social_feed()

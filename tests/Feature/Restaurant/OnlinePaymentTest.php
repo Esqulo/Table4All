@@ -5,6 +5,7 @@ namespace Tests\Feature\Restaurant;
 use App\Enums\OnlinePaymentStatus;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Coupon;
+use App\Models\FeeTier;
 use App\Models\OnlinePayment;
 use App\Models\RestaurantTable;
 use App\Models\User;
@@ -509,13 +510,25 @@ class OnlinePaymentTest extends TestCase
         $this->assertSame(90, $this->gateway->checkouts[$this->gateway->lastSessionId()]->applicationFeeCents);
     }
 
-    public function test_tier_rates_come_from_config(): void
+    public function test_tier_rates_come_from_the_admins_plans(): void
     {
-        config(['payments.tiers.default.fee_percent' => 3.0]);
+        FeeTier::where('key', 'default')->update(['fee_percent' => 3.0]);
 
         $this->pay($this->owner, 20);
 
         $this->assertSame(60, $this->gateway->checkouts[$this->gateway->lastSessionId()]->applicationFeeCents);
+        $this->assertSame(300, $this->lastPayment()->fee_rate_bps);
+    }
+
+    public function test_a_restaurants_own_fee_overrides_its_tier(): void
+    {
+        $this->restaurant->forceFill(['fee_tier' => 'founder', 'fee_percent_override' => 2.5])->save();
+
+        $this->pay($this->owner, 20);
+
+        $this->assertSame(50, $this->gateway->checkouts[$this->gateway->lastSessionId()]->applicationFeeCents);
+        $this->assertSame('founder', $this->lastPayment()->fee_tier);
+        $this->assertSame(250, $this->lastPayment()->fee_rate_bps);
     }
 
     public function test_the_platform_covers_stripes_fee_for_sponsored_restaurants_out_of_its_commission(): void

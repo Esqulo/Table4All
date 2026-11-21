@@ -75,6 +75,10 @@ class SocialFeedController extends Controller
             return to_route('social.feed');
         }
 
+        if ($request->user()->account_type === AccountType::ADMIN) {
+            return to_route('admin.overview');
+        }
+
         return Inertia::render('dashboard');
     }
 }

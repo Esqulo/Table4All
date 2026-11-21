@@ -91,7 +91,7 @@ class AdmissionRequestTest extends TestCase
 
     public function test_admin_sees_requests_filtered_by_status(): void
     {
-        $admin = User::factory()->create(['account_type' => 'admin']);
+        $admin = User::factory()->admin()->create();
         AdmissionRequest::factory()->count(2)->create();
         AdmissionRequest::factory()->create(['status' => AdmissionRequestStatus::ARCHIVED]);
 
@@ -115,7 +115,7 @@ class AdmissionRequestTest extends TestCase
     {
         $request = AdmissionRequest::factory()->create();
 
-        $this->get(route('admin.admission-requests.index'))->assertRedirect(route('login'));
+        $this->get(route('admin.admission-requests.index'))->assertRedirect(route('admin.login'));
 
         foreach (['restaurant', 'waiter', 'customer'] as $type) {
             $user = User::factory()->create(['account_type' => $type]);
@@ -131,7 +131,7 @@ class AdmissionRequestTest extends TestCase
 
     public function test_admin_can_change_the_status(): void
     {
-        $admin = User::factory()->create(['account_type' => 'admin']);
+        $admin = User::factory()->admin()->create();
         $request = AdmissionRequest::factory()->create();
 
         $this->actingAs($admin)

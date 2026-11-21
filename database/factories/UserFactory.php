@@ -59,4 +59,18 @@ class UserFactory extends Factory
             'two_factor_confirmed_at' => now(),
         ]);
     }
+
+    /**
+     * A platform admin with the authenticator app set up (required to reach the admin area).
+     * The secret is a real TOTP key, so tests can generate valid codes from it.
+     */
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'account_type' => 'admin',
+            'two_factor_secret' => encrypt('JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP'),
+            'two_factor_recovery_codes' => encrypt(json_encode(['recovery-code-1', 'recovery-code-2'])),
+            'two_factor_confirmed_at' => now(),
+        ]);
+    }
 }

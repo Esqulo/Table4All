@@ -5,3 +5,4 @@ export type * from './ui';
 export type * from './social';
 export type * from './dashboard';
 export type * from './loyalty';
+export type * from './admin';

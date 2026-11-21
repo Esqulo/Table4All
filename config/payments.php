@@ -8,10 +8,8 @@
 | Customers pay their table through Stripe Checkout. The charge is made
 | directly on the restaurant's own Stripe account (so the money is theirs
 | and Stripe's processing fee comes out of it), and the platform keeps an
-| application fee set by the restaurant's tier.
-|
-| To add a tier, add a key here (and its label under `payments.tiers.<key>`
-| in both frontend locale files); the admin screen lists them from here.
+| application fee set by the restaurant's tier (App\Models\FeeTier, managed in
+| the admin panel) or by a commission the admin set for that restaurant.
 | Changing a percentage only affects payments started after the change:
 | each payment stores the rate it was charged with.
 |
@@ -21,14 +19,8 @@ return [
 
     'currency' => 'brl',
 
-    // Tier given to restaurants that were never assigned one.
+    // Tier given to restaurants that were never assigned one (a fee_tiers key; it can't be deleted).
     'default_tier' => 'default',
-
-    // Platform share of each online payment, in percent of what the restaurant receives.
-    'tiers' => [
-        'default' => ['fee_percent' => 4.5],
-        'founder' => ['fee_percent' => 0.0],
-    ],
 
     // Stripe's minimum charge in BRL is R$ 0,50; a coupon never brings a charge below it.
     'min_charge_cents' => 50,

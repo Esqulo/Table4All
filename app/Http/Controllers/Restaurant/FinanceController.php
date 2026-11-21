@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Restaurant;
 
 use App\Enums\OnlinePaymentStatus;
 use App\Http\Controllers\Controller;
+use App\Models\FeeTier;
 use App\Models\OnlinePayment;
 use App\Models\User;
 use App\Support\Payments\PaymentGateway;
@@ -83,6 +84,7 @@ class FinanceController extends Controller
                 'details_submitted' => $user->stripe_details_submitted,
             ],
             'tier' => $user->feeTier(),
+            'tierName' => FeeTier::where('key', $user->feeTier())->value('name') ?? $user->feeTier(),
             'feePercent' => $user->feeRateBps() / 100,
             'platformPaysStripeFees' => $user->platform_pays_stripe_fees,
             'payments' => $payments,

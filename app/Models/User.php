@@ -55,6 +55,9 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property bool $stripe_details_submitted
  * @property string|null $fee_tier
  * @property bool $platform_pays_stripe_fees
+ * @property string|null $fee_percent_override The restaurant's own commission, over its tier's
+ * @property Carbon|null $last_login_at
+ * @property Carbon|null $last_seen_at
  * @property Carbon|null $email_verified_at
  * @property string $password
  * @property string|null $two_factor_secret
@@ -216,21 +219,25 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
         return $this->stripe_account_id !== null && $this->stripe_charges_enabled;
     }
 
-    /** The restaurant's tier, falling back to the default when unset or no longer configured. */
+    /** The restaurant's tier, falling back to the default when unset or no longer offered. */
     public function feeTier(): string
     {
-        /** @var array<string, mixed> $tiers */
-        $tiers = config('payments.tiers');
-
-        return $this->fee_tier !== null && array_key_exists($this->fee_tier, $tiers)
+        return $this->fee_tier !== null && FeeTier::where('key', $this->fee_tier)->exists()
             ? $this->fee_tier
-            : (string) config('payments.default_tier');
+            : FeeTier::defaultKey();
     }
 
-    /** The platform's share of this restaurant's online payments, in basis points (4.5% = 450). */
+    /**
+     * The platform's share of this restaurant's online payments, in basis points (4.5% = 450):
+     * its own commission when the admin set one, otherwise its tier's.
+     */
     public function feeRateBps(): int
     {
-        return (int) round(((float) config('payments.tiers.'.$this->feeTier().'.fee_percent', 0)) * 100);
+        $percent = $this->fee_percent_override
+            ?? FeeTier::where('key', $this->feeTier())->value('fee_percent')
+            ?? 0;
+
+        return (int) round(((float) $percent) * 100);
     }
 
     /** @return HasMany<User, $this> */
@@ -318,6 +325,9 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             'stripe_charges_enabled' => 'boolean',
             'stripe_details_submitted' => 'boolean',
             'platform_pays_stripe_fees' => 'boolean',
+            'fee_percent_override' => 'decimal:2',
+            'last_login_at' => 'datetime',
+            'last_seen_at' => 'datetime',
             'staff_role' => StaffRole::class,
             'staff_permissions' => 'array',
             'price_level' => 'integer',

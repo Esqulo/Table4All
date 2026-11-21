@@ -3,7 +3,9 @@
 use App\Http\ErrorPage;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\ProtectAdminTwoFactor;
 use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\TrackLastSeen;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -28,9 +30,16 @@ return Application::configure(basePath: dirname(__DIR__))
         // in the user's language. The cookie is not encrypted, so it is readable this early.
         $middleware->append(SetLocale::class);
 
+        // The admin area has its own sign-in screen (two steps: password, then authenticator code).
+        $middleware->redirectGuestsTo(fn (Request $request) => $request->is('admin', 'admin/*')
+            ? route('admin.login')
+            : route('login'));
+
         $middleware->web(append: [
             HandleAppearance::class,
             HandleInertiaRequests::class,
+            TrackLastSeen::class,
+            ProtectAdminTwoFactor::class,
             // Only the first assets (entry CSS/JS): the built app preloads ~35 chunks, and a
             // header that long (4.5 KB) overflows nginx's FastCGI buffer, which turns every full
             // page into a 502. The HTML still carries a modulepreload tag for each chunk.

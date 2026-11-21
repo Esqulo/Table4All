@@ -37,6 +37,7 @@ createInertiaApp({
             case name.startsWith('table/'):
                 return CustomerLayout;
             case name.startsWith('auth/'):
+            case name.startsWith('admin/auth/'): // the admins' own sign-in screens
                 return AuthLayout;
             case name.startsWith('settings/'):
                 return [AppLayout, SettingsLayout];

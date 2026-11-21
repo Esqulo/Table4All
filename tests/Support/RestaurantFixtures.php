@@ -33,7 +33,7 @@ trait RestaurantFixtures
 
     protected function admin(): User
     {
-        return User::factory()->create(['account_type' => 'admin']);
+        return User::factory()->admin()->create();
     }
 
     protected function product(User $restaurant, array $attributes = []): Product
