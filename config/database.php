@@ -17,7 +17,9 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'sqlite'),
+    // PostgreSQL is the only database (production, development, tests): a missing
+    // DB_CONNECTION must not silently fall back to a SQLite file inside the container.
+    'default' => env('DB_CONNECTION', 'pgsql'),
 
     /*
     |--------------------------------------------------------------------------

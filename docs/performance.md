@@ -159,7 +159,7 @@ The scenario asks for ~125 req/s, about three quarters of it the table chat. The
 | # | Problem | Impact | Fix |
 |---|---|---|---|
 | 21 | A Postgres connection per request: 25-30 ms (backend fork + SCRAM) | More than the queries of a poll | `DB_PERSISTENT=true` (persistent PDO per FPM worker): chat poll 117 ms to 51 ms unloaded |
-| 22 | The built app preloads ~35 chunks; the `Link` header (4.5 KB) overflowed nginx's 4 KB FastCGI buffer | **Every full page load was a 502 in production** (dev, served by Vite, has no preload header) | `AddLinkHeadersForPreloadedAssets::using(10)` and bigger `fastcgi_buffer_size` |
+| 22 | The built app preloads ~35 chunks; the `Link` header (4.5 KB) overflowed nginx's 4 KB FastCGI buffer | **Every full page load would have been a 502 from the first deploy** (found before the app ever ran in production; dev, served by Vite, has no preload header) | `AddLinkHeadersForPreloadedAssets::using(10)` and bigger `fastcgi_buffer_size` |
 | 23 | Customer spend (rewards) scanned every restaurant's bill lines (no index on `ordered_by_user_id`) | 50 ms, growing with the platform | `rtp_buyer_idx`: 0.3 ms |
 | 24 | The 90-day dashboard scanned every restaurant's bill lines | 0.6-1.3 s | Covering index `rtp_table_cover_idx` + `random_page_cost=1.1`: 220 ms (the rest is the real aggregation) |
 

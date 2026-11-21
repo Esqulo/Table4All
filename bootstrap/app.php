@@ -32,8 +32,8 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleAppearance::class,
             HandleInertiaRequests::class,
             // Only the first assets (entry CSS/JS): the built app preloads ~35 chunks, and a
-            // header that long (4.5 KB) overflowed nginx's FastCGI buffer, so every full page
-            // came back as a 502. The HTML still carries a modulepreload tag for each chunk.
+            // header that long (4.5 KB) overflows nginx's FastCGI buffer, which turns every full
+            // page into a 502. The HTML still carries a modulepreload tag for each chunk.
             AddLinkHeadersForPreloadedAssets::using(10),
         ]);
     })
