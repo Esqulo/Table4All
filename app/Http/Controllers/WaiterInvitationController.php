@@ -49,6 +49,7 @@ class WaiterInvitationController extends Controller
             // The same strength rules as signing up (stricter in production).
             'password' => $this->passwordRules(),
             'password_confirmation' => ['required'],
+            'terms' => ['accepted'],
         ]);
 
         $user = User::create([
@@ -66,6 +67,7 @@ class WaiterInvitationController extends Controller
             'staff_role' => StaffRole::tryFrom($invitation->role) ?? StaffRole::WAITER,
             'staff_permissions' => StaffFeature::waiterDefaults(),
         ])->save();
+        $user->recordTermsAcceptance();
 
         $invitation->update(['accepted_at' => now()]);
 

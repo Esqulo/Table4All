@@ -186,7 +186,7 @@ class AccessControlTest extends TestCase
 
         $this->post(route('register.store'), [
             'name' => 'Cliente', 'email' => 'cliente@example.com', 'phone' => '11999999999',
-            'password' => 'password', 'password_confirmation' => 'password',
+            'password' => 'password', 'password_confirmation' => 'password', 'terms' => '1',
         ]);
 
         $user = User::where('email', 'cliente@example.com')->sole();

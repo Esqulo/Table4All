@@ -33,7 +33,7 @@ class DeliveryController extends Controller
             ->with([
                 'product:id,name,picture',
                 'restaurantTable:id,title',
-                'orderedBy:id,name,email',
+                'orderedBy:id,name',
             ])
             ->oldest('updated_at')
             ->get()
@@ -49,7 +49,7 @@ class DeliveryController extends Controller
                 'notes' => $item->notes,
                 'price' => (float) $item->price,
                 'status' => $item->status->value,
-                'ordered_by' => $item->orderedBy !== null ? ($item->orderedBy->name ?? $item->orderedBy->email) : null,
+                'ordered_by' => $item->orderedBy?->name,
                 'waiting_since' => $item->updated_at->toISOString(),
             ]);
 

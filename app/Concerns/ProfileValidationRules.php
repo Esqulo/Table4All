@@ -51,7 +51,8 @@ trait ProfileValidationRules
      */
     protected function phoneRules(): array
     {
-        return ['required', 'string', 'regex:/^\+55\d{10,11}$/'];
+        // Optional: nothing in the app needs it from customers (LGPD Art. 6 III, necessity).
+        return ['nullable', 'string', 'regex:/^\+55\d{10,11}$/'];
     }
 
     /**

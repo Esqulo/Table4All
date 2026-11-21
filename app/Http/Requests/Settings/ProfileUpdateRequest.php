@@ -13,7 +13,8 @@ class ProfileUpdateRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         if ($this->has('phone')) {
-            $this->merge(['phone' => $this->normalizePhone($this->input('phone', ''))]);
+            $phone = trim((string) $this->input('phone', ''));
+            $this->merge(['phone' => $phone === '' ? null : $this->normalizePhone($phone)]);
         }
     }
 

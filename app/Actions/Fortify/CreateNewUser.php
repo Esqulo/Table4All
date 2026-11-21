@@ -19,21 +19,26 @@ class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input): User
     {
-        if (! empty($input['phone'])) {
-            $input['phone'] = $this->normalizePhone($input['phone']);
-        }
+        $phone = trim((string) ($input['phone'] ?? ''));
+        $input['phone'] = $phone === '' ? null : $this->normalizePhone($phone);
 
         Validator::make($input, [
             ...$this->profileRules(),
             'password' => $this->passwordRules(),
+            // Agreeing to the terms and privacy policy, and declaring the minimum age (LGPD Art. 14).
+            'terms' => ['accepted'],
         ])->validate();
 
-        return User::create([
+        $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'phone' => $input['phone'],
             'account_type' => 'customer',
             'password' => $input['password'],
         ]);
+
+        $user->recordTermsAcceptance();
+
+        return $user;
     }
 }

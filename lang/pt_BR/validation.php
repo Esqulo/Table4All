@@ -161,10 +161,14 @@ return [
             'regex' => 'Digite um número de telefone brasileiro válido (ex: 11 99999-9999).',
             'required' => 'O número de telefone é obrigatório.',
         ],
+        'terms' => [
+            'accepted' => 'Para criar a conta, aceite os termos de uso e a política de privacidade e confirme ter 18 anos ou mais.',
+        ],
     ],
 
     'attributes' => [
         'name' => 'nome',
+        'terms' => 'termos de uso',
         'email' => 'e-mail',
         'coupon' => 'cupom',
         'discount_type' => 'tipo de desconto',

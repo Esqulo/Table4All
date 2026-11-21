@@ -2,6 +2,7 @@ import { Head, useForm } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import WaiterInvitationController from '@/actions/App/Http/Controllers/WaiterInvitationController';
 import AppLogoIcon from '@/components/app-logo-icon';
+import { TermsConsent } from '@/components/terms-consent';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,7 +22,12 @@ export default function WaiterAccept({
     email_taken,
 }: Props) {
     const { t } = useTranslation();
-    const form = useForm({ name: '', password: '', password_confirmation: '' });
+    const form = useForm({
+        name: '',
+        password: '',
+        password_confirmation: '',
+        terms: false,
+    });
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -138,6 +144,14 @@ export default function WaiterAccept({
                                 </p>
                             )}
                         </div>
+
+                        <TermsConsent
+                            checked={form.data.terms}
+                            onCheckedChange={(value) =>
+                                form.setData('terms', value)
+                            }
+                            error={form.errors.terms}
+                        />
 
                         <Button
                             type="submit"

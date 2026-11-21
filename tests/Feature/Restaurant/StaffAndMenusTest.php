@@ -118,7 +118,7 @@ class StaffAndMenusTest extends TestCase
 
         $this->get(route('waiter.invite.show', $invitation->token))->assertOk();
         $this->post(route('waiter.invite.accept', $invitation->token), [
-            'name' => 'Novo Garçom', 'password' => 'segredo123', 'password_confirmation' => 'segredo123',
+            'name' => 'Novo Garçom', 'password' => 'segredo123', 'password_confirmation' => 'segredo123', 'terms' => '1',
         ])->assertRedirect(route('dashboard'));
 
         $waiter = User::where('email', 'novo@bar.test')->sole();
@@ -127,12 +127,14 @@ class StaffAndMenusTest extends TestCase
         $this->assertNotNull($waiter->email_verified_at);
         $this->assertAuthenticatedAs($waiter);
         $this->assertNotNull($invitation->fresh()->accepted_at);
+        $this->assertNotNull($waiter->terms_accepted_at);
+        $this->assertSame(config('legal.version'), $waiter->terms_version);
     }
 
     public function test_invitation_link_works_only_once(): void
     {
         $invitation = $this->invitation($this->restaurant());
-        $payload = ['name' => 'A', 'password' => 'segredo123', 'password_confirmation' => 'segredo123'];
+        $payload = ['name' => 'A', 'password' => 'segredo123', 'password_confirmation' => 'segredo123', 'terms' => '1'];
 
         $this->post(route('waiter.invite.accept', $invitation->token), $payload);
         auth()->logout();
@@ -159,7 +161,7 @@ class StaffAndMenusTest extends TestCase
         $this->get(route('waiter.invite.show', $invitation->token))
             ->assertInertia(fn (Assert $page) => $page->where('email_taken', true));
         $this->post(route('waiter.invite.accept', $invitation->token), [
-            'name' => 'A', 'password' => 'segredo123', 'password_confirmation' => 'segredo123',
+            'name' => 'A', 'password' => 'segredo123', 'password_confirmation' => 'segredo123', 'terms' => '1',
         ])->assertSessionHasErrors('email');
 
         $this->assertSame(1, User::where('email', 'novo@bar.test')->count());

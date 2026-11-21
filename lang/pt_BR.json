@@ -128,5 +128,8 @@
     "mail.admin_invitation.cta": "Aceitar convite",
     "mail.admin_invitation.expires": "Este convite expira em :hours horas.",
     "mail.admin_invitation.ignore": "Se você não esperava este convite, ignore este e-mail.",
-    "mail.admin_invitation.signature": "Abraços,\nEquipe :app"
+    "mail.admin_invitation.signature": "Abraços,\nEquipe :app",
+    "privacy.avatar_unreadable": "Não foi possível ler a imagem. Tente outra.",
+    "privacy.restaurant_cannot_delete": "Contas de restaurante são encerradas pela nossa equipe, para guardar os registros que a lei exige. Fale com a gente para encerrar a sua.",
+    "privacy.closed_restaurant_name": "Restaurante encerrado #:id"
 }

@@ -17,6 +17,7 @@ use App\Http\Controllers\Customer\JoinController as CustomerJoinController;
 use App\Http\Controllers\Customer\PaymentController as CustomerPaymentController;
 use App\Http\Controllers\Customer\RewardController as CustomerRewardController;
 use App\Http\Controllers\DiscoverController;
+use App\Http\Controllers\LegalController;
 use App\Http\Controllers\PostInteractionController;
 use App\Http\Controllers\Restaurant\CallController;
 use App\Http\Controllers\Restaurant\CouponController;
@@ -55,6 +56,8 @@ Route::inertia('/contato', 'contact', [
 Route::post('/contato', [AdmissionRequestController::class, 'store'])
     ->middleware('throttle:5,10')
     ->name('contact.store');
+Route::get('/privacidade', [LegalController::class, 'privacy'])->name('privacy');
+Route::get('/termos', [LegalController::class, 'terms'])->name('terms');
 
 Route::get('/menu/{menu}', [MenuController::class, 'show'])->name('menu.show');
 

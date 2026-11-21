@@ -1,4 +1,4 @@
-import { Form } from '@inertiajs/react';
+import { Form, Link, usePage } from '@inertiajs/react';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
@@ -16,10 +16,32 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { contact } from '@/routes';
 
 export default function DeleteUser() {
     const { t } = useTranslation();
     const passwordInput = useRef<HTMLInputElement>(null);
+    const { auth } = usePage().props;
+
+    // A restaurant's bills are records the law requires keeping: the team closes the
+    // account instead (personal and public data removed, records kept).
+    if (auth.user?.account_type === 'restaurant') {
+        return (
+            <div className="space-y-6">
+                <Heading
+                    variant="small"
+                    title={t('delete_user.title')}
+                    description={t('delete_user.restaurant_description')}
+                />
+                <Link
+                    href={contact()}
+                    className="text-sm font-medium underline underline-offset-4"
+                >
+                    {t('delete_user.restaurant_contact')}
+                </Link>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">

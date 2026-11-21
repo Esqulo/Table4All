@@ -78,5 +78,9 @@
     "mail.admin_invitation.cta": "Accept invitation",
     "mail.admin_invitation.expires": "This invitation expires in :hours hours.",
     "mail.admin_invitation.ignore": "If you weren't expecting this invitation, ignore this e-mail.",
-    "mail.admin_invitation.signature": "Best regards,\nThe :app team"
+    "mail.admin_invitation.signature": "Best regards,\nThe :app team",
+    "privacy.avatar_unreadable": "The picture could not be read. Try another one.",
+    "privacy.restaurant_cannot_delete": "Restaurant accounts are closed by our team, so the records the law requires are kept. Contact us to close yours.",
+    "privacy.closed_restaurant_name": "Closed restaurant #:id",
+    "validation.custom.terms.accepted": "To create your account, accept the terms of use and the privacy policy and confirm you are 18 or older."
 }

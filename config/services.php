@@ -58,9 +58,11 @@ return [
 
     // Where a visitor roughly is when the browser doesn't share its location
     // (App\Support\Geo\IpLocator). "{ip}" is replaced; the JSON answer has latitude and longitude.
-    // Empty turns it off. Cloudflare's visitor location headers are used first when present.
+    // Off by default: it sends the visitor's IP address to a service abroad (LGPD Art. 33).
+    // Cloudflare's visitor location headers are used first when present, with no outside call.
+    // Turning it on (e.g. https://ipwho.is/{ip}) must be listed in the privacy policy.
     'ip_location' => [
-        'url' => env('IP_LOCATION_URL', 'https://ipwho.is/{ip}'),
+        'url' => env('IP_LOCATION_URL', ''),
     ],
 
 ];

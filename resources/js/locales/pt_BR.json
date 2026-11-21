@@ -19,7 +19,7 @@
             "name_label": "Nome completo",
             "name_placeholder": "Nome completo",
             "email_label": "Endereço de e-mail",
-            "phone_label": "Número de telefone",
+            "phone_label": "Telefone (opcional)",
             "phone_placeholder": "11 99999-9999",
             "password_label": "Senha",
             "password_placeholder": "Senha",
@@ -117,7 +117,7 @@
             "name_placeholder": "Nome completo",
             "email_label": "Endereço de e-mail",
             "email_placeholder": "Endereço de e-mail",
-            "phone_label": "Número de telefone",
+            "phone_label": "Telefone (opcional)",
             "phone_placeholder": "11 99999-9999",
             "avatar_label": "Foto de perfil",
             "unverified_email": "Seu endereço de e-mail não foi verificado.",
@@ -144,6 +144,11 @@
             "head": "Configurações de aparência",
             "section_title": "Configurações de aparência",
             "section_description": "Atualize as configurações de aparência da sua conta"
+        },
+        "my_data": {
+            "title": "Meus dados",
+            "description": "Baixe uma cópia de tudo o que o Table4All guarda sobre você: conta, mesas, pedidos, pagamentos, mensagens e mais.",
+            "download": "Baixar meus dados (JSON)"
         }
     },
     "appearance": {
@@ -164,7 +169,9 @@
         "password_label": "Senha",
         "password_placeholder": "Senha",
         "cancel": "Cancelar",
-        "confirm": "Excluir conta"
+        "confirm": "Excluir conta",
+        "restaurant_description": "Contas de restaurante são encerradas pela nossa equipe: removemos os dados do perfil, as mídias e os acessos da equipe, e guardamos as contas e pagamentos pelo prazo que a lei exige.",
+        "restaurant_contact": "Falar com a equipe para encerrar a conta"
     },
     "menus": {
         "title": "Cardápio",
@@ -918,7 +925,11 @@
         "footer": {
             "rights": "© {{year}} Table4All",
             "made": "Feito para bares e restaurantes do Brasil.",
-            "contact": "Contato"
+            "contact": "Contato",
+            "nav": "Links institucionais",
+            "privacy": "Privacidade",
+            "terms": "Termos de uso",
+            "cookies": "Cookies"
         }
     },
     "contact": {
@@ -1843,5 +1854,119 @@
         "you": "você",
         "msg_invited": "Convite enviado.",
         "msg_revoked": "Convite cancelado."
+    },
+    "cookies": {
+        "label": "Aviso de cookies",
+        "text": "Usamos apenas cookies necessários para o Table4All funcionar, como manter você conectado e lembrar idioma e tema. Nada de publicidade ou rastreamento.",
+        "learn_more": "Saiba mais",
+        "accept": "Entendi"
+    },
+    "legal": {
+        "consent": "Li e aceito os <terms>Termos de Uso</terms> e a <privacy>Política de Privacidade</privacy>, e declaro ter 18 anos ou mais.",
+        "common": {
+            "document": "CNPJ {{value}}",
+            "dpo_fallback": "a equipe de privacidade do Table4All",
+            "updated": "Última atualização: {{date}}",
+            "contents": "Nesta página",
+            "see_also": "Veja também:"
+        },
+        "privacy": {
+            "head": "Política de Privacidade",
+            "title": "Política de Privacidade",
+            "intro": "Esta política explica quais dados pessoais o Table4All trata, para quê, com quem compartilha, por quanto tempo guarda e como você exerce seus direitos, conforme a Lei Geral de Proteção de Dados Pessoais (Lei nº 13.709/2018, LGPD).",
+            "sections": {
+                "controller": {
+                    "title": "Quem é o controlador",
+                    "body": "O controlador dos dados tratados pela plataforma é {{controller}}.\n\nO encarregado pelo tratamento de dados pessoais (DPO) é {{dpo}}, que atende titulares e a Autoridade Nacional de Proteção de Dados (ANPD) pelo e-mail {{dpo_email}}.\n\nCada restaurante que usa o Table4All também é controlador dos dados do seu próprio atendimento (o que foi pedido e pago no estabelecimento) e responde por eles na sua parte."
+                },
+                "data": {
+                    "title": "Quais dados tratamos",
+                    "body": "- Conta: nome, e-mail, senha (guardada só como hash), telefone (opcional), foto de perfil (opcional) e tipo de conta.\n- Segurança: autenticação em dois fatores e passkeys, sessões ativas (endereço IP, navegador e último acesso) e datas de login.\n- Uso nas mesas: mesas em que você entrou, itens pedidos e observações, pagamentos, chamados ao garçom, mensagens e reações no chat da mesa.\n- Pagamentos online: valores, status e identificadores da transação. Os dados do cartão são digitados direto na Stripe; o Table4All não os recebe nem guarda.\n- Fidelidade e cupons: cupons pessoais e recompensas recebidas em cada restaurante.\n- Social: comentários, reações e avaliações que você publica em perfis de restaurantes.\n- Restaurantes: nome do estabelecimento, contato, endereço, localização no mapa, fotos, cardápio e dados da conta de recebimento na Stripe.\n- Equipe: nome, e-mail e permissões de garçons e funcionários convidados pelo restaurante.\n- Contato: nome do estabelecimento, e-mail, telefone, cidade e mensagem enviados pelo formulário de contato.\n- Localização aproximada: só se você permitir no navegador, arredondada para cerca de 100 m e usada apenas para ordenar restaurantes por distância. Ela não fica gravada.\n\nNão tratamos dados pessoais sensíveis, não usamos seus dados para publicidade e não os vendemos."
+                },
+                "purposes": {
+                    "title": "Para que usamos e com qual base legal",
+                    "body": "- Criar e manter sua conta, abrir mesas, registrar pedidos, dividir e fechar a conta: execução de contrato (Art. 7º, V).\n- Processar pagamentos online, reembolsos e repasses aos restaurantes: execução de contrato (Art. 7º, V).\n- Guardar contas, pagamentos e registros financeiros pelo prazo exigido: cumprimento de obrigação legal (Art. 7º, II) e exercício regular de direitos (Art. 7º, VI).\n- Guardar registros de acesso (IP, data e hora): obrigação legal do Marco Civil da Internet (Art. 7º, II).\n- Proteger contas e a plataforma (limite de tentativas, sessões, prevenção a fraudes): legítimo interesse (Art. 7º, IX).\n- Programa de fidelidade e cupons: execução de contrato (Art. 7º, V).\n- Comentários, reações e avaliações: execução de contrato, quando você escolhe publicar (Art. 7º, V).\n- Ordenar restaurantes por distância: consentimento dado no navegador (Art. 7º, I), que você pode retirar a qualquer momento nas configurações dele.\n- Responder ao formulário de contato: procedimentos preliminares a um contrato, a seu pedido (Art. 7º, V).\n- E-mails de serviço (confirmação de e-mail, redefinição de senha, convites): execução de contrato (Art. 7º, V)."
+                },
+                "sharing": {
+                    "title": "Com quem compartilhamos",
+                    "body": "- O restaurante em que você está: vê seu nome, seus pedidos, chamados, pagamentos e o chat da mesa, para atender você.\n- Outras pessoas na mesma mesa: veem seu nome, seus pedidos e suas mensagens no chat da mesa.\n- Stripe: processa os pagamentos online e as contas de recebimento dos restaurantes.\n- Provedores de hospedagem e de envio de e-mails: operadores que tratam os dados só para manter o serviço funcionando, sob contrato.\n- OpenStreetMap (Nominatim): recebe apenas o endereço público dos restaurantes, para localizá-los no mapa. Nenhum dado de clientes é enviado.\n- Autoridades públicas: quando houver ordem judicial ou obrigação legal.\n\nPerfis, publicações e avaliações de restaurantes são públicos, e seus comentários e reações neles aparecem com seu nome."
+                },
+                "international": {
+                    "title": "Transferência internacional",
+                    "body": "Alguns operadores, como a Stripe, podem tratar dados fora do Brasil. Nesses casos a transferência segue o Art. 33 da LGPD, com cláusulas contratuais que garantem proteção equivalente à da lei brasileira."
+                },
+                "retention": {
+                    "title": "Por quanto tempo guardamos",
+                    "body": "- Conta: enquanto ela existir. Ao excluir a conta, apagamos seu perfil, mensagens, comentários, reações, avaliações, cupons pessoais e recompensas.\n- Registros financeiros (contas de mesa, itens cobrados e pagamentos): pelo prazo da legislação fiscal e comercial, em geral 5 anos. Depois da exclusão da conta eles deixam de estar ligados a você.\n- Registros de acesso (IP, data e hora): 6 meses, como exige o Marco Civil da Internet (Lei nº 12.965/2014, Art. 15).\n- Chat e reações da mesa: {{chat_days}} dias depois de a mesa fechar.\n- Chamados ao garçom: {{calls_days}} dias depois de atendidos.\n- Links de acesso e convites: alguns dias depois de usados ou vencidos.\n- Formulário de contato: {{admission_days}} dias depois de respondido.\n- Publicações temporárias (\"Hoje tem!\"): 24 horas."
+                },
+                "rights": {
+                    "title": "Seus direitos",
+                    "body": "Pelo Art. 18 da LGPD, você pode a qualquer momento:\n\n- confirmar se tratamos seus dados e acessá-los;\n- corrigir dados incompletos, inexatos ou desatualizados;\n- pedir a anonimização, o bloqueio ou a eliminação de dados desnecessários, excessivos ou tratados em desconformidade com a lei;\n- receber seus dados em formato estruturado (portabilidade);\n- eliminar dados tratados com seu consentimento e revogar esse consentimento;\n- saber com quem compartilhamos seus dados;\n- se opor a um tratamento que descumpra a lei.\n\nEm Configurações > Perfil você corrige seus dados, baixa uma cópia completa deles e exclui sua conta. Para os demais pedidos, escreva para {{dpo_email}}: respondemos em até 15 dias. Você também pode apresentar reclamação à ANPD (www.gov.br/anpd)."
+                },
+                "cookies": {
+                    "title": "Cookies e armazenamento local",
+                    "body": "O Table4All usa apenas cookies estritamente necessários para funcionar. Não usamos cookies de publicidade, de rastreamento nem de análise de terceiros.\n\n- table4all-session: mantém você conectado. Dura enquanto a sessão estiver ativa.\n- XSRF-TOKEN: protege os formulários contra envios forjados. Mesma duração da sessão.\n- remember_web_*: só se você marcar \"Lembrar de mim\" no login. Dura até você sair.\n- locale: o idioma escolhido. 1 ano.\n- appearance: tema claro ou escuro. 1 ano.\n- sidebar_state: menu lateral aberto ou fechado. 7 dias.\n\nNo armazenamento local do navegador guardamos só preferências de interface, como idioma, tema, filtros, stories já vistos e o aviso de cookies dispensado.\n\nComo são necessários para o serviço, esses cookies não dependem de consentimento. Você pode apagá-los nas configurações do navegador, mas aí o login deixa de funcionar."
+                },
+                "security": {
+                    "title": "Segurança",
+                    "body": "Senhas são guardadas apenas como hash, a conexão é criptografada (HTTPS), o acesso aos dados é limitado pelo tipo de conta (cliente, equipe, restaurante, administrador) e administradores entram com autenticação em dois fatores. Também limitamos tentativas de login e de códigos de mesa.\n\nSe ocorrer um incidente de segurança que possa trazer risco ou dano relevante, comunicaremos a ANPD e as pessoas afetadas, como prevê o Art. 48 da LGPD."
+                },
+                "children": {
+                    "title": "Crianças e adolescentes",
+                    "body": "O Table4All é destinado a pessoas com {{min_age}} anos ou mais. Se soubermos que uma conta pertence a alguém mais novo, ela será excluída."
+                },
+                "changes": {
+                    "title": "Alterações desta política",
+                    "body": "Podemos atualizar esta política. A data da versão em vigor fica no topo da página e, quando a mudança for relevante, avisaremos por e-mail ou na plataforma."
+                }
+            }
+        },
+        "terms": {
+            "head": "Termos de Uso",
+            "title": "Termos de Uso",
+            "intro": "Estes termos regem o uso do Table4All, plataforma de gestão de mesas, pedidos pelo QR code, filas de preparo e pagamentos para bares e restaurantes. Ao criar uma conta ou usar a plataforma, você concorda com eles e com a Política de Privacidade.",
+            "sections": {
+                "service": {
+                    "title": "O serviço",
+                    "body": "O Table4All é operado por {{controller}}. A plataforma liga clientes, equipes e restaurantes: o cliente abre ou entra em uma mesa pelo código, faz pedidos e paga; o restaurante gerencia mesas, cardápio, filas de preparo e equipe.\n\nO Table4All não vende nem prepara os produtos. A venda é feita pelo restaurante, que responde pelos produtos, preços, atendimento, documentos fiscais e pelas normas de consumo e sanitárias."
+                },
+                "account": {
+                    "title": "Sua conta",
+                    "body": "- Para criar uma conta você precisa ter {{min_age}} anos ou mais e informar dados verdadeiros.\n- A conta é pessoal. Guarde sua senha e avise-nos se suspeitar de uso indevido.\n- Garçons e funcionários entram por convite do restaurante, que define o que cada um pode fazer.\n- Contas de restaurante são criadas pela equipe do Table4All após contato comercial."
+                },
+                "customers": {
+                    "title": "Uso pelos clientes",
+                    "body": "- O primeiro cliente a abrir uma mesa livre fica responsável por ela e aprova quem pede para entrar.\n- Os preços são os do cardápio ou da promoção ativa no momento do pedido e ficam registrados na conta da mesa.\n- Pedidos enviados seguem direto para o preparo; cancelamentos e trocas dependem do restaurante.\n- Pagamentos online são processados pela Stripe. O que for pago a mais é devolvido automaticamente.\n- Itens não entregues quando a mesa é fechada não são cobrados."
+                },
+                "conduct": {
+                    "title": "Conduta",
+                    "body": "Não é permitido:\n\n- usar códigos de mesa de outras pessoas ou tentar adivinhá-los;\n- publicar mensagens, comentários ou avaliações ofensivas, discriminatórias, ilegais ou com dados pessoais de terceiros;\n- tentar acessar dados ou áreas sem permissão, sobrecarregar ou atacar a plataforma;\n- usar a plataforma para fraudes ou para fins diferentes dos previstos.\n\nPodemos remover conteúdo e suspender contas que descumpram estes termos."
+                },
+                "restaurants": {
+                    "title": "Restaurantes",
+                    "body": "- O restaurante responde pelo cardápio, preços, promoções e cupons que oferece, pelo atendimento e pelas informações do seu perfil público.\n- As taxas da plataforma sobre pagamentos online são as do plano contratado e aparecem no painel financeiro.\n- O restaurante é controlador dos dados pessoais do seu atendimento e o Table4All trata esses dados em seu nome para operar o serviço. O restaurante deve usá-los só para atender, cobrar e cumprir obrigações legais, sem copiá-los para outros fins nem compartilhá-los sem base legal, e deve encaminhar ao Table4All os pedidos de titulares que receber.\n- O restaurante responde pelos acessos que concede à sua equipe e deve removê-los quando alguém deixar o estabelecimento.\n- Contas de restaurante são encerradas pela equipe do Table4All: perfil, mídias e acessos da equipe são removidos, e os registros financeiros ficam guardados pelo prazo legal."
+                },
+                "content": {
+                    "title": "Conteúdo publicado",
+                    "body": "Você continua dono do que publica (fotos, textos, comentários e avaliações) e concede ao Table4All uma licença gratuita e não exclusiva para exibir esse conteúdo na plataforma enquanto ele estiver publicado. Você garante que tem os direitos sobre ele."
+                },
+                "liability": {
+                    "title": "Disponibilidade e responsabilidade",
+                    "body": "Trabalhamos para manter a plataforma estável, inclusive em horário de pico, mas ela pode passar por manutenções ou falhas. Nada nestes termos afasta os direitos previstos no Código de Defesa do Consumidor."
+                },
+                "termination": {
+                    "title": "Encerramento",
+                    "body": "Você pode excluir sua conta a qualquer momento em Configurações > Perfil. Podemos suspender ou encerrar contas que violem estes termos ou a lei. Os registros que a lei manda guardar continuam guardados pelo prazo legal, como explica a Política de Privacidade."
+                },
+                "changes": {
+                    "title": "Alterações",
+                    "body": "Podemos atualizar estes termos. Mudanças relevantes serão avisadas com antecedência por e-mail ou na plataforma."
+                },
+                "law": {
+                    "title": "Lei aplicável e contato",
+                    "body": "Estes termos seguem a legislação brasileira, e fica eleito o foro do domicílio do consumidor. Dúvidas: {{dpo_email}}."
+                }
+            }
+        }
     }
 }

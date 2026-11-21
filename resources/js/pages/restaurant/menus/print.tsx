@@ -17,7 +17,7 @@ import {
     defaultLayout,
     FONT_CATEGORIES,
     FONTS,
-    googleFontsUrl,
+    fontFaceCss,
     ITEM_STYLES,
     LOGO_POSITIONS,
     LOGO_SIZES,
@@ -69,7 +69,7 @@ type Props = {
 
 type Tab = 'template' | 'style' | 'content' | 'texts';
 
-const ALL_FONTS_URL = googleFontsUrl(Object.keys(FONTS) as FontId[]);
+const ALL_FONTS_CSS = fontFaceCss(Object.keys(FONTS) as FontId[]);
 
 // ─── small controls ──────────────────────────────────────────────────────────
 
@@ -369,7 +369,7 @@ async function printPages(
 ) {
     const paper = PAPERS[layout.paper];
     const [w, h] = layout.landscape ? [paper.h, paper.w] : [paper.w, paper.h];
-    const fonts = googleFontsUrl([layout.heading_font, layout.body_font]);
+    const fonts = fontFaceCss([layout.heading_font, layout.body_font]);
 
     const frame = document.createElement('iframe');
     frame.setAttribute('aria-hidden', 'true');
@@ -387,7 +387,7 @@ async function printPages(
     const doc = frame.contentDocument!;
     doc.open();
     doc.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title></title>
-${fonts ? `<link rel="stylesheet" href="${fonts}">` : ''}
+${fonts ? `<style>${fonts}</style>` : ''}
 <style>
 @page { size: ${w}mm ${h}mm; margin: 0; }
 html, body { margin: 0; padding: 0; }
@@ -452,12 +452,11 @@ export default function PrintMenu({
     // Fonts: one stylesheet for the whole editor (picker previews included);
     // re-measure whenever a font finishes loading.
     useEffect(() => {
-        if (ALL_FONTS_URL && !document.getElementById('menu-print-fonts')) {
+        if (ALL_FONTS_CSS && !document.getElementById('menu-print-fonts')) {
             document.head.appendChild(
-                Object.assign(document.createElement('link'), {
+                Object.assign(document.createElement('style'), {
                     id: 'menu-print-fonts',
-                    rel: 'stylesheet',
-                    href: ALL_FONTS_URL,
+                    textContent: ALL_FONTS_CSS,
                 }),
             );
         }

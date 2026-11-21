@@ -153,7 +153,6 @@ class JoinController extends Controller
                 'restaurant_table_product.price',
                 'restaurant_table_product.quantity',
                 'users.name as ordered_by_name',
-                'users.email as ordered_by_email',
             )
             ->get()
             ->map(fn ($row) => [
@@ -164,13 +163,13 @@ class JoinController extends Controller
                 'price_type' => $row->price_type,
                 'quantity' => (int) $row->quantity,
                 'picture_url' => $row->picture ? Storage::disk('public')->url($row->picture) : null,
-                'ordered_by' => $row->ordered_by_name ?? $row->ordered_by_email ?? null,
+                'ordered_by' => $row->ordered_by_name,
             ])
             ->all();
 
         $preparing = fn () => QueueItem::where('restaurant_table_id', $table->id)
             ->whereIn('status', QueueItemStatus::open())
-            ->with(['product:id,name', 'orderedBy:id,name,email'])
+            ->with(['product:id,name', 'orderedBy:id,name'])
             ->orderBy('created_at')
             ->get()
             ->map(fn ($item) => [
@@ -179,7 +178,7 @@ class JoinController extends Controller
                 'quantity' => (int) $item->quantity,
                 'notes' => $item->notes,
                 'has_queue' => $item->queue_id !== null,
-                'ordered_by' => $item->orderedBy !== null ? ($item->orderedBy->name ?? $item->orderedBy->email) : null,
+                'ordered_by' => $item->orderedBy?->name,
             ]);
 
         // The bill is the products plus the service fee, shown apart from them.
@@ -260,7 +259,6 @@ class JoinController extends Controller
                 'table_payments.registered_by_type',
                 'table_payments.created_at',
                 'users.name',
-                'users.email',
             ])
             ->map(function ($row) {
                 $byCustomer = $row->registered_by_type === AccountType::CUSTOMER->value;
@@ -269,7 +267,7 @@ class JoinController extends Controller
                     'method' => (string) $row->method,
                     'amount' => (float) $row->amount,
                     // Staff are not named to customers: "paid at the counter".
-                    'payer' => $byCustomer ? ($row->name ?: $row->email) : null,
+                    'payer' => $byCustomer ? $row->name : null,
                     'by_staff' => ! $byCustomer,
                     'status' => OnlinePaymentStatus::PAID->value,
                     'created_at' => $row->created_at !== null ? Carbon::parse($row->created_at)->toIso8601String() : null,
@@ -281,11 +279,11 @@ class JoinController extends Controller
             ->where('online_payments.status', OnlinePaymentStatus::PROCESSING->value)
             ->leftJoin('users', 'users.id', '=', 'online_payments.user_id')
             ->orderBy('online_payments.id')
-            ->get(['online_payments.amount_cents', 'online_payments.created_at', 'users.name', 'users.email'])
+            ->get(['online_payments.amount_cents', 'online_payments.created_at', 'users.name'])
             ->map(fn ($row) => [
                 'method' => PaymentMethod::ONLINE->value,
                 'amount' => $row->amount_cents / 100,
-                'payer' => $row->name ?: $row->email,
+                'payer' => $row->name,
                 'by_staff' => false,
                 'status' => OnlinePaymentStatus::PROCESSING->value,
                 'created_at' => $row->created_at !== null ? Carbon::parse($row->created_at)->toIso8601String() : null,
@@ -705,10 +703,10 @@ class JoinController extends Controller
             ->where('restaurant_table_customers.status', TableCustomerStatus::APPROVED->value)
             ->join('users', 'users.id', '=', 'restaurant_table_customers.user_id')
             ->orderBy('restaurant_table_customers.id')
-            ->get(['users.id', 'users.name', 'users.email'])
+            ->get(['users.id', 'users.name'])
             ->map(fn ($row) => [
                 'id' => (int) $row->id,
-                'name' => (string) ($row->name ?: $row->email),
+                'name' => (string) $row->name,
                 'is_responsible' => (int) $row->id === $responsibleId,
                 'is_me' => (int) $row->id === $viewerId,
             ])
@@ -727,8 +725,8 @@ class JoinController extends Controller
             ->where('restaurant_table_customers.status', TableCustomerStatus::PENDING->value)
             ->join('users', 'users.id', '=', 'restaurant_table_customers.user_id')
             ->orderBy('restaurant_table_customers.id')
-            ->get(['users.id', 'users.name', 'users.email'])
-            ->map(fn ($row) => ['id' => (int) $row->id, 'name' => (string) ($row->name ?: $row->email)])
+            ->get(['users.id', 'users.name'])
+            ->map(fn ($row) => ['id' => (int) $row->id, 'name' => (string) $row->name])
             ->all();
     }
 }

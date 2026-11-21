@@ -62,3 +62,8 @@ Schedule::command('stories:prune')->everyFiveMinutes()->withoutOverlapping();
 // Online payments: catch up on checkouts whose webhook never arrived and on
 // transfers to restaurants that failed (see App\Console\Commands\ReconcilePayments).
 Schedule::command('payments:reconcile')->everyMinute()->withoutOverlapping();
+
+// LGPD: delete personal data past its retention period (config/legal.php, docs/privacy.md),
+// and password reset tokens that already expired.
+Schedule::command('privacy:prune')->dailyAt('04:10')->withoutOverlapping();
+Schedule::command('auth:clear-resets')->dailyAt('04:20');

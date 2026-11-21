@@ -94,7 +94,8 @@ type FontDef = {
     label: string;
     stack: string;
     category: FontCategory;
-    google?: string;
+    /** The @fontsource package bundled with the app (no request to Google: LGPD Art. 33). */
+    files?: string;
 };
 
 export const FONTS: Record<FontId, FontDef> = {
@@ -107,37 +108,37 @@ export const FONTS: Record<FontId, FontDef> = {
         label: 'Playfair Display',
         category: 'serif',
         stack: "'Playfair Display', Georgia, serif",
-        google: 'Playfair+Display:ital,wght@0,400;0,600;0,700;1,400',
+        files: 'playfair-display',
     },
     cormorant: {
         label: 'Cormorant Garamond',
         category: 'serif',
         stack: "'Cormorant Garamond', Georgia, serif",
-        google: 'Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400',
+        files: 'cormorant-garamond',
     },
     lora: {
         label: 'Lora',
         category: 'serif',
         stack: "'Lora', Georgia, serif",
-        google: 'Lora:ital,wght@0,400;0,600;0,700;1,400',
+        files: 'lora',
     },
     merriweather: {
         label: 'Merriweather',
         category: 'serif',
         stack: "'Merriweather', Georgia, serif",
-        google: 'Merriweather:ital,wght@0,300;0,400;0,700;1,400',
+        files: 'merriweather',
     },
     ebgaramond: {
         label: 'EB Garamond',
         category: 'serif',
         stack: "'EB Garamond', Georgia, serif",
-        google: 'EB+Garamond:ital,wght@0,400;0,600;0,700;1,400',
+        files: 'eb-garamond',
     },
     robotoslab: {
         label: 'Roboto Slab',
         category: 'serif',
         stack: "'Roboto Slab', Georgia, serif",
-        google: 'Roboto+Slab:wght@400;600;700',
+        files: 'roboto-slab',
     },
     arial: {
         label: 'Arial',
@@ -148,85 +149,85 @@ export const FONTS: Record<FontId, FontDef> = {
         label: 'Lato',
         category: 'sans',
         stack: "'Lato', Arial, sans-serif",
-        google: 'Lato:ital,wght@0,400;0,700;1,400',
+        files: 'lato',
     },
     montserrat: {
         label: 'Montserrat',
         category: 'sans',
         stack: "'Montserrat', Arial, sans-serif",
-        google: 'Montserrat:ital,wght@0,400;0,600;0,700;1,400',
+        files: 'montserrat',
     },
     poppins: {
         label: 'Poppins',
         category: 'sans',
         stack: "'Poppins', Arial, sans-serif",
-        google: 'Poppins:ital,wght@0,400;0,600;0,700;1,400',
+        files: 'poppins',
     },
     raleway: {
         label: 'Raleway',
         category: 'sans',
         stack: "'Raleway', Arial, sans-serif",
-        google: 'Raleway:ital,wght@0,400;0,600;0,700;1,400',
+        files: 'raleway',
     },
     nunito: {
         label: 'Nunito',
         category: 'sans',
         stack: "'Nunito', Arial, sans-serif",
-        google: 'Nunito:ital,wght@0,400;0,600;0,700;1,400',
+        files: 'nunito',
     },
     josefin: {
         label: 'Josefin Sans',
         category: 'sans',
         stack: "'Josefin Sans', Arial, sans-serif",
-        google: 'Josefin+Sans:ital,wght@0,300;0,400;0,600;0,700;1,400',
+        files: 'josefin-sans',
     },
     oswald: {
         label: 'Oswald',
         category: 'display',
         stack: "'Oswald', 'Arial Narrow', sans-serif",
-        google: 'Oswald:wght@400;600;700',
+        files: 'oswald',
     },
     bebas: {
         label: 'Bebas Neue',
         category: 'display',
         stack: "'Bebas Neue', 'Arial Narrow', sans-serif",
-        google: 'Bebas+Neue',
+        files: 'bebas-neue',
     },
     abril: {
         label: 'Abril Fatface',
         category: 'display',
         stack: "'Abril Fatface', Georgia, serif",
-        google: 'Abril+Fatface',
+        files: 'abril-fatface',
     },
     pacifico: {
         label: 'Pacifico',
         category: 'handwritten',
         stack: "'Pacifico', cursive",
-        google: 'Pacifico',
+        files: 'pacifico',
     },
     dancing: {
         label: 'Dancing Script',
         category: 'handwritten',
         stack: "'Dancing Script', cursive",
-        google: 'Dancing+Script:wght@400;700',
+        files: 'dancing-script',
     },
     caveat: {
         label: 'Caveat',
         category: 'handwritten',
         stack: "'Caveat', cursive",
-        google: 'Caveat:wght@400;700',
+        files: 'caveat',
     },
     patrick: {
         label: 'Patrick Hand',
         category: 'handwritten',
         stack: "'Patrick Hand', cursive",
-        google: 'Patrick+Hand',
+        files: 'patrick-hand',
     },
     amatic: {
         label: 'Amatic SC',
         category: 'handwritten',
         stack: "'Amatic SC', cursive",
-        google: 'Amatic+SC:wght@400;700',
+        files: 'amatic-sc',
     },
 };
 
@@ -237,15 +238,42 @@ export const FONT_CATEGORIES: FontCategory[] = [
     'handwritten',
 ];
 
-/** One stylesheet with every font the given ids need (null when all are system fonts). */
-export function googleFontsUrl(ids: FontId[]): string | null {
-    const families = [...new Set(ids)]
-        .map((id) => FONTS[id].google)
-        .filter(Boolean);
+/**
+ * The bundled font files (latin subset: covers Portuguese), as URLs Vite emits with the
+ * build. Only the URLs are in the bundle; the browser downloads a file when text uses it.
+ */
+const FONT_FILES = import.meta.glob(
+    '/node_modules/@fontsource/*/files/*-latin-{300,400,600,700}-{normal,italic}.woff2',
+    { query: '?url', import: 'default', eager: true },
+) as Record<string, string>;
 
-    return families.length
-        ? `https://fonts.googleapis.com/css2?${families.map((f) => `family=${f}`).join('&')}&display=swap`
-        : null;
+const FILE_PATTERN =
+    /@fontsource\/([^/]+)\/files\/[^/]+-latin-(\d+)-(normal|italic)\.woff2$/;
+
+/** The @font-face rules every font the given ids need (null when all are system fonts). */
+export function fontFaceCss(ids: FontId[]): string | null {
+    const wanted = new Map<string, string>();
+
+    for (const id of new Set(ids)) {
+        const font = FONTS[id];
+
+        if (font.files) {
+            wanted.set(font.files, font.label);
+        }
+    }
+
+    const rules = Object.entries(FONT_FILES).flatMap(([path, url]) => {
+        const match = FILE_PATTERN.exec(path);
+        const family = match && wanted.get(match[1]);
+
+        return match && family
+            ? [
+                  `@font-face{font-family:'${family}';font-style:${match[3]};font-weight:${match[2]};font-display:swap;src:url(${url}) format('woff2');}`,
+              ]
+            : [];
+    });
+
+    return rules.length ? rules.join('\n') : null;
 }
 
 // ─── paper ───────────────────────────────────────────────────────────────────

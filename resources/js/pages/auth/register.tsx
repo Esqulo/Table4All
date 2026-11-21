@@ -2,6 +2,7 @@ import { Form, Head } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
+import { TermsConsent } from '@/components/terms-consent';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -78,7 +79,6 @@ export default function Register({ passwordRules }: Props) {
                                     <Input
                                         id="phone"
                                         type="tel"
-                                        required
                                         tabIndex={3}
                                         autoComplete="tel"
                                         name="phone"
@@ -129,10 +129,12 @@ export default function Register({ passwordRules }: Props) {
                                 />
                             </div>
 
+                            <TermsConsent error={errors.terms} tabIndex={6} />
+
                             <Button
                                 type="submit"
                                 className="mt-2 w-full"
-                                tabIndex={6}
+                                tabIndex={7}
                                 data-test="register-user-button"
                             >
                                 {processing && <Spinner />}
@@ -142,7 +144,7 @@ export default function Register({ passwordRules }: Props) {
 
                         <div className="text-center text-sm text-muted-foreground">
                             {t('auth.register.already_have_account')}{' '}
-                            <TextLink href={login()} tabIndex={7}>
+                            <TextLink href={login()} tabIndex={8}>
                                 {t('auth.register.log_in')}
                             </TextLink>
                         </div>

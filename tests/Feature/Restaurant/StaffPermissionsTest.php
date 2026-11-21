@@ -368,6 +368,7 @@ class StaffPermissionsTest extends TestCase
             'name' => 'Gerente',
             'password' => 'password123',
             'password_confirmation' => 'password123',
+            'terms' => '1',
         ])->assertRedirect(route('dashboard'));
 
         $manager = User::where('email', 'gerente@example.com')->firstOrFail();

@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@/components/delete-user';
+import DownloadMyData from '@/components/download-my-data';
 import Heading from '@/components/heading';
 import { ImageCropper } from '@/components/image-cropper';
 import InputError from '@/components/input-error';
@@ -161,7 +162,6 @@ export default function Profile({
                                             ) ?? ''
                                         }
                                         name="phone"
-                                        required
                                         autoComplete="tel"
                                         placeholder={t(
                                             'settings.profile.phone_placeholder',
@@ -255,6 +255,8 @@ export default function Profile({
                     )}
                 </Form>
             </div>
+
+            <DownloadMyData />
 
             <DeleteUser />
         </>

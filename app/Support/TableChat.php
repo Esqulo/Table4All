@@ -65,11 +65,11 @@ class TableChat
             ->join('users', 'users.id', '=', 'table_messages.user_id')
             ->orderByDesc('table_messages.id')
             ->limit(self::HISTORY)
-            ->get(['table_messages.id', 'table_messages.user_id', 'table_messages.body', 'table_messages.created_at', 'users.name', 'users.email'])
+            ->get(['table_messages.id', 'table_messages.user_id', 'table_messages.body', 'table_messages.created_at', 'users.name'])
             ->reverse()
             ->map(fn ($row) => [
                 'id' => (int) $row->id,
-                'name' => (string) ($row->name ?: $row->email),
+                'name' => (string) $row->name,
                 'body' => (string) $row->body,
                 'mine' => (int) $row->user_id === $viewerId,
                 'at' => Carbon::parse($row->created_at, 'UTC')->toIso8601String(),

@@ -19,7 +19,7 @@
             "name_label": "Full name",
             "name_placeholder": "Full name",
             "email_label": "Email address",
-            "phone_label": "Phone number",
+            "phone_label": "Phone (optional)",
             "phone_placeholder": "11 99999-9999",
             "password_label": "Password",
             "password_placeholder": "Password",
@@ -117,7 +117,7 @@
             "name_placeholder": "Full name",
             "email_label": "Email address",
             "email_placeholder": "Email address",
-            "phone_label": "Phone number",
+            "phone_label": "Phone (optional)",
             "phone_placeholder": "11 99999-9999",
             "avatar_label": "Profile picture",
             "unverified_email": "Your email address is unverified.",
@@ -144,6 +144,11 @@
             "head": "Appearance settings",
             "section_title": "Appearance settings",
             "section_description": "Update the appearance settings for your account"
+        },
+        "my_data": {
+            "title": "My data",
+            "description": "Download a copy of everything Table4All keeps about you: account, tables, orders, payments, messages and more.",
+            "download": "Download my data (JSON)"
         }
     },
     "appearance": {
@@ -164,7 +169,9 @@
         "password_label": "Password",
         "password_placeholder": "Password",
         "cancel": "Cancel",
-        "confirm": "Delete account"
+        "confirm": "Delete account",
+        "restaurant_description": "Restaurant accounts are closed by our team: we remove the profile, media and staff access, and keep bills and payments for as long as the law requires.",
+        "restaurant_contact": "Contact the team to close the account"
     },
     "menus": {
         "title": "Menu",
@@ -918,7 +925,11 @@
         "footer": {
             "rights": "© {{year}} Table4All",
             "made": "Made for bars and restaurants in Brazil.",
-            "contact": "Contact"
+            "contact": "Contact",
+            "nav": "Company links",
+            "privacy": "Privacy",
+            "terms": "Terms of use",
+            "cookies": "Cookies"
         }
     },
     "contact": {
@@ -1843,5 +1854,119 @@
         "you": "you",
         "msg_invited": "Invitation sent.",
         "msg_revoked": "Invitation canceled."
+    },
+    "cookies": {
+        "label": "Cookie notice",
+        "text": "We only use the cookies Table4All needs to work, such as keeping you signed in and remembering your language and theme. No advertising or tracking.",
+        "learn_more": "Learn more",
+        "accept": "Got it"
+    },
+    "legal": {
+        "consent": "I have read and accept the <terms>Terms of Use</terms> and the <privacy>Privacy Policy</privacy>, and I declare that I am 18 or older.",
+        "common": {
+            "document": "CNPJ {{value}}",
+            "dpo_fallback": "the Table4All privacy team",
+            "updated": "Last updated: {{date}}",
+            "contents": "On this page",
+            "see_also": "See also:"
+        },
+        "privacy": {
+            "head": "Privacy Policy",
+            "title": "Privacy Policy",
+            "intro": "This policy explains which personal data Table4All processes, what for, who it is shared with, how long it is kept and how you exercise your rights, under Brazil's General Data Protection Law (Law 13,709/2018, LGPD).",
+            "sections": {
+                "controller": {
+                    "title": "Who the controller is",
+                    "body": "The controller of the data processed by the platform is {{controller}}.\n\nThe data protection officer (DPO) is {{dpo}}, who answers data subjects and the National Data Protection Authority (ANPD) at {{dpo_email}}.\n\nEach restaurant that uses Table4All is also a controller of the data of its own service (what was ordered and paid at the venue) and answers for its part."
+                },
+                "data": {
+                    "title": "What data we process",
+                    "body": "- Account: name, email, password (stored only as a hash), phone (optional), profile picture (optional) and account type.\n- Security: two-factor authentication and passkeys, active sessions (IP address, browser and last activity) and sign-in dates.\n- At the table: tables you joined, items ordered and notes, payments, waiter calls, messages and reactions in the table chat.\n- Online payments: amounts, status and transaction identifiers. Card details are typed straight into Stripe; Table4All never receives or stores them.\n- Loyalty and coupons: personal coupons and rewards earned at each restaurant.\n- Social: comments, reactions and reviews you post on restaurant profiles.\n- Restaurants: venue name, contact details, address, map location, pictures, menu and Stripe payout account details.\n- Staff: name, email and permissions of waiters and staff invited by the restaurant.\n- Contact: venue name, email, phone, city and message sent through the contact form.\n- Approximate location: only if you allow it in the browser, rounded to about 100 m and used only to sort restaurants by distance. It is not stored.\n\nWe do not process sensitive personal data, do not use your data for advertising and do not sell it."
+                },
+                "purposes": {
+                    "title": "What we use it for and on which legal basis",
+                    "body": "- Creating and keeping your account, opening tables, recording orders, splitting and closing the bill: performance of a contract (Art. 7, V).\n- Processing online payments, refunds and payouts to restaurants: performance of a contract (Art. 7, V).\n- Keeping bills, payments and financial records for the required period: legal obligation (Art. 7, II) and exercise of rights (Art. 7, VI).\n- Keeping access logs (IP, date and time): legal obligation under Brazil's Internet Civil Framework (Art. 7, II).\n- Protecting accounts and the platform (attempt limits, sessions, fraud prevention): legitimate interest (Art. 7, IX).\n- Loyalty program and coupons: performance of a contract (Art. 7, V).\n- Comments, reactions and reviews: performance of a contract, when you choose to post (Art. 7, V).\n- Sorting restaurants by distance: consent given in the browser (Art. 7, I), which you can withdraw at any time in its settings.\n- Answering the contact form: steps prior to a contract, at your request (Art. 7, V).\n- Service emails (email confirmation, password reset, invitations): performance of a contract (Art. 7, V)."
+                },
+                "sharing": {
+                    "title": "Who we share it with",
+                    "body": "- The restaurant you are at: sees your name, your orders, calls, payments and the table chat, to serve you.\n- Other people at the same table: see your name, your orders and your messages in the table chat.\n- Stripe: processes online payments and the restaurants' payout accounts.\n- Hosting and email providers: processors that handle the data only to keep the service running, under contract.\n- OpenStreetMap (Nominatim): receives only restaurants' public addresses, to find them on the map. No customer data is sent.\n- Public authorities: when there is a court order or a legal obligation.\n\nRestaurant profiles, posts and reviews are public, and your comments and reactions on them show your name."
+                },
+                "international": {
+                    "title": "International transfers",
+                    "body": "Some processors, such as Stripe, may process data outside Brazil. In those cases the transfer follows Art. 33 of the LGPD, with contractual clauses that ensure protection equivalent to Brazilian law."
+                },
+                "retention": {
+                    "title": "How long we keep it",
+                    "body": "- Account: while it exists. When you delete your account we erase your profile, messages, comments, reactions, reviews, personal coupons and rewards.\n- Financial records (table bills, charged items and payments): for the period set by tax and commercial law, usually 5 years. Once the account is deleted they are no longer linked to you.\n- Access logs (IP, date and time): 6 months, as required by the Internet Civil Framework (Law 12,965/2014, Art. 15).\n- Table chat and reactions: {{chat_days}} days after the table closes.\n- Waiter calls: {{calls_days}} days after they are answered.\n- Sign-in links and invitations: a few days after they are used or expire.\n- Contact form: {{admission_days}} days after it is answered.\n- Temporary posts (\"Hoje tem!\"): 24 hours."
+                },
+                "rights": {
+                    "title": "Your rights",
+                    "body": "Under Art. 18 of the LGPD you can at any time:\n\n- confirm whether we process your data and access it;\n- correct incomplete, inaccurate or outdated data;\n- ask for unnecessary or excessive data, or data processed unlawfully, to be anonymised, blocked or erased;\n- receive your data in a structured format (portability);\n- erase data processed with your consent and withdraw that consent;\n- know who we share your data with;\n- object to processing that breaks the law.\n\nIn Settings > Profile you can correct your data, download a full copy of it and delete your account. For anything else, write to {{dpo_email}}: we answer within 15 days. You can also file a complaint with the ANPD (www.gov.br/anpd)."
+                },
+                "cookies": {
+                    "title": "Cookies and local storage",
+                    "body": "Table4All only uses cookies that are strictly necessary for it to work. We do not use advertising, tracking or third-party analytics cookies.\n\n- table4all-session: keeps you signed in. Lasts while the session is active.\n- XSRF-TOKEN: protects forms against forged submissions. Same duration as the session.\n- remember_web_*: only if you tick \"Remember me\" when signing in. Lasts until you sign out.\n- locale: the language you picked. 1 year.\n- appearance: light or dark theme. 1 year.\n- sidebar_state: side menu open or closed. 7 days.\n\nIn the browser's local storage we keep only interface preferences, such as language, theme, filters, stories already seen and the dismissed cookie notice.\n\nBecause they are needed for the service, these cookies do not depend on consent. You can delete them in your browser settings, but signing in will stop working."
+                },
+                "security": {
+                    "title": "Security",
+                    "body": "Passwords are stored only as hashes, the connection is encrypted (HTTPS), access to data is limited by account type (customer, staff, restaurant, administrator) and administrators sign in with two-factor authentication. We also limit sign-in and table code attempts.\n\nIf a security incident may cause relevant risk or harm, we will notify the ANPD and the people affected, as Art. 48 of the LGPD requires."
+                },
+                "children": {
+                    "title": "Children and teenagers",
+                    "body": "Table4All is meant for people aged {{min_age}} or older. If we learn that an account belongs to someone younger, it will be deleted."
+                },
+                "changes": {
+                    "title": "Changes to this policy",
+                    "body": "We may update this policy. The date of the current version is at the top of the page and, when a change is relevant, we will let you know by email or on the platform."
+                }
+            }
+        },
+        "terms": {
+            "head": "Terms of Use",
+            "title": "Terms of Use",
+            "intro": "These terms govern the use of Table4All, a platform for table management, QR code ordering, prep queues and payments for bars and restaurants. By creating an account or using the platform you agree to them and to the Privacy Policy.",
+            "sections": {
+                "service": {
+                    "title": "The service",
+                    "body": "Table4All is run by {{controller}}. The platform connects customers, staff and restaurants: customers open or join a table with its code, order and pay; restaurants manage tables, menu, prep queues and staff.\n\nTable4All does not sell or prepare the products. The sale is made by the restaurant, which answers for the products, prices, service, tax documents and consumer and health rules."
+                },
+                "account": {
+                    "title": "Your account",
+                    "body": "- To create an account you must be {{min_age}} or older and give truthful information.\n- The account is personal. Keep your password safe and tell us if you suspect misuse.\n- Waiters and staff join by invitation from the restaurant, which decides what each of them can do.\n- Restaurant accounts are created by the Table4All team after a sales contact."
+                },
+                "customers": {
+                    "title": "Use by customers",
+                    "body": "- The first customer to open a free table becomes responsible for it and approves who asks to join.\n- Prices are those of the menu or of the promotion active when the order is placed, and are recorded on the table's bill.\n- Orders go straight to preparation; cancellations and changes depend on the restaurant.\n- Online payments are processed by Stripe. Anything paid in excess is refunded automatically.\n- Items not delivered when the table closes are not charged."
+                },
+                "conduct": {
+                    "title": "Conduct",
+                    "body": "You may not:\n\n- use other people's table codes or try to guess them;\n- post offensive, discriminatory or unlawful messages, comments or reviews, or ones with other people's personal data;\n- try to access data or areas without permission, overload or attack the platform;\n- use the platform for fraud or for purposes other than those intended.\n\nWe may remove content and suspend accounts that break these terms."
+                },
+                "restaurants": {
+                    "title": "Restaurants",
+                    "body": "- The restaurant answers for the menu, prices, promotions and coupons it offers, for its service and for the information on its public profile.\n- The platform's fees on online payments are those of the plan agreed and are shown in the finance panel.\n- The restaurant is the controller of the personal data of its service and Table4All processes that data on its behalf to run the service. The restaurant must use it only to serve, charge and meet legal obligations, must not copy it for other purposes or share it without a legal basis, and must forward to Table4All any data subject requests it receives.\n- The restaurant answers for the access it gives its staff and must remove it when someone leaves.\n- Restaurant accounts are closed by the Table4All team: profile, media and staff access are removed, and financial records are kept for the legal period."
+                },
+                "content": {
+                    "title": "Posted content",
+                    "body": "You still own what you post (pictures, texts, comments and reviews) and grant Table4All a free, non-exclusive licence to display it on the platform while it is posted. You confirm you hold the rights to it."
+                },
+                "liability": {
+                    "title": "Availability and liability",
+                    "body": "We work to keep the platform stable, including at rush hour, but it may go through maintenance or failures. Nothing in these terms limits the rights granted by Brazil's Consumer Protection Code."
+                },
+                "termination": {
+                    "title": "Ending the account",
+                    "body": "You can delete your account at any time in Settings > Profile. We may suspend or close accounts that break these terms or the law. Records the law requires us to keep are kept for the legal period, as the Privacy Policy explains."
+                },
+                "changes": {
+                    "title": "Changes",
+                    "body": "We may update these terms. Relevant changes will be announced in advance by email or on the platform."
+                },
+                "law": {
+                    "title": "Governing law and contact",
+                    "body": "These terms are governed by Brazilian law, and the courts of the consumer's domicile have jurisdiction. Questions: {{dpo_email}}."
+                }
+            }
+        }
     }
 }

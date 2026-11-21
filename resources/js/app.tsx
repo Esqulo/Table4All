@@ -1,4 +1,5 @@
 import { createInertiaApp } from '@inertiajs/react';
+import { CookieNotice } from '@/components/cookie-notice';
 import { SwitchLocaleAfterHydration } from '@/components/switch-locale-after-hydration';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -29,6 +30,7 @@ createInertiaApp({
                     : null;
             case name === 'welcome':
             case name === 'contact':
+            case name.startsWith('legal/'): // privacy policy and terms (public site chrome)
             case name.startsWith('menu/'):
             case name === 'restaurant/menus/print':
             case name.startsWith('waiter/'):
@@ -54,6 +56,7 @@ createInertiaApp({
             <TooltipProvider delayDuration={0}>
                 {app}
                 <Toaster />
+                <CookieNotice />
                 {preferred && <SwitchLocaleAfterHydration to={preferred} />}
             </TooltipProvider>
         );

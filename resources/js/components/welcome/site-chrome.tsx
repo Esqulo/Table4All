@@ -5,9 +5,17 @@ import AppLogoIcon from '@/components/app-logo-icon';
 import AppLogoWordmark from '@/components/app-logo-wordmark';
 import { DarkModeToggle } from '@/components/dark-mode-toggle';
 import { LanguageToggle } from '@/components/language-toggle';
-import { contact, dashboard, home, login, register } from '@/routes';
+import {
+    contact,
+    dashboard,
+    home,
+    login,
+    privacy,
+    register,
+    terms,
+} from '@/routes';
 
-/** Shared buttons, header and footer for the public marketing pages (welcome, contact). */
+/** Shared buttons, header and footer for the public pages (welcome, contact, legal). */
 
 export const btnPrimary =
     'inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[var(--w-btn-bg)] px-7 text-[15px] font-semibold text-[var(--w-btn-fg)] shadow-[0_1px_2px_oklch(0.2_0.03_155/0.25),0_8px_18px_-8px_oklch(0.3_0.08_157/0.55)] transition-colors duration-200 hover:bg-[var(--w-btn-bg-hover)]';
@@ -88,6 +96,9 @@ function SiteHeader() {
     );
 }
 
+const footerLink =
+    'font-medium text-[var(--w-ink)] underline decoration-[var(--w-rule)] hover:text-[var(--w-green)] hover:decoration-[var(--w-green)]';
+
 function SiteFooter() {
     const { t } = useTranslation();
     const year = new Date().getFullYear();
@@ -101,12 +112,26 @@ function SiteFooter() {
                 </span>
                 <span className="flex flex-wrap items-center gap-x-5 gap-y-2">
                     <span>{t('welcome.footer.made')}</span>
-                    <Link
-                        href={contact()}
-                        className="font-medium text-[var(--w-ink)] underline decoration-[var(--w-rule)] hover:text-[var(--w-green)] hover:decoration-[var(--w-green)]"
+                    <nav
+                        aria-label={t('welcome.footer.nav')}
+                        className="flex flex-wrap items-center gap-x-5 gap-y-2"
                     >
-                        {t('welcome.footer.contact')}
-                    </Link>
+                        <Link href={contact()} className={footerLink}>
+                            {t('welcome.footer.contact')}
+                        </Link>
+                        <Link href={privacy()} className={footerLink}>
+                            {t('welcome.footer.privacy')}
+                        </Link>
+                        <Link href={terms()} className={footerLink}>
+                            {t('welcome.footer.terms')}
+                        </Link>
+                        <a
+                            href={`${privacy.url()}#cookies`}
+                            className={footerLink}
+                        >
+                            {t('welcome.footer.cookies')}
+                        </a>
+                    </nav>
                 </span>
             </div>
         </footer>

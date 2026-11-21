@@ -10,6 +10,11 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    // LGPD Art. 18 II and V: a copy of everything kept about the signed-in person.
+    Route::get('settings/profile/export', [ProfileController::class, 'export'])
+        ->middleware('throttle:6,1')
+        ->name('profile.export');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {

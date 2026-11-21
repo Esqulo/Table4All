@@ -47,7 +47,7 @@ PostgreSQL is the only database, in production, development and tests (there is 
 - `TablePayment`s accumulate against a table. A table can only be closed (`closed_at`) once payments cover the total. Closed tables feed `DashboardController`.
 
 ### Frontend
-- Pages: `resources/js/pages/**`, rendered with `Inertia::render('restaurant/tables/show', …)`. The layout is chosen **by page-name prefix** in `resources/js/app.tsx` (`table/*` → CustomerLayout, `auth/*` → AuthLayout, `settings/*` → App+Settings, `welcome`/`menu/*`/`waiter/*`/print → none, everything else → AppLayout). When adding a page under a new prefix, update that switch.
+- Pages: `resources/js/pages/**`, rendered with `Inertia::render('restaurant/tables/show', …)`. The layout is chosen **by page-name prefix** in `resources/js/app.tsx` (`table/*` → CustomerLayout, `auth/*` → AuthLayout, `settings/*` → App+Settings, `welcome`/`contact`/`legal/*`/`menu/*`/`waiter/*`/print → none, everything else → AppLayout). When adding a page under a new prefix, update that switch.
 - Routing on the client uses **Laravel Wayfinder**: import typed route helpers from `@/routes` or controller actions from `@/actions/App/Http/Controllers/...`. Don't hardcode URLs. These directories (`resources/js/routes`, `actions`, `wayfinder`) are **generated** by the Vite plugin and gitignored, so they regenerate when Vite runs (or via `php artisan wayfinder:generate`) after route/controller changes.
 - Shared props come from `HandleInertiaRequests::share` (`auth.user`, `name`, `sidebarOpen`). Shared TS types are in `resources/js/types/` (domain types in `restaurant.ts`).
 - UI is shadcn-style Radix components in `resources/js/components/ui/` with Tailwind v4. React Compiler is enabled via Babel.
@@ -59,6 +59,14 @@ PostgreSQL is the only database, in production, development and tests (there is 
 
 ### Auth
 Email verification is mandatory (`User` implements `MustVerifyEmail`; every operational route uses `verified`). Invited waiters are verified by the invite link. Laravel Fortify (`FortifyServiceProvider`, `app/Actions/Fortify`) handles login/registration, email verification, 2FA and passkeys (WebAuthn). Settings routes are in `routes/settings.php`.
+
+## Privacy / LGPD (mandatory)
+Read **`docs/privacy.md`** before adding personal data, an outside service, or a screen that shows one person's data to another. In short:
+- Collect only what the feature needs. Show other customers and staff a person's **name**, never their email or phone.
+- New personal data goes into `App\Support\Privacy\PersonalDataExport` (Settings > Profile > download) and gets a retention period in `config/legal.php` + `privacy:prune` unless it is a financial record. Financial rows reference users with `nullOnDelete`; personal content with `cascadeOnDelete`; index every FK to `users`.
+- Public pictures: `ImageOptimizer::storeReencoded()` (drops EXIF/GPS). Avatars already use it.
+- Restaurants can't delete their own account (bills must be kept); `php artisan restaurants:close {id}` anonymises one. Sign-up and waiter invites require `terms` (recorded in `users.terms_accepted_at`/`terms_version`; bump `legal.version` when the texts change).
+- Public texts: `/privacidade` and `/termos` (`legal/*` pages, `legal.*` locale keys). List any new outside service in the policy's "sharing" section. The cookie notice (`CookieNotice`) assumes only essential cookies: adding analytics or ads needs real consent first.
 
 ## Performance under rush (mandatory)
 The app runs during rush hour on slow mobile networks and old devices; it must never be the bottleneck. Read **`docs/performance.md`** before touching a hot path (kitchen queue, delivery board, tables, customer ordering). The rules in short:

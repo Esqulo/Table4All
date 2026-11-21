@@ -58,6 +58,8 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property string|null $fee_percent_override The restaurant's own commission, over its tier's
  * @property Carbon|null $last_login_at
  * @property Carbon|null $last_seen_at
+ * @property Carbon|null $terms_accepted_at
+ * @property string|null $terms_version
  * @property Carbon|null $email_verified_at
  * @property string $password
  * @property string|null $two_factor_secret
@@ -100,6 +102,15 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
                 GeocodeRestaurant::dispatch($user->id)->afterCommit();
             }
         });
+    }
+
+    /** Proof of consent (LGPD Art. 8 §2): when and which version of the terms was accepted. */
+    public function recordTermsAcceptance(): void
+    {
+        $this->forceFill([
+            'terms_accepted_at' => now(),
+            'terms_version' => (string) config('legal.version'),
+        ])->save();
     }
 
     /** Lowercase without accents: how names and search terms are compared. */
@@ -328,6 +339,7 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             'fee_percent_override' => 'decimal:2',
             'last_login_at' => 'datetime',
             'last_seen_at' => 'datetime',
+            'terms_accepted_at' => 'datetime',
             'staff_role' => StaffRole::class,
             'staff_permissions' => 'array',
             'price_level' => 'integer',
