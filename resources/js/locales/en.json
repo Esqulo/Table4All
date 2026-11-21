@@ -1968,5 +1968,213 @@
                 }
             }
         }
+    },
+    "partner": {
+        "head": "Become a partner",
+        "hero": {
+            "eyebrow": "For bars, restaurants and diners",
+            "title": "Full house, tidy floor.",
+            "lead": "With Table4All guests order from the table's QR code, every order lands in the right kitchen or bar queue, and the bill closes right, split however the table wants. Your staff serves more people and you know how much came in."
+        },
+        "cta": {
+            "primary": "I want Table4All in my venue",
+            "watch": "See how it works"
+        },
+        "video": {
+            "label": "Video: Table4All on a packed night",
+            "poster": "Watch in {{seconds}} seconds",
+            "controls": {
+                "play": "Play",
+                "pause": "Pause",
+                "replay": "Watch again",
+                "chapters": "Video chapters",
+                "fullscreen": "Full screen",
+                "exit_fullscreen": "Exit full screen"
+            },
+            "scenes": {
+                "rush": {
+                    "title": "Friday, 9 PM. Full house.",
+                    "body": "A raised hand at every table, waiters rushing, orders scribbled in a hurry. This is where sales get lost."
+                },
+                "qr": {
+                    "title": "Guests order from their phone",
+                    "body": "They scan the table's QR code, see the menu with photos and prices, and send the order. No waiting for anyone."
+                },
+                "queue": {
+                    "title": "Every order lands in the right queue",
+                    "body": "The draft beer goes to the bar, the snack to the kitchen. Whoever prepares marks it ready, whoever serves marks it delivered."
+                },
+                "call": {
+                    "title": "One tap and the staff sees it",
+                    "body": "Calling the waiter or asking for the bill is a single tap, and it shows up on the floor staff's screen."
+                },
+                "pay": {
+                    "title": "Split bill, no calculator",
+                    "body": "Everyone pays their share by Pix, card or cash. The table only closes when the bill adds up."
+                },
+                "dash": {
+                    "title": "You know how much came in",
+                    "body": "Revenue, best sellers and average ticket on the dashboard, updated with every closed table."
+                },
+                "loyalty": {
+                    "title": "And guests come back",
+                    "body": "Loyalty card, coupons and the venue's profile on the feed bring your crowd back."
+                },
+                "end": {
+                    "title": "Table4All",
+                    "body": "Full house, tidy floor."
+                }
+            },
+            "stage": {
+                "table": "Table {{number}}",
+                "waiting": "waiting {{minutes}} min",
+                "menu": "Menu",
+                "order_button_one": "Order {{count}} item",
+                "order_button_other": "Order {{count}} items",
+                "order_sent": "Order sent!",
+                "people_one": "{{count}} person",
+                "people_other": "{{count}} people",
+                "items": {
+                    "chopp": "Pilsner draft 300ml",
+                    "pastel": "Cheese pastel (6 pcs)",
+                    "fries": "Fries basket",
+                    "caipirinha": "Lime caipirinha"
+                },
+                "queues": {
+                    "bar": "Bar",
+                    "kitchen": "Kitchen"
+                },
+                "status": {
+                    "queued": "queued",
+                    "ready": "ready",
+                    "delivered": "delivered"
+                },
+                "bill_total": "Table total",
+                "call_waiter": "Call the waiter",
+                "ask_bill": "Ask for the bill",
+                "calls": "Calls",
+                "asked_bill": "Asked for the bill · {{amount}}",
+                "called_waiter": "Called the waiter",
+                "answered": "Answered",
+                "methods": {
+                    "pix": "Pix",
+                    "card": "Card",
+                    "cash": "Cash"
+                },
+                "remaining": "Left to pay",
+                "paid_stamp": "Paid",
+                "table_closed": "Table closed",
+                "kpi": {
+                    "revenue": "Revenue today",
+                    "tables": "Tables closed",
+                    "ticket": "Average ticket"
+                },
+                "today": "Today",
+                "top_sellers": "Best sellers",
+                "sample": "Sample values",
+                "loyalty_card": "Loyalty card",
+                "venue": "Corner Pub",
+                "visit": "Visit {{count}} of {{total}}",
+                "coupon_unlocked": "Coupon unlocked",
+                "coupon": "10% off your next visit",
+                "post": "Live samba tonight, 8 PM"
+            }
+        },
+        "benefits": {
+            "title": "What changes on your floor",
+            "more_rounds": {
+                "title": "More rounds per table",
+                "body": "Guests order the next round the moment they feel like it, without waiting for the waiter to pass by. Orders that don't depend on a raised hand happen more often."
+            },
+            "no_mistakes": {
+                "title": "No note-taking mistakes",
+                "body": "The order goes from the guest's phone straight to the bar or kitchen queue. Nobody rewrites a ticket, nobody mishears."
+            },
+            "team": {
+                "title": "Staff at full speed during the rush",
+                "body": "Waiters stop taking notes and start serving, helping and selling. Calls and bill requests show up on the floor staff's screen."
+            },
+            "bill": {
+                "title": "Bills that close right",
+                "body": "The price is locked in when the item is ordered, promotions included. A table only closes when payments cover the total, so nobody leaves owing someone else's share."
+            },
+            "control": {
+                "title": "You know how much came in",
+                "body": "Revenue per day, best sellers, average ticket and payment methods, no spreadsheet needed. Check it from anywhere."
+            },
+            "return": {
+                "title": "Guests who come back",
+                "body": "Loyalty card, coupons and the venue's profile with posts and stories keep you on your guests' minds and bring them back."
+            }
+        },
+        "easy": {
+            "title": "No new hardware, no hassle",
+            "devices": {
+                "title": "Uses what you already have",
+                "body": "It runs in the browser of the phones, tablets and computers you already use. Guests order on their own phone."
+            },
+            "network": {
+                "title": "Built for rush hour",
+                "body": "Designed for weak internet, an old tablet in the kitchen and dozens of orders arriving at once."
+            },
+            "everyone": {
+                "title": "Nobody is left out",
+                "body": "Guests who don't want to use their phone order from the waiter, who adds it to the same tab from their own phone."
+            },
+            "print": {
+                "title": "Printed menu with QR",
+                "body": "The system builds a print-ready menu with the QR code guests use to join the table."
+            }
+        },
+        "steps": {
+            "title": "How to get started",
+            "talk": {
+                "title": "A chat",
+                "body": "Tell us how your venue works: tables, menu, kitchen and bar."
+            },
+            "setup": {
+                "title": "Setup",
+                "body": "We create the venue's account and the menu goes in with photos, prices and prep queues."
+            },
+            "tables": {
+                "title": "Tables and staff",
+                "body": "The QR codes go on the tables and each waiter joins through the invite sent to their email."
+            },
+            "night": {
+                "title": "Opening night",
+                "body": "Open the floor. Orders land in the queues and every closed bill shows up on the dashboard."
+            }
+        },
+        "faq": {
+            "title": "Questions venue owners ask",
+            "equipment": {
+                "q": "Do I need to buy any equipment?",
+                "a": "No. Table4All runs in the browser of the phones, tablets and computers you already have. In the kitchen, any tablet or screen with internet shows the prep queue."
+            },
+            "no_phone": {
+                "q": "What about guests who don't want to order by phone?",
+                "a": "They order from the waiter, as always. The waiter adds the order to the table's tab from their own phone, and it goes to the same queues."
+            },
+            "internet": {
+                "q": "Our internet is weak. Will it work?",
+                "a": "Yes. The system was built for weak 3G and 4G and old devices, and guests use their own mobile data to order."
+            },
+            "payments": {
+                "q": "How do guests pay?",
+                "a": "As usual: Pix, card or cash, and the staff records each payment on the tab. If you want, turn on in-app payments and the money goes straight to your Stripe account."
+            },
+            "cost": {
+                "q": "How much does it cost?",
+                "a": "We agree on the partnership terms in this conversation. On payments guests make through the app, the platform keeps a percentage agreed with you."
+            },
+            "data": {
+                "q": "What about my guests' data?",
+                "a": "We follow Brazil's LGPD. Other guests and the staff only see the name of whoever is at the table, never their email or phone."
+            }
+        },
+        "closing": {
+            "title": "Shall we open the first table?",
+            "body": "Leave your details and we'll arrange the next steps. Or talk right now with the person showing you this page."
+        }
     }
 }

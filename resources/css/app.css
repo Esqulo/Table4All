@@ -227,6 +227,45 @@
     text-decoration-thickness: 1px;
 }
 
+/*
+ * Partner page video: the stage is drawn in em, and 1em follows the player's
+ * width (a 62.5em x 35em canvas), so it scales like a real video.
+ */
+.t4a-stage-wrap {
+    container-type: inline-size;
+}
+
+.t4a-stage {
+    font-size: 1.6vw;
+}
+
+@supports (width: 1cqw) {
+    .t4a-stage {
+        font-size: 1.6cqw;
+    }
+}
+
+@keyframes t4a-scan {
+    0%,
+    100% {
+        top: 10%;
+    }
+    50% {
+        top: 86%;
+    }
+}
+
+.t4a-scan {
+    animation: t4a-scan 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .t4a-scan {
+        animation: none;
+        top: 50%;
+    }
+}
+
 /* Torn bottom edge of the receipt. */
 .t4a-receipt {
     --tooth: 10px;

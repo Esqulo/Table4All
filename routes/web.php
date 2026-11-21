@@ -56,6 +56,8 @@ Route::inertia('/contato', 'contact', [
 Route::post('/contato', [AdmissionRequestController::class, 'store'])
     ->middleware('throttle:5,10')
     ->name('contact.store');
+// Sales page shown in person to venue owners; reached only by its direct link.
+Route::inertia('/parceiro', 'partner')->name('partner');
 Route::get('/privacidade', [LegalController::class, 'privacy'])->name('privacy');
 Route::get('/termos', [LegalController::class, 'terms'])->name('terms');
 

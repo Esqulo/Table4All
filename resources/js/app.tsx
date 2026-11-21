@@ -30,6 +30,7 @@ createInertiaApp({
                     : null;
             case name === 'welcome':
             case name === 'contact':
+            case name === 'partner': // sales page for venue owners (/parceiro)
             case name.startsWith('legal/'): // privacy policy and terms (public site chrome)
             case name.startsWith('menu/'):
             case name === 'restaurant/menus/print':

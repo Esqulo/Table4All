@@ -1968,5 +1968,213 @@
                 }
             }
         }
+    },
+    "partner": {
+        "head": "Seja parceiro",
+        "hero": {
+            "eyebrow": "Para bares, restaurantes e lanchonetes",
+            "title": "Casa cheia, salão em ordem.",
+            "lead": "Com o Table4All o cliente pede pelo QR da mesa, cada pedido cai na fila certa da cozinha ou do bar e a conta fecha certa, dividida do jeito que a mesa quiser. Sua equipe atende mais gente e você sabe quanto entrou."
+        },
+        "cta": {
+            "primary": "Quero o Table4All na minha casa",
+            "watch": "Ver como funciona"
+        },
+        "video": {
+            "label": "Vídeo: o Table4All numa noite de casa cheia",
+            "poster": "Veja em {{seconds}} segundos",
+            "controls": {
+                "play": "Reproduzir",
+                "pause": "Pausar",
+                "replay": "Assistir de novo",
+                "chapters": "Capítulos do vídeo",
+                "fullscreen": "Tela cheia",
+                "exit_fullscreen": "Sair da tela cheia"
+            },
+            "scenes": {
+                "rush": {
+                    "title": "Sexta, 21h. Casa cheia.",
+                    "body": "Mão levantada em cada mesa, garçom correndo, pedido anotado às pressas. É aqui que se perde venda."
+                },
+                "qr": {
+                    "title": "O cliente pede pelo celular",
+                    "body": "Escaneia o QR da mesa, vê o cardápio com fotos e preços e manda o pedido. Sem esperar ninguém."
+                },
+                "queue": {
+                    "title": "Cada pedido cai na fila certa",
+                    "body": "O chopp vai para o bar, a porção para a cozinha. Quem prepara marca pronto, quem serve marca entregue."
+                },
+                "call": {
+                    "title": "Chamou, a equipe vê na hora",
+                    "body": "Chamar o garçom ou pedir a conta é um toque, e aparece na tela de quem está no salão."
+                },
+                "pay": {
+                    "title": "Conta dividida, sem calculadora",
+                    "body": "Cada um paga a sua parte em Pix, cartão ou dinheiro. A mesa só fecha quando a conta bate."
+                },
+                "dash": {
+                    "title": "Você sabe quanto entrou",
+                    "body": "Faturamento, mais vendidos e ticket médio no painel, atualizados a cada mesa fechada."
+                },
+                "loyalty": {
+                    "title": "E o cliente volta",
+                    "body": "Cartão fidelidade, cupons e o perfil da casa no feed trazem a clientela de volta."
+                },
+                "end": {
+                    "title": "Table4All",
+                    "body": "Casa cheia, salão em ordem."
+                }
+            },
+            "stage": {
+                "table": "Mesa {{number}}",
+                "waiting": "{{minutes}} min esperando",
+                "menu": "Cardápio",
+                "order_button_one": "Pedir {{count}} item",
+                "order_button_other": "Pedir {{count}} itens",
+                "order_sent": "Pedido enviado!",
+                "people_one": "{{count}} pessoa",
+                "people_other": "{{count}} pessoas",
+                "items": {
+                    "chopp": "Chopp Pilsen 300ml",
+                    "pastel": "Pastel de queijo (6 un.)",
+                    "fries": "Porção de fritas",
+                    "caipirinha": "Caipirinha de limão"
+                },
+                "queues": {
+                    "bar": "Bar",
+                    "kitchen": "Cozinha"
+                },
+                "status": {
+                    "queued": "na fila",
+                    "ready": "pronto",
+                    "delivered": "entregue"
+                },
+                "bill_total": "Total da mesa",
+                "call_waiter": "Chamar o garçom",
+                "ask_bill": "Pedir a conta",
+                "calls": "Chamadas",
+                "asked_bill": "Pediu a conta · {{amount}}",
+                "called_waiter": "Chamou o garçom",
+                "answered": "Atendida",
+                "methods": {
+                    "pix": "Pix",
+                    "card": "Cartão",
+                    "cash": "Dinheiro"
+                },
+                "remaining": "Falta pagar",
+                "paid_stamp": "Pago",
+                "table_closed": "Mesa fechada",
+                "kpi": {
+                    "revenue": "Faturamento hoje",
+                    "tables": "Mesas fechadas",
+                    "ticket": "Ticket médio"
+                },
+                "today": "Hoje",
+                "top_sellers": "Mais vendidos",
+                "sample": "Valores de exemplo",
+                "loyalty_card": "Cartão fidelidade",
+                "venue": "Boteco da Esquina",
+                "visit": "Visita {{count}} de {{total}}",
+                "coupon_unlocked": "Cupom liberado",
+                "coupon": "10% na próxima visita",
+                "post": "Samba ao vivo hoje, 20h"
+            }
+        },
+        "benefits": {
+            "title": "O que muda no seu salão",
+            "more_rounds": {
+                "title": "Mais rodadas por mesa",
+                "body": "O cliente pede a próxima rodada na hora em que dá vontade, sem esperar o garçom passar. Pedido que não depende de levantar a mão sai mais vezes."
+            },
+            "no_mistakes": {
+                "title": "Pedido sem erro de anotação",
+                "body": "O pedido sai do celular do cliente direto para a fila do bar ou da cozinha. Ninguém reescreve comanda, ninguém entende errado."
+            },
+            "team": {
+                "title": "Equipe rendendo no pico",
+                "body": "O garçom para de anotar e passa a servir, atender e vender. Chamadas e pedidos de conta aparecem na tela de quem está no salão."
+            },
+            "bill": {
+                "title": "Conta que fecha certa",
+                "body": "O preço fica gravado na hora do pedido, promoção incluída. A mesa só fecha quando os pagamentos cobrem o total, então ninguém sai devendo a parte de alguém."
+            },
+            "control": {
+                "title": "Você sabe quanto entrou",
+                "body": "Faturamento por dia, mais vendidos, ticket médio e formas de pagamento, sem planilha. Dá para acompanhar de qualquer lugar."
+            },
+            "return": {
+                "title": "Cliente que volta",
+                "body": "Cartão fidelidade, cupons e o perfil da casa com publicações e stories fazem o cliente lembrar de você e voltar."
+            }
+        },
+        "easy": {
+            "title": "Sem equipamento novo, sem complicação",
+            "devices": {
+                "title": "Usa o que a casa já tem",
+                "body": "Funciona no navegador dos celulares, tablets e computadores que vocês já usam. O cliente pede pelo próprio celular."
+            },
+            "network": {
+                "title": "Feito para a hora do pico",
+                "body": "Pensado para internet fraca, tablet antigo na cozinha e dezenas de pedidos chegando ao mesmo tempo."
+            },
+            "everyone": {
+                "title": "Ninguém fica de fora",
+                "body": "Quem não quer usar o celular pede ao garçom, que lança o pedido na mesma comanda pelo celular dele."
+            },
+            "print": {
+                "title": "Cardápio impresso com QR",
+                "body": "O sistema gera o cardápio pronto para imprimir, com o QR para o cliente entrar na mesa."
+            }
+        },
+        "steps": {
+            "title": "Como começar",
+            "talk": {
+                "title": "Conversa",
+                "body": "Você conta como a casa funciona: mesas, cardápio, cozinha e bar."
+            },
+            "setup": {
+                "title": "Cadastro",
+                "body": "Criamos a conta do estabelecimento e o cardápio entra com fotos, preços e as filas de preparo."
+            },
+            "tables": {
+                "title": "Mesas e equipe",
+                "body": "Os QRs vão para as mesas e cada garçom entra pelo convite que chega no e-mail dele."
+            },
+            "night": {
+                "title": "Primeira noite",
+                "body": "Abra o salão. Os pedidos caem nas filas e cada conta fechada aparece no painel."
+            }
+        },
+        "faq": {
+            "title": "Perguntas de quem toca a casa",
+            "equipment": {
+                "q": "Preciso comprar algum equipamento?",
+                "a": "Não. O Table4All roda no navegador dos celulares, tablets e computadores que vocês já têm. Na cozinha, qualquer tablet ou tela com internet mostra a fila de preparo."
+            },
+            "no_phone": {
+                "q": "E o cliente que não quer pedir pelo celular?",
+                "a": "Ele pede ao garçom, como sempre. O garçom lança o pedido pelo celular dele na mesma comanda da mesa, e tudo segue para as mesmas filas."
+            },
+            "internet": {
+                "q": "A internet aqui é fraca. Funciona?",
+                "a": "Funciona. O sistema foi feito para 3G e 4G fracos e aparelhos antigos, e o cliente usa os próprios dados do celular para pedir."
+            },
+            "payments": {
+                "q": "Como o cliente paga?",
+                "a": "Como sempre: Pix, cartão ou dinheiro, e a equipe registra cada pagamento na comanda. Se quiser, ative o pagamento pelo app e o dinheiro cai direto na sua conta Stripe."
+            },
+            "cost": {
+                "q": "Quanto custa?",
+                "a": "As condições da parceria a gente acerta nesta conversa. Nos pagamentos que o cliente faz pelo app, a plataforma fica com uma porcentagem combinada com você."
+            },
+            "data": {
+                "q": "E os dados dos meus clientes?",
+                "a": "Seguimos a LGPD. Os outros clientes e a equipe veem só o nome de quem está na mesa, nunca e-mail ou telefone."
+            }
+        },
+        "closing": {
+            "title": "Vamos abrir a primeira mesa?",
+            "body": "Deixe seus dados e a gente combina os próximos passos. Ou fale agora mesmo com quem está te mostrando esta página."
+        }
     }
 }
