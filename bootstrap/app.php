@@ -31,7 +31,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             HandleAppearance::class,
             HandleInertiaRequests::class,
-            AddLinkHeadersForPreloadedAssets::class,
+            // Only the first assets (entry CSS/JS): the built app preloads ~35 chunks, and a
+            // header that long (4.5 KB) overflowed nginx's FastCGI buffer, so every full page
+            // came back as a 502. The HTML still carries a modulepreload tag for each chunk.
+            AddLinkHeadersForPreloadedAssets::using(10),
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

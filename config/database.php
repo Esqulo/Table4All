@@ -97,6 +97,13 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            // Each PHP-FPM worker keeps its connection between requests. Opening one costs
+            // 25-30 ms on a small VPS (a backend process plus SCRAM authentication), more than
+            // the queries of a polling request; with every open screen polling, that was most
+            // of the server's work. PDO rolls back a transaction a request leaves open.
+            'options' => extension_loaded('pdo_pgsql') ? [
+                PDO::ATTR_PERSISTENT => (bool) env('DB_PERSISTENT', false),
+            ] : [],
         ],
 
         'sqlsrv' => [

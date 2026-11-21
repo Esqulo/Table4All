@@ -146,7 +146,25 @@ Measured with 40 open tables and 150 products: every polling request runs 2-14 q
 | 19 | FPM sized for a large host (16 workers, 4 always idle) | 300-500 MB of RAM held for nothing | 8 workers, 2 warm |
 | 20 | ffmpeg on 2 threads at normal priority | A video upload slowed every screen on 1-2 vCPU | Queue worker at `nice 19`, ffmpeg on 1 thread |
 
+### 2026-11-21: scale test (10 venues, 400 open tables, large history)
+History: 50k closed tables, 400k bill lines, 250k chat messages, 200k queue items, 20k customers (286 MB of database). Every hot path stayed at 5-25 ms of database time whatever the history, so history size is not the risk. Load: k6 against the production configuration (OPcache, cached config), app and Postgres sharing the same CPUs, one phone per table (30% of tables chatting), occasional orders and messages, and each venue's staff screens.
+
+| CPUs | Throughput | Poll latency (median / p95) | Errors |
+|---|---|---|---|
+| 2 vCPU | ~47 req/s, saturated | 5.4 s / 8.1 s | 0 |
+| 4 vCPU | ~124 req/s, at the limit | 0.65 s / 1.7 s | 0 |
+
+The scenario asks for ~125 req/s, about three quarters of it the table chat. The CPU goes to PHP booting Laravel for each short poll (~30 ms of CPU each); Postgres used a quarter of what PHP did. Rule of thumb: **about 25-30 polling requests per second per vCPU**.
+
+| # | Problem | Impact | Fix |
+|---|---|---|---|
+| 21 | A Postgres connection per request: 25-30 ms (backend fork + SCRAM) | More than the queries of a poll | `DB_PERSISTENT=true` (persistent PDO per FPM worker): chat poll 117 ms to 51 ms unloaded |
+| 22 | The built app preloads ~35 chunks; the `Link` header (4.5 KB) overflowed nginx's 4 KB FastCGI buffer | **Every full page load was a 502 in production** (dev, served by Vite, has no preload header) | `AddLinkHeadersForPreloadedAssets::using(10)` and bigger `fastcgi_buffer_size` |
+| 23 | Customer spend (rewards) scanned every restaurant's bill lines (no index on `ordered_by_user_id`) | 50 ms, growing with the platform | `rtp_buyer_idx`: 0.3 ms |
+| 24 | The 90-day dashboard scanned every restaurant's bill lines | 0.6-1.3 s | Covering index `rtp_table_cover_idx` + `random_page_cost=1.1`: 220 ms (the rest is the real aggregation) |
+
 ### Known gaps / next steps
+- **Per-request boot cost is the ceiling.** See the scale test above. Beyond what one VPS size gives, the levers are, in order: push instead of polling for the chat (Laravel Reverb), since it is most of the traffic; Laravel Octane (FrankenPHP), which keeps the app booted between requests; then more vCPUs.
 - **Polling vs push.** Polling is simple and robust on bad networks, but with many screens open it costs one request per screen every few seconds. If load grows, move the kitchen and delivery boards to WebSockets (Laravel Reverb) and keep polling as the fallback.
 - **Sessions and cache on the database.** Every request writes the session row. Fine for one venue; for multi-venue hosting, move sessions and cache to Redis.
 - **Offline ordering.** A service worker with a retry queue would let waiters keep working through short Wi-Fi drops (it needs HTTPS).

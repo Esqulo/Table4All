@@ -34,6 +34,9 @@ services:
 
   db:
     image: postgres:16-alpine
+    # The default random_page_cost (4) assumes spinning disks and makes the planner
+    # scan whole tables for reports; 1.1 is the usual value for SSDs (a VPS disk).
+    command: ["postgres", "-c", "random_page_cost=1.1"]
     environment:
       POSTGRES_DB: ${DB_DATABASE:-table4all}
       POSTGRES_USER: ${DB_USERNAME:-table4all}
