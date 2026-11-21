@@ -33,6 +33,27 @@ export type ChatFeed = {
 const MAX_FLOATING = 24;
 
 /**
+ * Chat refresh: quick while people are talking, slow once it goes quiet. Every
+ * open phone polls the chat, so this is most of the server's traffic during
+ * service (see docs/performance.md).
+ */
+const LIVELY_RELOAD_MS = 3_000;
+const QUIET_RELOAD_MS = 12_000;
+/** How long after the last message, reaction or tap on the chat it stays quick. */
+const LIVELY_FOR_MS = 60_000;
+
+/** Id of the newest entry someone else sent (0 if none). No findLast: old phones lack it. */
+function lastOthersId(entries: { id: number; mine: boolean }[]): number {
+    for (let i = entries.length - 1; i >= 0; i--) {
+        if (!entries[i].mine) {
+            return entries[i].id;
+        }
+    }
+
+    return 0;
+}
+
+/**
  * Sends an emoji floating up the screen. Drawn straight into the overlay (not
  * React state) so a burst of reactions never re-renders the table screen.
  */
@@ -77,8 +98,40 @@ export function TableChat({
     const seen = useRef<Set<number> | null>(null);
     const lastMessageId = chat.messages.at(-1)?.id ?? 0;
 
-    // Messages and reactions arrive quickly; the rest of the screen refreshes slower.
-    useLiveReload({ only: ['chat'], intervalMs: 3_000 });
+    // Quick while the table is chatting (someone else wrote or reacted, or this
+    // customer tapped the chat), slow after a quiet minute. The rest of the
+    // screen refreshes on its own, slower schedule.
+    const [lively, setLively] = useState(true);
+    const [activity, setActivity] = useState(0);
+    const wake = () => {
+        setLively(true);
+        setActivity((n) => n + 1);
+    };
+
+    // Others' activity, noticed while rendering (not in an effect) so the
+    // quick schedule starts with this very render.
+    const othersMark = `${lastOthersId(chat.messages)}:${lastOthersId(chat.reactions)}`;
+    const [seenOthersMark, setSeenOthersMark] = useState(othersMark);
+
+    if (seenOthersMark !== othersMark) {
+        setSeenOthersMark(othersMark);
+        wake();
+    }
+
+    useEffect(() => {
+        if (!lively) {
+            return;
+        }
+
+        const timer = setTimeout(() => setLively(false), LIVELY_FOR_MS);
+
+        return () => clearTimeout(timer);
+    }, [lively, activity]);
+
+    useLiveReload({
+        only: ['chat'],
+        intervalMs: lively ? LIVELY_RELOAD_MS : QUIET_RELOAD_MS,
+    });
 
     useEffect(() => {
         if (seen.current === null) {
@@ -127,6 +180,7 @@ export function TableChat({
         }
 
         setSending(true);
+        wake();
         router.post(
             JoinController.sendMessage.url(code),
             { body: text, request_key: requestKey },
@@ -146,6 +200,7 @@ export function TableChat({
 
     function react(emoji: string) {
         launch(layerRef.current, emoji);
+        wake();
         router.post(
             JoinController.react.url(code),
             { emoji },
@@ -244,6 +299,7 @@ export function TableChat({
                             setBody(e.target.value);
                             setRequestKey(newRequestKey());
                         }}
+                        onFocus={wake}
                         maxLength={maxLength}
                         placeholder={t('join_table.chat_placeholder')}
                         aria-label={t('join_table.chat_placeholder')}

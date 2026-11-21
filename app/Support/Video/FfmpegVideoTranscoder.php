@@ -109,6 +109,8 @@ final class FfmpegVideoTranscoder implements VideoTranscoder
             $this->ffmpeg, '-hide_banner', '-nostdin', '-y', '-v', 'error',
             '-protocol_whitelist', 'file',
             '-f', $probe->demuxer,
+            // Decoder too (an input option), or a 4K HEVC source would spread over every core.
+            '-threads', '1',
             '-i', $input,
             '-t', (string) $maxSeconds,
             '-map', '0:v:0', '-map', '0:a:0?',
@@ -120,7 +122,9 @@ final class FfmpegVideoTranscoder implements VideoTranscoder
             '-c:a', 'aac', '-b:a', '96k', '-ac', '2',
             '-map_metadata', '-1', '-map_chapters', '-1', '-sn', '-dn',
             '-movflags', '+faststart',
-            '-threads', '2',
+            // One core for the encoder as well: on a small VPS a conversion must never take
+            // the CPU from the live screens (the queue worker also runs at the lowest priority).
+            '-threads', '1',
             '-f', 'mp4', $output,
         ]);
 

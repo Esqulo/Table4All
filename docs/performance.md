@@ -28,6 +28,7 @@ performance-sensitive:
 | Table (order + payments) | `restaurant.tables.show` | Waiters | every 15 s while there are no unsaved edits |
 | Tables board | `restaurant.tables.index` | Waiters, owner | every 20 s |
 | Customer table | `customer.table` / `customer.order` | Customers (mobile data) | every 20 s while the menu is closed |
+| Table chat | `customer.table` (`chat` prop) | Customers (mobile data) | every 3 s while the table is chatting, 12 s after a quiet minute |
 | Public menu / join | `table.show`, `menu.show` | Customers | - |
 
 ## Budgets
@@ -65,7 +66,10 @@ venue (around 40 open tables and 150 products):
 
 ### Server and infrastructure
 16. nginx gzips text responses and serves `/build/*` (hashed) with a one-year immutable cache and `/storage/*` (random names) with a 30-day cache.
-17. PHP-FPM keeps warm workers (`pm.min_spare_servers`), recycles them (`pm.max_requests`) and kills stuck requests (`request_terminate_timeout = 60s`). Size `pm.max_children` to the host: about `(RAM for PHP) / 50 MB`.
+17. PHP-FPM keeps warm workers (`pm.min_spare_servers`), recycles them (`pm.max_requests`) and kills stuck requests (`request_terminate_timeout = 60s`). `docker/php/www.conf` is sized for a small VPS (2 vCPU, 2-4 GB shared with Postgres: 8 workers, 2 warm). On a bigger host raise `pm.max_children` to about `(RAM for PHP) / 50 MB`.
+    - Background work never competes with the live screens: the queue worker runs under `nice -n 19` (ffmpeg and every other job inherit it) and ffmpeg decodes and encodes on one thread.
+    - Logs can't fill the disk: Docker keeps at most 3 x 10 MB per container (`x-logging` in `docker-compose.yml`), and nginx doesn't log polling requests (those carrying `X-Inertia-Partial-Component`).
+    - **Polling is the traffic.** Every open screen polls, so its interval is the main lever on server load. The table chat is on every customer's phone, so it is quick (3 s) only while someone is chatting and slows down to 12 s after a quiet minute. A new poll on a screen that many people keep open should do the same.
 18. OPcache with `validate_timestamps = 0`, a large realpath cache, and `php artisan optimize` on boot (in `docker/entrypoint.sh`).
 19. **"Hoje tem!" stories (pictures and videos, gone after 24 hours).** Uploads are untrusted and never served as they came:
     - The type is read from the content (fileinfo), then pictures are re-encoded by GD (`ImageOptimizer::storeReencoded()`, which refuses what it can't decode instead of keeping the original), dropping EXIF/GPS. The browser crops them to 9:16 first, so little is sent.
@@ -131,6 +135,16 @@ venue (around 40 open tables and 150 products):
 - Moving items carries a `request_key` (a resent request would move more units). A resent merge finds the old table already gone (soft-deleted) and just follows to the merged one.
 - A merge doesn't carry the chat over: both tables' messages and reactions are deleted, so the merged group starts a fresh conversation.
 - A merge waits while the table being merged has an online payment in flight, so Stripe's confirmation is never credited to a table that no longer exists.
+
+### 2026-11-20: cost audit for a small VPS
+Measured with 40 open tables and 150 products: every polling request runs 2-14 queries (3 ms or less each; the tables board's totals 15 ms) and returns 0.2-3 KB gzipped, so the database is not where the cost is. A busy small venue (8 tables, 16 phones, 6 staff screens) makes about 400 requests/min, ~80% of them the table chat polling every 3 s.
+
+| # | Problem | Impact | Fix |
+|---|---|---|---|
+| 17 | Chat polled every 3 s on every open phone, even with nobody chatting | Most of the server's requests | Quick only for a minute after activity, then 12 s (about a third of the requests) |
+| 18 | nginx logged every poll; Docker logs had no size limit | Disk filling up on a small VPS | Polls not logged; 3 x 10 MB per container |
+| 19 | FPM sized for a large host (16 workers, 4 always idle) | 300-500 MB of RAM held for nothing | 8 workers, 2 warm |
+| 20 | ffmpeg on 2 threads at normal priority | A video upload slowed every screen on 1-2 vCPU | Queue worker at `nice 19`, ffmpeg on 1 thread |
 
 ### Known gaps / next steps
 - **Polling vs push.** Polling is simple and robust on bad networks, but with many screens open it costs one request per screen every few seconds. If load grows, move the kitchen and delivery boards to WebSockets (Laravel Reverb) and keep polling as the fallback.

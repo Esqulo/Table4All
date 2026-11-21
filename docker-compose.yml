@@ -1,3 +1,12 @@
+# Docker keeps each container's output (nginx access log, PHP errors, Postgres) in
+# a file that grows forever by default; on a small VPS it ends up filling the
+# disk. Keep at most 3 x 10 MB per container.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   app:
     build:
@@ -21,6 +30,7 @@ services:
       db:
         condition: service_healthy
     restart: unless-stopped
+    logging: *logging
 
   db:
     image: postgres:16-alpine
@@ -41,6 +51,7 @@ services:
       timeout: 5s
       retries: 10
     restart: unless-stopped
+    logging: *logging
 
 volumes:
   db_data:
