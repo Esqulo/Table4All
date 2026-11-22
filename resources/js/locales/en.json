@@ -1889,11 +1889,11 @@
                 },
                 "sharing": {
                     "title": "Who we share it with",
-                    "body": "- The restaurant you are at: sees your name, your orders, calls, payments and the table chat, to serve you.\n- Other people at the same table: see your name, your orders and your messages in the table chat.\n- Stripe: processes online payments and the restaurants' payout accounts.\n- Hosting and email providers: processors that handle the data only to keep the service running, under contract.\n- OpenStreetMap (Nominatim): receives only restaurants' public addresses, to find them on the map. No customer data is sent.\n- Public authorities: when there is a court order or a legal obligation.\n\nRestaurant profiles, posts and reviews are public, and your comments and reactions on them show your name."
+                    "body": "- The restaurant you are at: sees your name, your orders, calls, payments and the table chat, to serve you.\n- Other people at the same table: see your name, your orders and your messages in the table chat.\n- Stripe: processes online payments and the restaurants' payout accounts.\n- Hostinger: hosts the server and the database, in Brazil.\n- Resend: sends your account emails (sign-up confirmation, password reset, invitations) and receives your name and email address to do so.\n- These providers are processors: they handle the data only to keep the service running, under contract.\n- OpenStreetMap (Nominatim): receives only restaurants' public addresses, to find them on the map. No customer data is sent.\n- Public authorities: when there is a court order or a legal obligation.\n\nRestaurant profiles, posts and reviews are public, and your comments and reactions on them show your name."
                 },
                 "international": {
                     "title": "International transfers",
-                    "body": "Some processors, such as Stripe, may process data outside Brazil. In those cases the transfer follows Art. 33 of the LGPD, with contractual clauses that ensure protection equivalent to Brazilian law."
+                    "body": "Some processors, such as Stripe and Resend, may process data outside Brazil. In those cases the transfer follows Art. 33 of the LGPD, with contractual clauses that ensure protection equivalent to Brazilian law."
                 },
                 "retention": {
                     "title": "How long we keep it",

@@ -1889,11 +1889,11 @@
                 },
                 "sharing": {
                     "title": "Com quem compartilhamos",
-                    "body": "- O restaurante em que você está: vê seu nome, seus pedidos, chamados, pagamentos e o chat da mesa, para atender você.\n- Outras pessoas na mesma mesa: veem seu nome, seus pedidos e suas mensagens no chat da mesa.\n- Stripe: processa os pagamentos online e as contas de recebimento dos restaurantes.\n- Provedores de hospedagem e de envio de e-mails: operadores que tratam os dados só para manter o serviço funcionando, sob contrato.\n- OpenStreetMap (Nominatim): recebe apenas o endereço público dos restaurantes, para localizá-los no mapa. Nenhum dado de clientes é enviado.\n- Autoridades públicas: quando houver ordem judicial ou obrigação legal.\n\nPerfis, publicações e avaliações de restaurantes são públicos, e seus comentários e reações neles aparecem com seu nome."
+                    "body": "- O restaurante em que você está: vê seu nome, seus pedidos, chamados, pagamentos e o chat da mesa, para atender você.\n- Outras pessoas na mesma mesa: veem seu nome, seus pedidos e suas mensagens no chat da mesa.\n- Stripe: processa os pagamentos online e as contas de recebimento dos restaurantes.\n- Hostinger: hospeda o servidor e o banco de dados, no Brasil.\n- Resend: envia os e-mails da sua conta (confirmação de cadastro, recuperação de senha, convites) e recebe seu nome e e-mail para isso.\n- Esses provedores são operadores: tratam os dados só para manter o serviço funcionando, sob contrato.\n- OpenStreetMap (Nominatim): recebe apenas o endereço público dos restaurantes, para localizá-los no mapa. Nenhum dado de clientes é enviado.\n- Autoridades públicas: quando houver ordem judicial ou obrigação legal.\n\nPerfis, publicações e avaliações de restaurantes são públicos, e seus comentários e reações neles aparecem com seu nome."
                 },
                 "international": {
                     "title": "Transferência internacional",
-                    "body": "Alguns operadores, como a Stripe, podem tratar dados fora do Brasil. Nesses casos a transferência segue o Art. 33 da LGPD, com cláusulas contratuais que garantem proteção equivalente à da lei brasileira."
+                    "body": "Alguns operadores, como a Stripe e o Resend, podem tratar dados fora do Brasil. Nesses casos a transferência segue o Art. 33 da LGPD, com cláusulas contratuais que garantem proteção equivalente à da lei brasileira."
                 },
                 "retention": {
                     "title": "Por quanto tempo guardamos",
