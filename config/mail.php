@@ -115,4 +115,23 @@ return [
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Markdown Mail Settings
+    |--------------------------------------------------------------------------
+    |
+    | Every e-mail (Laravel's own, such as verification and password reset, and
+    | the app's) is a Markdown mail. The Table4All theme and components (logo,
+    | colors, footer) live in resources/views/vendor/mail.
+    |
+    */
+
+    'markdown' => [
+        'theme' => 'table4all',
+
+        'paths' => [
+            resource_path('views/vendor/mail'),
+        ],
+    ],
+
 ];

@@ -19,13 +19,14 @@ with a white wordmark.
 
 ## Derived files in the app
 
-| App file                                                       | Made from                                                                              |
-| -------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `public/images/brand/mark-green.svg`, `mark-white.svg`         | `symbol/*.svg`, with rounded coordinates and no fixed size                             |
-| `public/images/brand/wordmark-green.png`, `wordmark-white.png` | `wordmark/*.png`, cropped and resized to 96px tall                                     |
-| `public/favicon.svg`                                           | `symbol/table4all-symbol-green.svg` centered on a transparent square                   |
-| `public/favicon.ico`                                           | `symbol/table4all-symbol-green.png` on a transparent square (16/32/48px)               |
-| `public/apple-touch-icon.png`                                  | `avatar/table4all-avatar-512.png` at 180px (opaque: iOS fills transparency with black) |
+| App file                                                       | Made from                                                                                                                      |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `public/images/brand/mark-green.svg`, `mark-white.svg`         | `symbol/*.svg`, with rounded coordinates and no fixed size                                                                     |
+| `public/images/brand/wordmark-green.png`, `wordmark-white.png` | `wordmark/*.png`, cropped and resized to 96px tall                                                                             |
+| `public/favicon.svg`                                           | `symbol/table4all-symbol-green.svg` centered on a transparent square                                                           |
+| `public/favicon.ico`                                           | `symbol/table4all-symbol-green.png` on a transparent square (16/32/48px)                                                       |
+| `public/apple-touch-icon.png`                                  | `avatar/table4all-avatar-512.png` at 180px (opaque: iOS fills transparency with black)                                         |
+| `public/images/brand/email-logo.png`                           | `symbol/` + `wordmark/` green PNGs side by side, 96px tall (shown at 48px in the e-mail header, `resources/views/vendor/mail`) |
 
 Components: `AppLogoIcon` (symbol) and `AppLogoWordmark` in `resources/js/components/`.
 When an icon changes, bump the `?v=` query on the favicon links in `resources/views/app.blade.php`.
