@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Support\Payments\MercadoPagoGateway;
 use App\Support\Payments\PaymentGateway;
 use App\Support\Payments\StripePaymentGateway;
 use App\Support\Video\FfmpegVideoTranscoder;
@@ -27,6 +28,13 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(PaymentGateway::class, fn (): PaymentGateway => new StripePaymentGateway(
             config('services.stripe.secret'),
             array_values(array_filter(array_map('trim', explode(',', (string) config('services.stripe.webhook_secret'))))),
+            (string) config('payments.currency'),
+        ));
+
+        $this->app->singleton(MercadoPagoGateway::class, fn (): MercadoPagoGateway => new MercadoPagoGateway(
+            config('services.mercadopago.client_id'),
+            config('services.mercadopago.client_secret'),
+            config('services.mercadopago.webhook_secret'),
             (string) config('payments.currency'),
         ));
     }

@@ -46,7 +46,7 @@ class RestaurantController extends Controller
                 ? $q->where(fn ($q) => $q->whereNull('fee_tier')->orWhere('fee_tier', $defaultKey)->orWhereNotIn('fee_tier', $knownKeys))
                 : $q->where('fee_tier', $tier))
             ->orderBy('name')
-            ->select(['id', 'name', 'email', 'fee_tier', 'fee_percent_override', 'platform_pays_stripe_fees', 'stripe_account_id', 'stripe_charges_enabled', 'last_seen_at', 'created_at'])
+            ->select(['id', 'name', 'email', 'fee_tier', 'fee_percent_override', 'platform_pays_stripe_fees', 'stripe_account_id', 'stripe_charges_enabled', 'mercadopago_user_id', 'last_seen_at', 'created_at'])
             ->paginate(50)
             ->withQueryString()
             ->through(fn (User $restaurant) => [
@@ -58,6 +58,7 @@ class RestaurantController extends Controller
                 'platform_pays_stripe_fees' => $restaurant->platform_pays_stripe_fees,
                 'stripe_connected' => $restaurant->stripe_account_id !== null,
                 'stripe_charges_enabled' => $restaurant->stripe_charges_enabled,
+                'mercadopago_connected' => $restaurant->mercadopago_user_id !== null,
                 'last_seen_at' => $restaurant->last_seen_at?->toIso8601String(),
                 'created_at' => $restaurant->created_at?->toIso8601String(),
             ]);
@@ -134,6 +135,7 @@ class RestaurantController extends Controller
                 'last_seen_at' => $restaurant->last_seen_at?->toIso8601String(),
                 'stripe_connected' => $restaurant->stripe_account_id !== null,
                 'stripe_charges_enabled' => $restaurant->stripe_charges_enabled,
+                'mercadopago_connected' => $restaurant->mercadopago_user_id !== null,
                 'stripe_details_submitted' => $restaurant->stripe_details_submitted,
                 'fee_tier' => $restaurant->feeTier(),
                 'fee_percent_override' => $restaurant->fee_percent_override !== null ? (float) $restaurant->fee_percent_override : null,

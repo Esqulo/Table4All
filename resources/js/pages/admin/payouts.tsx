@@ -19,7 +19,7 @@ type Payout = {
     restaurant_id: number;
     name: string | null;
     email: string | null;
-    stripe_connected: boolean;
+    payments_connected: boolean;
     amount: number;
     payments: number;
     since: string | null;
@@ -80,8 +80,8 @@ export default function AdminPayouts({ payouts }: { payouts: Payout[] }) {
                                     <p className="font-medium">{payout.name}</p>
                                     <p className="text-xs text-muted-foreground">
                                         {payout.email}
-                                        {!payout.stripe_connected &&
-                                            ` · ${t('admin_payouts.stripe_not_connected')}`}
+                                        {!payout.payments_connected &&
+                                            ` · ${t('admin_payouts.not_connected')}`}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
                                         {t('admin_payouts.payments', {

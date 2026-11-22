@@ -18,6 +18,7 @@ use App\Http\Controllers\Customer\PaymentController as CustomerPaymentController
 use App\Http\Controllers\Customer\RewardController as CustomerRewardController;
 use App\Http\Controllers\DiscoverController;
 use App\Http\Controllers\LegalController;
+use App\Http\Controllers\MercadoPagoWebhookController;
 use App\Http\Controllers\PostInteractionController;
 use App\Http\Controllers\Restaurant\CallController;
 use App\Http\Controllers\Restaurant\CouponController;
@@ -82,6 +83,7 @@ foreach (['/vempro', '/painel'] as $formerFeedUrl) {
 
 // Stripe's notifications (signed; CSRF-exempt in bootstrap/app.php).
 Route::post('/stripe/webhook', StripeWebhookController::class)->name('stripe.webhook');
+Route::post('/mercadopago/webhook', MercadoPagoWebhookController::class)->name('mercadopago.webhook');
 
 Route::get('/mesa', [TableJoinController::class, 'index'])->name('table.join');
 // Wrong table codes are limited (ThrottleTableCodes): they are short enough to guess.
@@ -300,6 +302,17 @@ Route::middleware(['auth', 'verified', EnsureRestaurant::class])
             ->name('finance.connect');
         Route::get('financeiro/stripe/atualizar', [FinanceController::class, 'refresh'])->name('finance.refresh');
         Route::get('financeiro/stripe/retorno', [FinanceController::class, 'back'])->name('finance.return');
+        // Or a Mercado Pago account, linked to the platform's app (OAuth).
+        Route::post('financeiro/mercadopago', [FinanceController::class, 'connectMercadoPago'])
+            ->middleware('throttle:10,1')
+            ->name('finance.mercadopago.connect');
+        Route::get('financeiro/mercadopago/retorno', [FinanceController::class, 'mercadoPagoBack'])
+            ->middleware('throttle:10,1')
+            ->name('finance.mercadopago.return');
+        Route::delete('financeiro/mercadopago', [FinanceController::class, 'disconnectMercadoPago'])
+            ->name('finance.mercadopago.disconnect');
+        // Which linked account new payments go to.
+        Route::put('financeiro/provedor', [FinanceController::class, 'chooseProvider'])->name('finance.provider');
 
         // Venue settings: public profile, opening hours, photos, logo and banner
         Route::put('estabelecimento/perfil', [EstablishmentController::class, 'updateProfile'])->name('establishment.profile.update');

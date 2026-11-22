@@ -9,8 +9,8 @@
 return [
 
     // Bump when the privacy policy or the terms change in substance: new sign-ups record it.
-    'version' => '2026-11-21',
-    'updated_at' => '2026-11-21',
+    'version' => '2026-11-22',
+    'updated_at' => '2026-11-22',
 
     // The controller: the company that runs Table4All.
     'company_name' => env('LEGAL_COMPANY_NAME') ?: 'Table4All',

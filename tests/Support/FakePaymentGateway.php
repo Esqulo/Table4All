@@ -71,12 +71,12 @@ final class FakePaymentGateway implements PaymentGateway
         return ['id' => $id, 'url' => 'https://checkout.stripe.test/'.$id, 'expires_at' => $request->expiresAt];
     }
 
-    public function checkoutStatus(string $accountId, string $sessionId): array
+    public function checkoutStatus(string $accountId, string $sessionId, string $reference): array
     {
         return $this->sessions[$sessionId] ?? throw new PaymentGatewayException('No such checkout');
     }
 
-    public function expireCheckout(string $accountId, string $sessionId): void
+    public function expireCheckout(string $accountId, string $sessionId, string $reference): void
     {
         if (($this->sessions[$sessionId]['status'] ?? null) !== 'open') {
             throw new PaymentGatewayException('Checkout is not open');
@@ -86,7 +86,7 @@ final class FakePaymentGateway implements PaymentGateway
         $this->sessions[$sessionId]['status'] = 'expired';
     }
 
-    public function processingFee(string $accountId, string $paymentIntentId): ?int
+    public function processingFee(string $accountId, string $paymentId): ?int
     {
         return $this->processingFee;
     }
@@ -96,7 +96,7 @@ final class FakePaymentGateway implements PaymentGateway
     /** @var list<array{account: string, payment_intent: string, cents: int, key: string}> */
     public array $refunds = [];
 
-    public function refund(string $accountId, string $paymentIntentId, int $cents, string $idempotencyKey): string
+    public function refund(string $accountId, string $paymentId, int $cents, string $idempotencyKey): string
     {
         if ($this->failRefund) {
             throw new PaymentGatewayException('Refund failed');
@@ -108,12 +108,17 @@ final class FakePaymentGateway implements PaymentGateway
             }
         }
 
-        $this->refunds[] = ['account' => $accountId, 'payment_intent' => $paymentIntentId, 'cents' => $cents, 'key' => $idempotencyKey];
+        $this->refunds[] = ['account' => $accountId, 'payment_intent' => $paymentId, 'cents' => $cents, 'key' => $idempotencyKey];
 
         return 're_test_'.(count($this->refunds) - 1);
     }
 
-    public function refundCommission(string $accountId, string $paymentIntentId, int $cents, string $idempotencyKey): ?array
+    public function refundsCommission(): bool
+    {
+        return true;
+    }
+
+    public function refundCommission(string $accountId, string $paymentId, int $cents, string $idempotencyKey): ?array
     {
         // Stripe answers a repeated idempotency key with the same refund.
         foreach ($this->commissionRefunds as $i => $refund) {
@@ -123,10 +128,10 @@ final class FakePaymentGateway implements PaymentGateway
         }
 
         // What is left of the commission withheld on this payment's checkout.
-        $sessionId = substr($paymentIntentId, 3);
+        $sessionId = substr($paymentId, 3);
         $withheld = isset($this->checkouts[$sessionId]) ? $this->checkouts[$sessionId]->applicationFeeCents : 0;
         $alreadyGiven = array_sum(array_column(
-            array_filter($this->commissionRefunds, fn ($r) => $r['payment_intent'] === $paymentIntentId),
+            array_filter($this->commissionRefunds, fn ($r) => $r['payment_intent'] === $paymentId),
             'cents',
         ));
         $amount = min($cents, $withheld - $alreadyGiven);
@@ -135,7 +140,7 @@ final class FakePaymentGateway implements PaymentGateway
             return null;
         }
 
-        $this->commissionRefunds[] = ['account' => $accountId, 'payment_intent' => $paymentIntentId, 'cents' => $amount, 'key' => $idempotencyKey];
+        $this->commissionRefunds[] = ['account' => $accountId, 'payment_intent' => $paymentId, 'cents' => $amount, 'key' => $idempotencyKey];
 
         return ['id' => 'fr_test_'.(count($this->commissionRefunds) - 1), 'cents' => $amount];
     }

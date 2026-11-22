@@ -17,7 +17,7 @@ use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * A customer pays (part of) their table's bill in the app, on Stripe's hosted
+ * A customer pays (part of) their table's bill in the app, on the provider's hosted
  * checkout, optionally with a discount coupon.
  */
 class PaymentController extends Controller
@@ -53,11 +53,11 @@ class PaymentController extends Controller
             return redirect()->route('customer.table', $code);
         }
 
-        // Stripe's page is outside the app: a full-page visit, not an Inertia one.
+        // The provider's page is outside the app: a full-page visit, not an Inertia one.
         return Inertia::location((string) $payment->checkout_url);
     }
 
-    /** Where Stripe sends the customer back, after paying or giving up. */
+    /** Where the provider sends the customer back, after paying or giving up. */
     public function back(Request $request, OnlinePayment $payment): RedirectResponse
     {
         abort_unless($payment->user_id === $request->user()->id, 403);
@@ -67,7 +67,7 @@ class PaymentController extends Controller
                 ? $this->checkout->cancel($payment)
                 : $this->checkout->sync($payment);
         } catch (PaymentGatewayException) {
-            // Stripe unreachable right now: the webhook or the reconcile command will catch up.
+            // Provider unreachable right now: the webhook or the reconcile command will catch up.
         }
 
         $message = match ($payment->status) {

@@ -220,14 +220,18 @@ class JoinController extends Controller
             'chat' => fn () => TableChat::feed($table->id, $user->id),
             'chatReactions' => TableChat::REACTIONS,
             'chatMaxLength' => TableChat::MAX_LENGTH,
-            // Paying in the app: only once the restaurant's Stripe account is active.
-            'onlinePayments' => fn () => [
-                'enabled' => User::whereKey($table->user_id)
-                    ->whereNotNull('stripe_account_id')
-                    ->where('stripe_charges_enabled', true)
-                    ->exists(),
-                'min' => ((int) config('payments.min_charge_cents')) / 100,
-            ],
+            // Paying in the app: only once the restaurant's Stripe or Mercado Pago account is active.
+            'onlinePayments' => function () use ($table) {
+                $provider = User::whereKey($table->user_id)
+                    ->first(['id', 'payment_provider', 'stripe_account_id', 'stripe_charges_enabled', 'mercadopago_user_id', 'mercadopago_access_token'])
+                    ?->onlinePaymentProvider();
+
+                return [
+                    'enabled' => $provider !== null,
+                    'provider' => $provider?->label(),
+                    'min' => ((int) config('payments.min_charge_cents')) / 100,
+                ];
+            },
             'payments' => fn () => $this->payments($table->id),
             // The table's open calls to staff: the buttons show they're waiting.
             'calls' => fn () => TableCall::where('restaurant_table_id', $table->id)
@@ -293,7 +297,7 @@ class JoinController extends Controller
     }
 
     /**
-     * The checkout this customer left open on Stripe, to resume or drop it.
+     * The checkout this customer left open on the provider, to resume or drop it.
      *
      * @return array{id: int, amount: float, charge: float, url: string}|null
      */

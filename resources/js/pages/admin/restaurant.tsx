@@ -49,6 +49,7 @@ type Restaurant = {
     stripe_connected: boolean;
     stripe_charges_enabled: boolean;
     stripe_details_submitted: boolean;
+    mercadopago_connected: boolean;
     fee_tier: string;
     fee_percent_override: number | null;
     effective_fee_percent: number;
@@ -181,6 +182,12 @@ export default function AdminRestaurant({
                                       ? t('admin_restaurants.stripe_pending')
                                       : t('admin_restaurants.stripe_none')}
                             </Badge>
+                            {restaurant.mercadopago_connected && (
+                                <Badge variant="default">
+                                    <CheckCircle2 className="size-3" />
+                                    {t('admin_restaurants.mercadopago_active')}
+                                </Badge>
+                            )}
                             <Badge variant="outline">
                                 {t('admin_restaurant.fee_badge', {
                                     percent:

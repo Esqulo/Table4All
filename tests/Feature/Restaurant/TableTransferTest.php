@@ -272,7 +272,7 @@ class TableTransferTest extends TestCase
         $this->billLine($this->from, $this->beer, 1, 10.00);
         DB::table('online_payments')->insert([
             'restaurant_table_id' => $this->from->id, 'restaurant_id' => $this->restaurant->id,
-            'stripe_account_id' => 'acct_x', 'status' => 'pending', 'stripe_key' => (string) Str::uuid(),
+            'provider' => 'stripe', 'account_id' => 'acct_x', 'status' => 'pending', 'reference' => (string) Str::uuid(),
             'amount_cents' => 1000, 'charge_cents' => 1000, 'fee_tier' => 'default',
             'fee_rate_bps' => 450, 'fee_cents' => 45, 'application_fee_cents' => 45,
             'created_at' => now(), 'updated_at' => now(),

@@ -18,6 +18,8 @@ final readonly class CheckoutRequest
         public ?string $customerEmail,
         public string $locale,
         public string $idempotencyKey,
+        // Unique and unguessable: names the payment to providers that search by it (Mercado Pago).
+        public string $reference,
         public array $metadata = [],
     ) {}
 }

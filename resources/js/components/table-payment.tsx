@@ -59,12 +59,13 @@ const SPLIT_OPTIONS = [2, 3, 4, 5];
 
 /**
  * Paying (part of) the bill in the app: the customer picks an amount (or the
- * whole balance), may apply a coupon, and is sent to Stripe's checkout.
+ * whole balance), may apply a coupon, and is sent to the restaurant's payment provider (Stripe or Mercado Pago).
  */
 export function PayPanel({
     code,
     remaining,
     enabled,
+    provider,
     minimum,
     myCheckout,
     couponQuote,
@@ -72,6 +73,7 @@ export function PayPanel({
     code: string;
     remaining: number;
     enabled: boolean;
+    provider: string | null;
     minimum: number;
     myCheckout: OpenCheckout | null;
     couponQuote: CouponQuote | undefined;
@@ -169,7 +171,7 @@ export function PayPanel({
                     setErrors(e);
                     setSubmitting(false);
                 },
-                // On success the browser leaves for Stripe; keep the button busy until then.
+                // On success the browser leaves for the provider's checkout; keep the button busy until then.
                 onCancel: () => setSubmitting(false),
             },
         );
@@ -472,7 +474,7 @@ export function PayPanel({
                     : t('payments.pay')}
             </Button>
             <p className="text-center text-[11px] text-muted-foreground">
-                {t('payments.secure_note')}
+                {t('payments.secure_note', { provider: provider ?? '' })}
             </p>
         </div>
     );

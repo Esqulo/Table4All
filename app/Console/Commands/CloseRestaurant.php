@@ -82,6 +82,11 @@ final class CloseRestaurant extends Command
                 'two_factor_secret' => null,
                 'two_factor_recovery_codes' => null,
                 'two_factor_confirmed_at' => null,
+                // Its link to Mercado Pago: the platform can no longer act on that account.
+                'mercadopago_access_token' => null,
+                'mercadopago_refresh_token' => null,
+                'mercadopago_token_expires_at' => null,
+                'payment_provider' => null,
             ])->save();
 
             DB::table('passkeys')->where('user_id', $restaurant->id)->delete();

@@ -253,7 +253,8 @@ class PaymentSettingsTest extends TestCase
         OnlinePayment::create([
             'restaurant_table_id' => $this->closedTable($restaurant)->id,
             'restaurant_id' => $restaurant->id,
-            'stripe_account_id' => 'acct_x',
+            'provider' => 'stripe',
+            'account_id' => 'acct_x',
             'status' => OnlinePaymentStatus::PAID,
             'amount_cents' => 1000,
             'discount_cents' => 50,

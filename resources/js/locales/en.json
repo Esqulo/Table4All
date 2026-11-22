@@ -1369,7 +1369,7 @@
         "you_pay": "You pay",
         "pay": "Pay",
         "pay_amount": "Pay {{amount}}",
-        "secure_note": "Secure payment by Stripe. You come back to the table when done.",
+        "secure_note": "Secure payment via {{provider}}. You come back to the table when done.",
         "open_checkout_title": "Unfinished payment",
         "open_checkout_description": "You started a payment of {{amount}} and didn't finish it.",
         "resume_checkout": "Continue",
@@ -1381,7 +1381,7 @@
         "msg_processing": "Payment received. It shows on the bill once it's confirmed.",
         "msg_canceled": "Payment canceled. Nothing was charged.",
         "msg_pending": "We haven't received the payment confirmation yet. It will show here shortly.",
-        "msg_gateway_error": "Couldn't reach Stripe right now. Please try again.",
+        "msg_gateway_error": "Couldn't reach the payment service right now. Please try again.",
         "msg_paid_partly_refunded": "Payment confirmed. Part of the bill was paid while you were paying, so we refunded the difference.",
         "msg_refunded": "The bill was already paid when your payment was confirmed. We refunded the full amount.",
         "split_label": "Split between",
@@ -1436,23 +1436,23 @@
     },
     "finance": {
         "title": "Finance",
-        "description": "Receive the payments your customers make in the app straight into your Stripe account.",
-        "state_none_title": "In-app payments are off",
-        "state_none_description": "Set up your financial profile on Stripe so your customers can pay their table from their phone. The money goes to your account.",
+        "description": "Receive the payments your customers make in the app straight into your Mercado Pago or Stripe account.",
+        "state_none_title": "No Stripe account",
+        "state_none_description": "Set up your financial profile on Stripe. The money from in-app payments goes to your Stripe account.",
         "state_pending_title": "Setup incomplete",
-        "state_pending_description": "Stripe still needs some information before enabling payments. Meanwhile, tables don't accept payments in the app.",
-        "state_active_title": "In-app payments are on",
-        "state_active_description": "Your customers can pay their table in the app. The money goes to your Stripe account.",
+        "state_pending_description": "Stripe still needs some information before enabling payments.",
+        "state_active_title": "Stripe account active",
+        "state_active_description": "Ready to receive in-app payments.",
         "connect": "Set up on Stripe",
         "continue": "Continue setup",
         "open_stripe": "Open Stripe dashboard",
         "terms_title": "Terms",
         "plan": "Plan",
         "fee_percent": "{{percent}}% per payment",
-        "stripe_fees": "Stripe fee",
+        "stripe_fees": "Processing fee",
         "stripe_fees_restaurant": "Paid by the restaurant",
         "stripe_fees_platform": "Paid by the platform",
-        "terms_hint": "Stripe withholds the platform's commission on each payment. When the platform covers Stripe's fee, it gives that fee back out of its own commission on the payment. A platform coupon's discount beyond the commission is paid to you outside Stripe.",
+        "terms_hint": "Mercado Pago or Stripe withholds the platform's commission on each payment. When the platform covers the processing fee, it gives that fee back out of its own commission on the payment (on Stripe, through Stripe itself; on Mercado Pago, paid to you outside it). A platform coupon's discount beyond the commission is also paid to you outside the provider.",
         "payments_title": "Latest in-app payments",
         "payments_empty": "No in-app payments yet.",
         "coupon_restaurant": "your coupon: {{amount}}",
@@ -1462,17 +1462,40 @@
         "msg_incomplete": "Stripe still needs information to enable payments.",
         "msg_stripe_error": "Couldn't reach Stripe right now. Please try again.",
         "refund_line": "refunded {{amount}}",
-        "fee_refund_line": "Stripe fee covered {{amount}}",
+        "fee_refund_line": "processing fee covered {{amount}}",
         "owed_line": "owed by the platform {{amount}}",
-        "owed_paid_line": "received from the platform {{amount}}"
+        "owed_paid_line": "received from the platform {{amount}}",
+        "status_off_title": "In-app payments are off",
+        "status_off_description": "Link your Mercado Pago or Stripe account so your customers can pay their table from their phone. The money goes straight to your account.",
+        "status_on_title": "In-app payments are on",
+        "status_on_description": "Your customers can pay their table in the app. The money goes to your account: {{provider}}.",
+        "receiving": "Receiving",
+        "use_provider": "Receive here",
+        "choose_hint": "You have two active accounts. The next payments go to the one marked \"Receiving\".",
+        "mp_none_title": "No Mercado Pago account",
+        "mp_none_description": "Already use Mercado Pago? Link your account in a few clicks and receive in-app payments there, with Pix and cards.",
+        "mp_active_title": "Mercado Pago account linked",
+        "mp_active_description": "Ready to receive in-app payments.",
+        "mp_connect": "Link Mercado Pago",
+        "mp_open": "Open Mercado Pago",
+        "mp_disconnect": "Unlink",
+        "mp_disconnect_confirm": "Unlink your Mercado Pago account? Your customers will no longer be able to pay through it.",
+        "msg_mercadopago_linked": "Mercado Pago account linked! Your customers can now pay in the app.",
+        "msg_mercadopago_unlinked": "Mercado Pago account unlinked.",
+        "msg_mercadopago_denied": "Linking with Mercado Pago was not completed.",
+        "msg_mercadopago_error": "Couldn't reach Mercado Pago right now. Please try again.",
+        "msg_mercadopago_busy": "Some Mercado Pago payments are still being confirmed. Try unlinking again in a few minutes.",
+        "msg_provider_chosen": "Done! The next payments go to this account.",
+        "provider_stripe": "Stripe",
+        "provider_mercadopago": "Mercado Pago"
     },
     "admin_restaurants": {
         "title": "Restaurants",
-        "description": "Sign restaurants up and set each one's terms: plan, own fee and who pays Stripe's fee. Changes apply to the next payments.",
+        "description": "Sign restaurants up and set each one's terms: plan, own fee and who pays the processing fee. Changes apply to the next payments.",
         "search": "Search by name or email",
         "empty": "No restaurants found.",
         "tier": "Plan",
-        "platform_pays_fees": "Platform pays Stripe's fee",
+        "platform_pays_fees": "Platform pays the processing fee",
         "stripe_active": "Stripe active",
         "stripe_pending": "Stripe setup incomplete",
         "stripe_none": "No Stripe account",
@@ -1495,19 +1518,20 @@
         "fee_override": "Own fee (%)",
         "fee_override_placeholder": "Use the plan's",
         "fee_effective": "Commission charged: {{percent}}% per in-app payment.",
-        "platform_pays_fees_hint": "The platform gives the restaurant back Stripe's processing fee (up to the commission).",
-        "msg_created": "Restaurant created. We e-mailed them a link to choose the password."
+        "platform_pays_fees_hint": "The platform gives the restaurant back Stripe's or Mercado Pago's processing fee (up to the commission).",
+        "msg_created": "Restaurant created. We e-mailed them a link to choose the password.",
+        "mercadopago_active": "Mercado Pago linked"
     },
     "admin_payouts": {
         "title": "Payouts",
-        "description": "Platform coupon discounts beyond the payment's commission. Stripe Brazil doesn't allow transferring these, so they're paid outside Stripe (Pix or bank transfer) and marked here.",
+        "description": "What the platform owes restaurants outside the payment provider: platform coupon discounts beyond the payment's commission and, on Mercado Pago, the fee covered for sponsored restaurants. Neither Stripe Brazil nor Mercado Pago allows transferring these, so they're paid outside (Pix or bank transfer) and marked here.",
         "empty": "Nothing to pay out.",
         "payments_one": "{{count}} payment",
         "payments_other": "{{count}} payments",
         "since": "since {{date}}",
         "mark_paid": "Mark as paid",
-        "mark_paid_confirm": "Confirm you paid {{amount}} to {{name}} outside Stripe?",
-        "stripe_not_connected": "no Stripe account",
+        "mark_paid_confirm": "Confirm you paid {{amount}} to {{name}} outside the payment provider?",
+        "not_connected": "no payout account",
         "msg_paid": "Payout marked as paid."
     },
     "customer_rewards": {
@@ -1738,7 +1762,7 @@
         "new_in_days_other": "{{count}} new in {{days}} days",
         "operating_week": "Operating (7 days)",
         "operating_month": "Operating ({{days}} days)",
-        "stripe_active": "Stripe active",
+        "payments_active": "Online payments active",
         "public_profiles": "Public profile",
         "custom_fee": "With their own fee",
         "movement": "Orders and payments",
@@ -1792,7 +1816,7 @@
         "queues": "Prep queues",
         "top_products": "Best sellers ({{days}} days)",
         "terms": "Terms with the platform",
-        "terms_description": "Plan, own fee and Stripe's fee. They apply to the next payments.",
+        "terms_description": "Plan, own fee and processing fee. They apply to the next payments.",
         "save_terms": "Save terms"
     },
     "admin_auth": {
@@ -1881,7 +1905,7 @@
                 },
                 "data": {
                     "title": "What data we process",
-                    "body": "- Account: name, email, password (stored only as a hash), phone (optional), profile picture (optional) and account type.\n- Security: two-factor authentication and passkeys, active sessions (IP address, browser and last activity) and sign-in dates.\n- At the table: tables you joined, items ordered and notes, payments, waiter calls, messages and reactions in the table chat.\n- Online payments: amounts, status and transaction identifiers. Card details are typed straight into Stripe; Table4All never receives or stores them.\n- Loyalty and coupons: personal coupons and rewards earned at each restaurant.\n- Social: comments, reactions and reviews you post on restaurant profiles.\n- Restaurants: venue name, contact details, address, map location, pictures, menu and Stripe payout account details.\n- Staff: name, email and permissions of waiters and staff invited by the restaurant.\n- Contact: venue name, email, phone, city and message sent through the contact form.\n- Approximate location: only if you allow it in the browser, rounded to about 100 m and used only to sort restaurants by distance. It is not stored.\n\nWe do not process sensitive personal data, do not use your data for advertising and do not sell it."
+                    "body": "- Account: name, email, password (stored only as a hash), phone (optional), profile picture (optional) and account type.\n- Security: two-factor authentication and passkeys, active sessions (IP address, browser and last activity) and sign-in dates.\n- At the table: tables you joined, items ordered and notes, payments, waiter calls, messages and reactions in the table chat.\n- Online payments: amounts, status and transaction identifiers. Card details are typed straight into Stripe or Mercado Pago; Table4All never receives or stores them.\n- Loyalty and coupons: personal coupons and rewards earned at each restaurant.\n- Social: comments, reactions and reviews you post on restaurant profiles.\n- Restaurants: venue name, contact details, address, map location, pictures, menu and Stripe or Mercado Pago payout account details.\n- Staff: name, email and permissions of waiters and staff invited by the restaurant.\n- Contact: venue name, email, phone, city and message sent through the contact form.\n- Approximate location: only if you allow it in the browser, rounded to about 100 m and used only to sort restaurants by distance. It is not stored.\n\nWe do not process sensitive personal data, do not use your data for advertising and do not sell it."
                 },
                 "purposes": {
                     "title": "What we use it for and on which legal basis",
@@ -1889,7 +1913,7 @@
                 },
                 "sharing": {
                     "title": "Who we share it with",
-                    "body": "- The restaurant you are at: sees your name, your orders, calls, payments and the table chat, to serve you.\n- Other people at the same table: see your name, your orders and your messages in the table chat.\n- Stripe: processes online payments and the restaurants' payout accounts.\n- Hostinger: hosts the server and the database, in Brazil.\n- Resend: sends your account emails (sign-up confirmation, password reset, invitations) and receives your name and email address to do so.\n- These providers are processors: they handle the data only to keep the service running, under contract.\n- OpenStreetMap (Nominatim): receives only restaurants' public addresses, to find them on the map. No customer data is sent.\n- Public authorities: when there is a court order or a legal obligation.\n\nRestaurant profiles, posts and reviews are public, and your comments and reactions on them show your name."
+                    "body": "- The restaurant you are at: sees your name, your orders, calls, payments and the table chat, to serve you.\n- Other people at the same table: see your name, your orders and your messages in the table chat.\n- Stripe and Mercado Pago: process online payments and the restaurants' payout accounts (each restaurant chooses one of them) and receive your email for the payment.\n- Hostinger: hosts the server and the database, in Brazil.\n- Resend: sends your account emails (sign-up confirmation, password reset, invitations) and receives your name and email address to do so.\n- These providers are processors: they handle the data only to keep the service running, under contract.\n- OpenStreetMap (Nominatim): receives only restaurants' public addresses, to find them on the map. No customer data is sent.\n- Public authorities: when there is a court order or a legal obligation.\n\nRestaurant profiles, posts and reviews are public, and your comments and reactions on them show your name."
                 },
                 "international": {
                     "title": "International transfers",
@@ -1936,7 +1960,7 @@
                 },
                 "customers": {
                     "title": "Use by customers",
-                    "body": "- The first customer to open a free table becomes responsible for it and approves who asks to join.\n- Prices are those of the menu or of the promotion active when the order is placed, and are recorded on the table's bill.\n- Orders go straight to preparation; cancellations and changes depend on the restaurant.\n- Online payments are processed by Stripe. Anything paid in excess is refunded automatically.\n- Items not delivered when the table closes are not charged."
+                    "body": "- The first customer to open a free table becomes responsible for it and approves who asks to join.\n- Prices are those of the menu or of the promotion active when the order is placed, and are recorded on the table's bill.\n- Orders go straight to preparation; cancellations and changes depend on the restaurant.\n- Online payments are processed by Stripe or Mercado Pago, depending on the restaurant. Anything paid in excess is refunded automatically.\n- Items not delivered when the table closes are not charged."
                 },
                 "conduct": {
                     "title": "Conduct",
@@ -2161,7 +2185,7 @@
             },
             "payments": {
                 "q": "How do guests pay?",
-                "a": "As usual: Pix, card or cash, and the staff records each payment on the tab. If you want, turn on in-app payments and the money goes straight to your Stripe account."
+                "a": "As usual: Pix, card or cash, and the staff records each payment on the tab. If you want, turn on in-app payments and the money goes straight to your Mercado Pago or Stripe account."
             },
             "cost": {
                 "q": "How much does it cost?",

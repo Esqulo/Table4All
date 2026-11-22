@@ -13,9 +13,10 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * What the platform owes restaurants outside Stripe: platform coupon discounts
- * beyond the payment's commission (Stripe Brazil doesn't allow the platform to
- * transfer them). The admin pays by Pix or bank transfer and marks them here.
+ * What the platform owes restaurants outside the payment provider: platform coupon
+ * discounts beyond the payment's commission, and Mercado Pago's fee for sponsored
+ * restaurants (neither Stripe Brazil nor Mercado Pago lets the platform transfer
+ * them). The admin pays by Pix or bank transfer and marks them here.
  */
 class PayoutController extends Controller
 {
@@ -30,7 +31,7 @@ class PayoutController extends Controller
             ->get();
 
         $restaurants = User::whereIn('id', $owed->pluck('restaurant_id'))
-            ->get(['id', 'name', 'email', 'stripe_account_id'])
+            ->get(['id', 'name', 'email', 'stripe_account_id', 'mercadopago_user_id'])
             ->keyBy('id');
 
         return Inertia::render('admin/payouts', [
@@ -42,7 +43,8 @@ class PayoutController extends Controller
                         'restaurant_id' => $row->restaurant_id,
                         'name' => $restaurant?->name,
                         'email' => $restaurant?->email,
-                        'stripe_connected' => $restaurant?->stripe_account_id !== null,
+                        'payments_connected' => $restaurant !== null
+                            && ($restaurant->stripe_account_id !== null || $restaurant->mercadopago_user_id !== null),
                         'amount' => ((int) $row->getAttribute('owed_cents')) / 100,
                         'payments' => (int) $row->getAttribute('payments'),
                         'since' => $row->getAttribute('since'),

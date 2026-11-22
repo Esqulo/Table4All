@@ -18,9 +18,10 @@ use Illuminate\Support\Facades\Log;
 /**
  * Customers paying their table in the app.
  *
- * A payment starts as a checkout on the restaurant's Stripe account. While it is
- * open, its amount (and coupon) is held, so two customers can't pay the same
- * balance or stack coupons that don't combine. Once Stripe confirms it (return
+ * A payment starts as a checkout on the restaurant's account with its payment
+ * provider (Stripe or Mercado Pago, PaymentGateways). While it is open, its amount
+ * (and coupon) is held, so two customers can't pay the same balance or stack
+ * coupons that don't combine. Once the provider confirms it (return
  * from the checkout, the webhook, or the reconcile command, whichever comes
  * first), it is recorded on the table as an "online" payment plus a "coupon"
  * payment for the discount, and the bill drops by the whole amount.
@@ -29,7 +30,7 @@ use Illuminate\Support\Facades\Log;
  */
 final class TableCheckout
 {
-    public function __construct(private readonly PaymentGateway $gateway) {}
+    public function __construct(private readonly PaymentGateways $gateways) {}
 
     /**
      * Opens a checkout for $amountCents of the table's bill and returns it (with
@@ -56,7 +57,9 @@ final class TableCheckout
 
         $restaurant = User::whereKey($table->user_id)->firstOrFail();
 
-        if (! $restaurant->acceptsOnlinePayments()) {
+        $provider = $restaurant->onlinePaymentProvider();
+
+        if ($provider === null) {
             throw new CheckoutRefused('amount', 'payments.unavailable');
         }
 
@@ -69,7 +72,7 @@ final class TableCheckout
             ->each(fn (OnlinePayment $open) => $this->cancel($open));
 
         try {
-            $payment = DB::transaction(function () use ($payer, $table, $restaurant, $amountCents, $couponCode, $requestKey) {
+            $payment = DB::transaction(function () use ($payer, $table, $restaurant, $provider, $amountCents, $couponCode, $requestKey) {
                 // Serializes with other checkouts, deliveries and closing on this table, so
                 // the balance and the coupons in use can't change between check and hold.
                 $locked = RestaurantTable::whereKey($table->id)->lockForUpdate()->firstOrFail();
@@ -84,7 +87,8 @@ final class TableCheckout
                     'restaurant_table_id' => $locked->id,
                     'user_id' => $payer->id,
                     'restaurant_id' => $restaurant->id,
-                    'stripe_account_id' => $restaurant->stripe_account_id,
+                    'provider' => $provider,
+                    'account_id' => (string) $restaurant->paymentAccountId($provider),
                     'status' => OnlinePaymentStatus::PENDING,
                     'request_key' => $requestKey,
                     'amount_cents' => $amountCents,
@@ -111,7 +115,7 @@ final class TableCheckout
         $restaurantName = (string) $restaurant->name;
 
         try {
-            $session = $this->gateway->createCheckout($payment->stripe_account_id, new CheckoutRequest(
+            $session = $this->gateway($payment)->createCheckout($payment->account_id, new CheckoutRequest(
                 chargeCents: $payment->charge_cents,
                 applicationFeeCents: $payment->application_fee_cents,
                 description: __('payments.checkout_description', ['table' => $table->title, 'restaurant' => $restaurantName]),
@@ -120,14 +124,15 @@ final class TableCheckout
                 expiresAt: $payment->expires_at?->getTimestamp() ?? now()->addMinutes(30)->getTimestamp(),
                 customerEmail: $payer->email,
                 locale: $locale === 'pt_BR' ? 'pt-BR' : 'en',
-                idempotencyKey: $payment->stripeKey('checkout'),
+                idempotencyKey: $payment->idempotencyKey('checkout'),
+                reference: $payment->reference,
                 metadata: [
                     'online_payment_id' => (string) $payment->id,
                     'restaurant_table_id' => (string) $table->id,
                 ],
             ));
         } catch (PaymentGatewayException $e) {
-            Log::warning('Stripe checkout failed', ['online_payment_id' => $payment->id, 'error' => $e->getMessage()]);
+            Log::warning('Online checkout failed', ['online_payment_id' => $payment->id, 'provider' => $payment->provider->value, 'error' => $e->getMessage()]);
             $this->markCanceled($payment);
 
             throw new CheckoutRefused('amount', 'payments.gateway_error');
@@ -172,7 +177,7 @@ final class TableCheckout
 
         if ($couponCode !== null && trim($couponCode) !== '') {
             $coupon = $this->applicableCoupon($payer, $table, $couponCode);
-            // A coupon never takes the charge below Stripe's minimum.
+            // A coupon never takes the charge below the minimum charge.
             $discount = min($coupon->discountFor($amountCents), $amountCents - $minCharge);
 
             if ($discount <= 0) {
@@ -188,7 +193,7 @@ final class TableCheckout
         // whole amount when the platform pays the discount, the amount minus the
         // discount when the restaurant does.
         $fee = (int) round(($byPlatform ? $amountCents : $amountCents - $discount) * $rate / 10000);
-        // A platform coupon is netted against the fee; what's left is owed outside Stripe (admin payouts).
+        // A platform coupon is netted against the fee; what's left is owed outside the provider (admin payouts).
         $applicationFee = $byPlatform ? max(0, $fee - $discount) : $fee;
 
         return [
@@ -285,7 +290,7 @@ final class TableCheckout
     }
 
     /**
-     * Brings the payment up to date with Stripe. Safe to call any number of
+     * Brings the payment up to date with its provider. Safe to call any number of
      * times, from any path (return URL, webhook, reconcile).
      */
     public function sync(OnlinePayment $payment): OnlinePayment
@@ -301,7 +306,7 @@ final class TableCheckout
         }
 
         if ($payment->checkout_session_id === null) {
-            // Never reached Stripe (the request died between hold and checkout).
+            // Never reached the provider (the request died between hold and checkout).
             if ($payment->created_at !== null && $payment->created_at->lt(now()->subMinutes(5))) {
                 $this->markCanceled($payment);
             }
@@ -309,7 +314,7 @@ final class TableCheckout
             return $payment;
         }
 
-        $checkout = $this->gateway->checkoutStatus($payment->stripe_account_id, $payment->checkout_session_id);
+        $checkout = $this->gateway($payment)->checkoutStatus($payment->account_id, $payment->checkout_session_id, $payment->reference);
 
         if ($checkout['status'] === 'complete' && in_array($checkout['payment_status'], ['paid', 'no_payment_required'], true)) {
             $this->markPaid($payment, $checkout['payment_intent']);
@@ -333,7 +338,7 @@ final class TableCheckout
         return $payment->refresh();
     }
 
-    /** The customer gives up on an open checkout: it is closed on Stripe and releases its hold. */
+    /** The customer gives up on an open checkout: it is closed on the provider and releases its hold. */
     public function cancel(OnlinePayment $payment): OnlinePayment
     {
         if ($payment->status !== OnlinePaymentStatus::PENDING) {
@@ -342,7 +347,7 @@ final class TableCheckout
 
         if ($payment->checkout_session_id !== null) {
             try {
-                $this->gateway->expireCheckout($payment->stripe_account_id, $payment->checkout_session_id);
+                $this->gateway($payment)->expireCheckout($payment->account_id, $payment->checkout_session_id, $payment->reference);
             } catch (PaymentGatewayException) {
                 // Already paid or already closed: find out which.
                 return $this->sync($payment);
@@ -382,7 +387,7 @@ final class TableCheckout
             $refund = $locked->charge_cents - $charged;
 
             $attributes = [
-                // A checkout canceled here can still be paid on Stripe if the customer had it
+                // A checkout canceled here can still be paid on the provider if the customer had it
                 // open; the money was taken, so it is recorded all the same.
                 'status' => $credited > 0 ? OnlinePaymentStatus::PAID : OnlinePaymentStatus::REFUNDED,
                 'paid_at' => now(),
@@ -435,7 +440,7 @@ final class TableCheckout
     /**
      * What follows a confirmed payment: refunding the customer what the bill no
      * longer owed, and sending the restaurant what the platform owes (a platform
-     * coupon's discount, Stripe's fee when the platform pays it). Failures are
+     * coupon's discount, the provider's fee when the platform pays it). Failures are
      * left for the reconcile command; idempotency keys make retries safe.
      */
     public function settle(OnlinePayment $payment): void
@@ -447,11 +452,11 @@ final class TableCheckout
 
         try {
             if ($payment->refunded_cents > 0 && $payment->refund_id === null && $payment->payment_intent_id !== null) {
-                $refundId = $this->gateway->refund(
-                    $payment->stripe_account_id,
+                $refundId = $this->gateway($payment)->refund(
+                    $payment->account_id,
                     $payment->payment_intent_id,
                     $payment->refunded_cents,
-                    $payment->stripeKey('refund'),
+                    $payment->idempotencyKey('refund'),
                 );
                 $payment->forceFill(['refund_id' => $refundId, 'refunded_at' => now()])->save();
             }
@@ -461,28 +466,35 @@ final class TableCheckout
                 return;
             }
 
-            if ($payment->platform_pays_stripe_fees && $payment->stripe_fee_cents === null && $payment->payment_intent_id !== null) {
-                $fee = $this->gateway->processingFee($payment->stripe_account_id, $payment->payment_intent_id);
+            $gateway = $this->gateway($payment);
+
+            if ($payment->platform_pays_stripe_fees && $payment->processing_fee_cents === null && $payment->payment_intent_id !== null) {
+                $fee = $gateway->processingFee($payment->account_id, $payment->payment_intent_id);
 
                 if ($fee !== null) {
-                    $payment->forceFill(['stripe_fee_cents' => $fee])->save();
+                    $payment->forceFill(['processing_fee_cents' => $fee])->save();
                 }
             }
 
-            // Sponsored: Stripe's fee comes back out of the platform's commission, as far as it goes.
+            // Sponsored: the provider's fee comes back out of the platform's commission, as far as it goes.
             if ($payment->platform_pays_stripe_fees && $payment->fee_refund_cents === null) {
-                if ($payment->stripe_fee_cents === null) {
+                if ($payment->processing_fee_cents === null) {
                     return;
                 }
 
-                $given = $payment->stripe_fee_cents > 0 && $payment->payment_intent_id !== null
-                    ? $this->gateway->refundCommission(
-                        $payment->stripe_account_id,
-                        $payment->payment_intent_id,
-                        $payment->stripe_fee_cents,
-                        $payment->stripeKey('fee-refund'),
-                    )
-                    : null;
+                if ($gateway->refundsCommission()) {
+                    $given = $payment->processing_fee_cents > 0 && $payment->payment_intent_id !== null
+                        ? $gateway->refundCommission(
+                            $payment->account_id,
+                            $payment->payment_intent_id,
+                            $payment->processing_fee_cents,
+                            $payment->idempotencyKey('fee-refund'),
+                        )
+                        : null;
+                } else {
+                    // Mercado Pago can't give commission back: the same amount is owed outside it.
+                    $given = ['id' => null, 'cents' => min($payment->processing_fee_cents, $this->commissionLeftCents($payment))];
+                }
 
                 $payment->forceFill([
                     'fee_refund_cents' => $given['cents'] ?? 0,
@@ -490,14 +502,41 @@ final class TableCheckout
                 ])->save();
             }
 
+            // Paid outside the provider (admin payouts): a platform coupon beyond the commission,
+            // and the sponsored fee where the provider couldn't give it back.
+            $owed = $payment->couponShortfallCents();
+
+            if (! $gateway->refundsCommission()) {
+                $owed += $payment->fee_refund_cents ?? 0;
+            }
+
             $payment->forceFill([
-                // A platform coupon beyond the commission: paid outside Stripe (admin payouts).
-                'owed_cents' => $payment->couponShortfallCents(),
+                'owed_cents' => $owed,
                 'settled_at' => now(),
             ])->save();
         } catch (PaymentGatewayException $e) {
             Log::warning('Settling an online payment failed', ['online_payment_id' => $payment->id, 'error' => $e->getMessage()]);
         }
+    }
+
+    private function gateway(OnlinePayment $payment): CheckoutGateway
+    {
+        return $this->gateways->for($payment->provider);
+    }
+
+    /**
+     * What the provider kept for the platform on this payment, after a refund to the
+     * customer gave back its share of the commission.
+     */
+    private function commissionLeftCents(OnlinePayment $payment): int
+    {
+        if ($payment->charge_cents <= 0) {
+            return 0;
+        }
+
+        return max(0, (int) round(
+            $payment->application_fee_cents * ($payment->charge_cents - $payment->refunded_cents) / $payment->charge_cents,
+        ));
     }
 
     /** The products plus the service fee. */

@@ -16,7 +16,7 @@ It is not legal advice: have a lawyer review the texts before launch.
       (`LOG_DAILY_DAYS`) and must not contain personal data beyond ids.
 - [ ] Encrypt database backups, keep them in Brazil or with an Art. 33 guarantee, and expire them
       (e.g. 30 days). A restored backup brings back deleted accounts: re-run deletions after a restore.
-- [ ] Sign data processing terms with the operators: hosting, email provider, Stripe. List any new
+- [ ] Sign data processing terms with the operators: hosting, email provider, Stripe, Mercado Pago. List any new
       one in the policy's "sharing" section.
 - [ ] The scheduler must run (`schedule:run` every minute): `privacy:prune` and `auth:clear-resets`
       enforce retention.
@@ -38,7 +38,8 @@ It is not legal advice: have a lawyer review the texts before launch.
 | Invitations, QR sign-in links | `waiter_invitations`, `admin_invitations`, `customer_link_tokens` | contract | days after use/expiry |
 | Device location | not stored (rounded ~100 m, in the discovery URL only) | consent in the browser | — |
 
-Outside services: Stripe (payments, abroad: Art. 33), Nominatim (restaurant addresses only), the
+Outside services: Stripe (payments, abroad: Art. 33), Mercado Pago (payments, for restaurants that
+choose it; receives the payer's email; restaurants' OAuth tokens are stored encrypted), Nominatim (restaurant addresses only), the
 email provider. The IP geolocation lookup (`IP_LOCATION_URL`) is **off** by default because it sends
 visitors' IPs abroad; turning it on requires adding it to the policy. Fonts are bundled
 (`@fontsource`), so no page calls Google Fonts.

@@ -36,7 +36,7 @@ type Props = {
     };
     restaurants: {
         total: number;
-        stripe_active: number;
+        payments_active: number;
         public_profiles: number;
         custom_fee: number;
         new_month: number;
@@ -170,10 +170,10 @@ export default function AdminOverview({
                         )}
                     />
                     <PlainStat
-                        label={t('admin_overview.stripe_active')}
-                        value={num(restaurants.stripe_active)}
+                        label={t('admin_overview.payments_active')}
+                        value={num(restaurants.payments_active)}
                         hint={share(
-                            restaurants.stripe_active,
+                            restaurants.payments_active,
                             restaurants.total,
                         )}
                     />

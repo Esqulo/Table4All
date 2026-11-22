@@ -11,16 +11,16 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
 /**
- * The safety net for online payments. The customer's return from Stripe and
+ * The safety net for online payments. The customer's return from the provider and
  * the webhook normally settle everything; this catches what they missed:
  * a customer who closed the tab after paying, a webhook that never arrived
  * (or isn't configured, as in development), a Pix confirmed later, an
  * abandoned checkout still holding its amount, a refund that failed, a sponsored
- * restaurant's Stripe fee not known yet.
+ * restaurant's processing fee not known yet. Works for Stripe and Mercado Pago alike.
  * Scheduled every minute (routes/console.php).
  */
 #[Signature('payments:reconcile')]
-#[Description('Bring open online payments up to date with Stripe and retry pending refunds')]
+#[Description('Bring open online payments up to date with their provider and retry pending refunds')]
 final class ReconcilePayments extends Command
 {
     /** Leave fresh checkouts to the return URL and the webhook. */

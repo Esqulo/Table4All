@@ -1369,7 +1369,7 @@
         "you_pay": "Você paga",
         "pay": "Pagar",
         "pay_amount": "Pagar {{amount}}",
-        "secure_note": "Pagamento seguro pela Stripe. Você volta para a mesa ao concluir.",
+        "secure_note": "Pagamento seguro via {{provider}}. Você volta para a mesa ao concluir.",
         "open_checkout_title": "Pagamento em aberto",
         "open_checkout_description": "Você começou um pagamento de {{amount}} e não concluiu.",
         "resume_checkout": "Continuar",
@@ -1381,7 +1381,7 @@
         "msg_processing": "Pagamento recebido. Assim que for confirmado, ele aparece na conta.",
         "msg_canceled": "Pagamento cancelado. Nada foi cobrado.",
         "msg_pending": "Ainda não recebemos a confirmação do pagamento. Ela aparece aqui em instantes.",
-        "msg_gateway_error": "Não foi possível falar com a Stripe agora. Tente novamente.",
+        "msg_gateway_error": "Não foi possível falar com o serviço de pagamento agora. Tente novamente.",
         "msg_paid_partly_refunded": "Pagamento confirmado. Parte da conta já tinha sido paga enquanto você pagava, então estornamos a diferença.",
         "msg_refunded": "A conta já estava paga quando seu pagamento foi confirmado. Estornamos o valor integral.",
         "split_label": "Dividir em",
@@ -1436,23 +1436,23 @@
     },
     "finance": {
         "title": "Financeiro",
-        "description": "Receba os pagamentos que seus clientes fazem pelo app direto na sua conta Stripe.",
-        "state_none_title": "Pagamentos pelo app desativados",
-        "state_none_description": "Cadastre seu perfil financeiro na Stripe para que seus clientes possam pagar a mesa pelo celular. O dinheiro cai na sua conta.",
+        "description": "Receba os pagamentos que seus clientes fazem pelo app direto na sua conta do Mercado Pago ou da Stripe.",
+        "state_none_title": "Sem conta Stripe",
+        "state_none_description": "Cadastre seu perfil financeiro na Stripe. O dinheiro dos pagamentos pelo app cai na sua conta Stripe.",
         "state_pending_title": "Cadastro incompleto",
-        "state_pending_description": "A Stripe ainda precisa de algumas informações antes de liberar os pagamentos. Enquanto isso, as mesas não aceitam pagamento pelo app.",
-        "state_active_title": "Pagamentos pelo app ativos",
-        "state_active_description": "Seus clientes já podem pagar a mesa pelo app. Os valores caem na sua conta Stripe.",
+        "state_pending_description": "A Stripe ainda precisa de algumas informações antes de liberar os pagamentos.",
+        "state_active_title": "Conta Stripe ativa",
+        "state_active_description": "Pronta para receber os pagamentos pelo app.",
         "connect": "Cadastrar na Stripe",
         "continue": "Continuar cadastro",
         "open_stripe": "Abrir painel da Stripe",
         "terms_title": "Condições",
         "plan": "Plano",
         "fee_percent": "{{percent}}% por pagamento",
-        "stripe_fees": "Taxa da Stripe",
+        "stripe_fees": "Taxa de processamento",
         "stripe_fees_restaurant": "Paga pelo restaurante",
         "stripe_fees_platform": "Paga pela plataforma",
-        "terms_hint": "A comissão da plataforma é retida pela Stripe em cada pagamento. Quando a plataforma banca a taxa da Stripe, ela devolve essa taxa a partir da própria comissão daquele pagamento. O desconto de um cupom da plataforma que passar da comissão é repassado por fora da Stripe.",
+        "terms_hint": "A comissão da plataforma é retida pelo Mercado Pago ou pela Stripe em cada pagamento. Quando a plataforma banca a taxa de processamento, ela devolve essa taxa a partir da própria comissão daquele pagamento (na Stripe, pela própria Stripe; no Mercado Pago, por fora). O desconto de um cupom da plataforma que passar da comissão também é repassado por fora.",
         "payments_title": "Últimos pagamentos pelo app",
         "payments_empty": "Nenhum pagamento pelo app ainda.",
         "coupon_restaurant": "seu cupom: {{amount}}",
@@ -1462,17 +1462,40 @@
         "msg_incomplete": "A Stripe ainda precisa de informações para liberar os pagamentos.",
         "msg_stripe_error": "Não foi possível falar com a Stripe agora. Tente novamente.",
         "refund_line": "estornado {{amount}}",
-        "fee_refund_line": "taxa da Stripe bancada {{amount}}",
+        "fee_refund_line": "taxa de processamento bancada {{amount}}",
         "owed_line": "a receber da plataforma {{amount}}",
-        "owed_paid_line": "recebido da plataforma {{amount}}"
+        "owed_paid_line": "recebido da plataforma {{amount}}",
+        "status_off_title": "Pagamentos pelo app desativados",
+        "status_off_description": "Vincule sua conta do Mercado Pago ou da Stripe para que seus clientes possam pagar a mesa pelo celular. O dinheiro cai direto na sua conta.",
+        "status_on_title": "Pagamentos pelo app ativos",
+        "status_on_description": "Seus clientes já podem pagar a mesa pelo app. O dinheiro cai na sua conta: {{provider}}.",
+        "receiving": "Recebendo",
+        "use_provider": "Receber por aqui",
+        "choose_hint": "Você tem duas contas ativas. Os próximos pagamentos caem na que estiver marcada como \"Recebendo\".",
+        "mp_none_title": "Sem conta do Mercado Pago",
+        "mp_none_description": "Já usa o Mercado Pago? Vincule sua conta em poucos cliques e receba os pagamentos pelo app nela, com Pix e cartão.",
+        "mp_active_title": "Conta do Mercado Pago vinculada",
+        "mp_active_description": "Pronta para receber os pagamentos pelo app.",
+        "mp_connect": "Vincular Mercado Pago",
+        "mp_open": "Abrir Mercado Pago",
+        "mp_disconnect": "Desvincular",
+        "mp_disconnect_confirm": "Desvincular sua conta do Mercado Pago? Seus clientes não poderão mais pagar por ela.",
+        "msg_mercadopago_linked": "Conta do Mercado Pago vinculada! Seus clientes já podem pagar pelo app.",
+        "msg_mercadopago_unlinked": "Conta do Mercado Pago desvinculada.",
+        "msg_mercadopago_denied": "A vinculação com o Mercado Pago não foi concluída.",
+        "msg_mercadopago_error": "Não foi possível falar com o Mercado Pago agora. Tente novamente.",
+        "msg_mercadopago_busy": "Ainda há pagamentos pelo Mercado Pago sendo confirmados. Tente desvincular daqui a alguns minutos.",
+        "msg_provider_chosen": "Pronto! Os próximos pagamentos caem nessa conta.",
+        "provider_stripe": "Stripe",
+        "provider_mercadopago": "Mercado Pago"
     },
     "admin_restaurants": {
         "title": "Restaurantes",
-        "description": "Cadastre restaurantes e defina os termos de cada um: plano, taxa própria e quem paga a taxa da Stripe. Mudanças valem para os próximos pagamentos.",
+        "description": "Cadastre restaurantes e defina os termos de cada um: plano, taxa própria e quem paga a taxa de processamento. Mudanças valem para os próximos pagamentos.",
         "search": "Buscar por nome ou e-mail",
         "empty": "Nenhum restaurante encontrado.",
         "tier": "Plano",
-        "platform_pays_fees": "Plataforma paga a taxa da Stripe",
+        "platform_pays_fees": "Plataforma paga a taxa de processamento",
         "stripe_active": "Stripe ativa",
         "stripe_pending": "Cadastro na Stripe incompleto",
         "stripe_none": "Sem conta Stripe",
@@ -1495,19 +1518,20 @@
         "fee_override": "Taxa própria (%)",
         "fee_override_placeholder": "Usar a do plano",
         "fee_effective": "Comissão cobrada: {{percent}}% por pagamento pelo app.",
-        "platform_pays_fees_hint": "A plataforma devolve ao restaurante a taxa de processamento da Stripe (até o valor da comissão).",
-        "msg_created": "Restaurante criado. Enviamos o e-mail para ele escolher a senha."
+        "platform_pays_fees_hint": "A plataforma devolve ao restaurante a taxa de processamento da Stripe ou do Mercado Pago (até o valor da comissão).",
+        "msg_created": "Restaurante criado. Enviamos o e-mail para ele escolher a senha.",
+        "mercadopago_active": "Mercado Pago vinculado"
     },
     "admin_payouts": {
         "title": "Repasses",
-        "description": "Descontos de cupons da plataforma que passaram da comissão do pagamento. A Stripe Brasil não permite transferir esses valores, então eles são pagos por fora (Pix ou transferência) e marcados aqui.",
+        "description": "O que a plataforma deve aos restaurantes por fora do provedor de pagamento: descontos de cupons da plataforma que passaram da comissão e, no Mercado Pago, a taxa bancada para restaurantes patrocinados. Nem a Stripe Brasil nem o Mercado Pago permitem transferir esses valores, então eles são pagos por fora (Pix ou transferência) e marcados aqui.",
         "empty": "Nada a repassar.",
         "payments_one": "{{count}} pagamento",
         "payments_other": "{{count}} pagamentos",
         "since": "desde {{date}}",
         "mark_paid": "Marcar como pago",
-        "mark_paid_confirm": "Confirmar que você pagou {{amount}} a {{name}} por fora da Stripe?",
-        "stripe_not_connected": "sem conta Stripe",
+        "mark_paid_confirm": "Confirmar que você pagou {{amount}} a {{name}} por fora do provedor de pagamento?",
+        "not_connected": "sem conta de recebimento",
         "msg_paid": "Repasse marcado como pago."
     },
     "customer_rewards": {
@@ -1738,7 +1762,7 @@
         "new_in_days_other": "{{count}} novos em {{days}} dias",
         "operating_week": "Operando (7 dias)",
         "operating_month": "Operando ({{days}} dias)",
-        "stripe_active": "Com Stripe ativa",
+        "payments_active": "Com pagamento online ativo",
         "public_profiles": "Perfil público",
         "custom_fee": "Com taxa própria",
         "movement": "Pedidos e pagamentos",
@@ -1792,7 +1816,7 @@
         "queues": "Filas de preparo",
         "top_products": "Mais vendidos ({{days}} dias)",
         "terms": "Termos com a plataforma",
-        "terms_description": "Plano, taxa própria e taxa da Stripe. Valem para os próximos pagamentos.",
+        "terms_description": "Plano, taxa própria e taxa de processamento. Valem para os próximos pagamentos.",
         "save_terms": "Salvar termos"
     },
     "admin_auth": {
@@ -1881,7 +1905,7 @@
                 },
                 "data": {
                     "title": "Quais dados tratamos",
-                    "body": "- Conta: nome, e-mail, senha (guardada só como hash), telefone (opcional), foto de perfil (opcional) e tipo de conta.\n- Segurança: autenticação em dois fatores e passkeys, sessões ativas (endereço IP, navegador e último acesso) e datas de login.\n- Uso nas mesas: mesas em que você entrou, itens pedidos e observações, pagamentos, chamados ao garçom, mensagens e reações no chat da mesa.\n- Pagamentos online: valores, status e identificadores da transação. Os dados do cartão são digitados direto na Stripe; o Table4All não os recebe nem guarda.\n- Fidelidade e cupons: cupons pessoais e recompensas recebidas em cada restaurante.\n- Social: comentários, reações e avaliações que você publica em perfis de restaurantes.\n- Restaurantes: nome do estabelecimento, contato, endereço, localização no mapa, fotos, cardápio e dados da conta de recebimento na Stripe.\n- Equipe: nome, e-mail e permissões de garçons e funcionários convidados pelo restaurante.\n- Contato: nome do estabelecimento, e-mail, telefone, cidade e mensagem enviados pelo formulário de contato.\n- Localização aproximada: só se você permitir no navegador, arredondada para cerca de 100 m e usada apenas para ordenar restaurantes por distância. Ela não fica gravada.\n\nNão tratamos dados pessoais sensíveis, não usamos seus dados para publicidade e não os vendemos."
+                    "body": "- Conta: nome, e-mail, senha (guardada só como hash), telefone (opcional), foto de perfil (opcional) e tipo de conta.\n- Segurança: autenticação em dois fatores e passkeys, sessões ativas (endereço IP, navegador e último acesso) e datas de login.\n- Uso nas mesas: mesas em que você entrou, itens pedidos e observações, pagamentos, chamados ao garçom, mensagens e reações no chat da mesa.\n- Pagamentos online: valores, status e identificadores da transação. Os dados do cartão são digitados direto na Stripe ou no Mercado Pago; o Table4All não os recebe nem guarda.\n- Fidelidade e cupons: cupons pessoais e recompensas recebidas em cada restaurante.\n- Social: comentários, reações e avaliações que você publica em perfis de restaurantes.\n- Restaurantes: nome do estabelecimento, contato, endereço, localização no mapa, fotos, cardápio e dados da conta de recebimento na Stripe ou no Mercado Pago.\n- Equipe: nome, e-mail e permissões de garçons e funcionários convidados pelo restaurante.\n- Contato: nome do estabelecimento, e-mail, telefone, cidade e mensagem enviados pelo formulário de contato.\n- Localização aproximada: só se você permitir no navegador, arredondada para cerca de 100 m e usada apenas para ordenar restaurantes por distância. Ela não fica gravada.\n\nNão tratamos dados pessoais sensíveis, não usamos seus dados para publicidade e não os vendemos."
                 },
                 "purposes": {
                     "title": "Para que usamos e com qual base legal",
@@ -1889,7 +1913,7 @@
                 },
                 "sharing": {
                     "title": "Com quem compartilhamos",
-                    "body": "- O restaurante em que você está: vê seu nome, seus pedidos, chamados, pagamentos e o chat da mesa, para atender você.\n- Outras pessoas na mesma mesa: veem seu nome, seus pedidos e suas mensagens no chat da mesa.\n- Stripe: processa os pagamentos online e as contas de recebimento dos restaurantes.\n- Hostinger: hospeda o servidor e o banco de dados, no Brasil.\n- Resend: envia os e-mails da sua conta (confirmação de cadastro, recuperação de senha, convites) e recebe seu nome e e-mail para isso.\n- Esses provedores são operadores: tratam os dados só para manter o serviço funcionando, sob contrato.\n- OpenStreetMap (Nominatim): recebe apenas o endereço público dos restaurantes, para localizá-los no mapa. Nenhum dado de clientes é enviado.\n- Autoridades públicas: quando houver ordem judicial ou obrigação legal.\n\nPerfis, publicações e avaliações de restaurantes são públicos, e seus comentários e reações neles aparecem com seu nome."
+                    "body": "- O restaurante em que você está: vê seu nome, seus pedidos, chamados, pagamentos e o chat da mesa, para atender você.\n- Outras pessoas na mesma mesa: veem seu nome, seus pedidos e suas mensagens no chat da mesa.\n- Stripe e Mercado Pago: processam os pagamentos online e as contas de recebimento dos restaurantes (cada restaurante escolhe um deles) e recebem seu e-mail para o pagamento.\n- Hostinger: hospeda o servidor e o banco de dados, no Brasil.\n- Resend: envia os e-mails da sua conta (confirmação de cadastro, recuperação de senha, convites) e recebe seu nome e e-mail para isso.\n- Esses provedores são operadores: tratam os dados só para manter o serviço funcionando, sob contrato.\n- OpenStreetMap (Nominatim): recebe apenas o endereço público dos restaurantes, para localizá-los no mapa. Nenhum dado de clientes é enviado.\n- Autoridades públicas: quando houver ordem judicial ou obrigação legal.\n\nPerfis, publicações e avaliações de restaurantes são públicos, e seus comentários e reações neles aparecem com seu nome."
                 },
                 "international": {
                     "title": "Transferência internacional",
@@ -1936,7 +1960,7 @@
                 },
                 "customers": {
                     "title": "Uso pelos clientes",
-                    "body": "- O primeiro cliente a abrir uma mesa livre fica responsável por ela e aprova quem pede para entrar.\n- Os preços são os do cardápio ou da promoção ativa no momento do pedido e ficam registrados na conta da mesa.\n- Pedidos enviados seguem direto para o preparo; cancelamentos e trocas dependem do restaurante.\n- Pagamentos online são processados pela Stripe. O que for pago a mais é devolvido automaticamente.\n- Itens não entregues quando a mesa é fechada não são cobrados."
+                    "body": "- O primeiro cliente a abrir uma mesa livre fica responsável por ela e aprova quem pede para entrar.\n- Os preços são os do cardápio ou da promoção ativa no momento do pedido e ficam registrados na conta da mesa.\n- Pedidos enviados seguem direto para o preparo; cancelamentos e trocas dependem do restaurante.\n- Pagamentos online são processados pela Stripe ou pelo Mercado Pago, conforme o restaurante. O que for pago a mais é devolvido automaticamente.\n- Itens não entregues quando a mesa é fechada não são cobrados."
                 },
                 "conduct": {
                     "title": "Conduta",
@@ -2161,7 +2185,7 @@
             },
             "payments": {
                 "q": "Como o cliente paga?",
-                "a": "Como sempre: Pix, cartão ou dinheiro, e a equipe registra cada pagamento na comanda. Se quiser, ative o pagamento pelo app e o dinheiro cai direto na sua conta Stripe."
+                "a": "Como sempre: Pix, cartão ou dinheiro, e a equipe registra cada pagamento na comanda. Se quiser, ative o pagamento pelo app e o dinheiro cai direto na sua conta do Mercado Pago ou da Stripe."
             },
             "cost": {
                 "q": "Quanto custa?",

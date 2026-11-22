@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\AccountType;
+use App\Enums\PaymentProvider;
 use App\Enums\Permission;
 use App\Enums\StaffFeature;
 use App\Enums\StaffRole;
@@ -53,6 +54,11 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property string|null $stripe_account_id
  * @property bool $stripe_charges_enabled
  * @property bool $stripe_details_submitted
+ * @property PaymentProvider|null $payment_provider The provider new checkouts go to
+ * @property string|null $mercadopago_user_id
+ * @property string|null $mercadopago_access_token
+ * @property string|null $mercadopago_refresh_token
+ * @property Carbon|null $mercadopago_token_expires_at
  * @property string|null $fee_tier
  * @property bool $platform_pays_stripe_fees
  * @property string|null $fee_percent_override The restaurant's own commission, over its tier's
@@ -70,7 +76,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'email', 'phone', 'avatar', 'logo', 'banner', 'handle', 'profile_public', 'address', 'ifood_url', 'price_level', 'table_capacity', 'account_type', 'password', 'restaurant_id'])]
-#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token', 'search_name', 'search_vector', 'stripe_account_id'])]
+#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token', 'search_name', 'search_vector', 'stripe_account_id', 'mercadopago_user_id', 'mercadopago_access_token', 'mercadopago_refresh_token'])]
 class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
@@ -227,7 +233,44 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     /** Whether customers can pay this restaurant's tables in the app. */
     public function acceptsOnlinePayments(): bool
     {
-        return $this->stripe_account_id !== null && $this->stripe_charges_enabled;
+        return $this->onlinePaymentProvider() !== null;
+    }
+
+    /**
+     * Where customers' payments go: the provider the restaurant chose, while its account
+     * there can take payments; otherwise the other one, if active; null when neither is.
+     */
+    public function onlinePaymentProvider(): ?PaymentProvider
+    {
+        if ($this->payment_provider !== null && $this->canReceiveWith($this->payment_provider)) {
+            return $this->payment_provider;
+        }
+
+        foreach (PaymentProvider::cases() as $provider) {
+            if ($this->canReceiveWith($provider)) {
+                return $provider;
+            }
+        }
+
+        return null;
+    }
+
+    /** Whether the restaurant's account with $provider can take payments now. */
+    public function canReceiveWith(PaymentProvider $provider): bool
+    {
+        return match ($provider) {
+            PaymentProvider::STRIPE => $this->stripe_account_id !== null && $this->stripe_charges_enabled,
+            PaymentProvider::MERCADO_PAGO => $this->mercadopago_user_id !== null && $this->mercadopago_access_token !== null,
+        };
+    }
+
+    /** The restaurant's account id with $provider (null when not linked). */
+    public function paymentAccountId(PaymentProvider $provider): ?string
+    {
+        return match ($provider) {
+            PaymentProvider::STRIPE => $this->stripe_account_id,
+            PaymentProvider::MERCADO_PAGO => $this->mercadopago_user_id,
+        };
     }
 
     /** The restaurant's tier, falling back to the default when unset or no longer offered. */
@@ -335,6 +378,10 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             'profile_public' => 'boolean',
             'stripe_charges_enabled' => 'boolean',
             'stripe_details_submitted' => 'boolean',
+            'payment_provider' => PaymentProvider::class,
+            'mercadopago_access_token' => 'encrypted',
+            'mercadopago_refresh_token' => 'encrypted',
+            'mercadopago_token_expires_at' => 'datetime',
             'platform_pays_stripe_fees' => 'boolean',
             'fee_percent_override' => 'decimal:2',
             'last_login_at' => 'datetime',

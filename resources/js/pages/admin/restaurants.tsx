@@ -45,6 +45,7 @@ type RestaurantRow = {
     platform_pays_stripe_fees: boolean;
     stripe_connected: boolean;
     stripe_charges_enabled: boolean;
+    mercadopago_connected: boolean;
     last_seen_at: string | null;
     created_at: string | null;
 };
@@ -225,6 +226,14 @@ export default function AdminRestaurants({
                                                     : t(
                                                           'admin_restaurants.stripe_none',
                                                       )}
+                                            </span>
+                                        )}
+                                        {restaurant.mercadopago_connected && (
+                                            <span className="inline-flex items-center gap-1">
+                                                <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+                                                {t(
+                                                    'admin_restaurants.mercadopago_active',
+                                                )}
                                             </span>
                                         )}
                                         <span className="text-muted-foreground">

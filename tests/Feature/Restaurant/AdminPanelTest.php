@@ -35,7 +35,8 @@ class AdminPanelTest extends TestCase
         return OnlinePayment::create([
             'restaurant_table_id' => $table->id,
             'restaurant_id' => $restaurant->id,
-            'stripe_account_id' => 'acct_x',
+            'provider' => 'stripe',
+            'account_id' => 'acct_x',
             'status' => OnlinePaymentStatus::PAID,
             'amount_cents' => 10000,
             'charge_cents' => 10000,

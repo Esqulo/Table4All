@@ -84,6 +84,7 @@
     "stories.error_video_unavailable": "Vídeos estão indisponíveis no momento. Publique uma foto.",
     "stories.error_limit": "Você já tem :max publicações no Hoje tem!. Apague uma ou espere alguma expirar.",
     "tables.customer_qr_invalid": "O QR code do cliente expirou ou já foi usado. Peça para ele gerar outro e leia novamente.",
+    "payments.provider_inactive": "Essa conta ainda não pode receber pagamentos. Termine de configurá-la primeiro.",
     "payments.unavailable": "Este restaurante ainda não aceita pagamentos pelo app. Pague com o garçom.",
     "payments.table_closed": "Esta mesa já foi fechada.",
     "payments.amount_too_low": "O valor mínimo para pagar pelo app é :min.",

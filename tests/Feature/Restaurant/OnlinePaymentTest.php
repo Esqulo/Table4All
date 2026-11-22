@@ -405,7 +405,7 @@ class OnlinePaymentTest extends TestCase
         $this->assertSame(OnlinePaymentStatus::PAID, $payment->status);
         $this->assertSame(2000, $payment->credited_cents);
         $this->assertSame(3000, $payment->refunded_cents);
-        $this->assertSame([['account' => 'acct_restaurant', 'payment_intent' => 'pi_'.$payment->checkout_session_id, 'cents' => 3000, 'key' => $payment->stripeKey('refund')]], $this->gateway->refunds);
+        $this->assertSame([['account' => 'acct_restaurant', 'payment_intent' => 'pi_'.$payment->checkout_session_id, 'cents' => 3000, 'key' => $payment->idempotencyKey('refund')]], $this->gateway->refunds);
         $this->assertNotNull($payment->refund_id);
 
         // The bill is exactly paid, not overpaid.
@@ -541,7 +541,7 @@ class OnlinePaymentTest extends TestCase
         $this->completeOnStripe($this->owner, $payment);
 
         $this->assertSame(
-            [['account' => 'acct_restaurant', 'payment_intent' => 'pi_'.$payment->checkout_session_id, 'cents' => 60, 'key' => $payment->stripeKey('fee-refund')]],
+            [['account' => 'acct_restaurant', 'payment_intent' => 'pi_'.$payment->checkout_session_id, 'cents' => 60, 'key' => $payment->idempotencyKey('fee-refund')]],
             $this->gateway->commissionRefunds,
         );
         $this->assertSame(60, $payment->refresh()->fee_refund_cents);
@@ -660,7 +660,7 @@ class OnlinePaymentTest extends TestCase
         // A payment confirmed after the admin looked isn't swept into the payout.
         $listed = $this->lastPayment()->id;
         $later = OnlinePayment::create([...$this->lastPayment()->only([
-            'restaurant_table_id', 'user_id', 'restaurant_id', 'stripe_account_id', 'amount_cents', 'discount_cents',
+            'restaurant_table_id', 'user_id', 'restaurant_id', 'provider', 'account_id', 'amount_cents', 'discount_cents',
             'charge_cents', 'fee_tier', 'fee_rate_bps', 'fee_cents', 'application_fee_cents',
         ]), 'status' => OnlinePaymentStatus::PAID]);
         $later->forceFill(['owed_cents' => 500])->save();

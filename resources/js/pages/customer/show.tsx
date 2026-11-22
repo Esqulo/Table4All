@@ -122,7 +122,7 @@ type Props = {
     chat: ChatFeed;
     chatReactions: string[];
     chatMaxLength: number;
-    onlinePayments: { enabled: boolean; min: number };
+    onlinePayments: { enabled: boolean; provider: string | null; min: number };
     payments: TablePaymentEntry[];
     myCheckout: OpenCheckout | null;
     couponQuote?: CouponQuote;
@@ -343,6 +343,7 @@ export default function CustomerShow({
                                 code={code}
                                 remaining={remaining}
                                 enabled={onlinePayments.enabled}
+                                provider={onlinePayments.provider}
                                 minimum={onlinePayments.min}
                                 myCheckout={myCheckout}
                                 couponQuote={couponQuote}

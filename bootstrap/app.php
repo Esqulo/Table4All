@@ -29,8 +29,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // Written by the frontend in plain text, so they can't be encrypted.
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state', SetLocale::COOKIE]);
 
-        // Signed by Stripe instead (StripeWebhookController).
-        $middleware->validateCsrfTokens(except: ['stripe/webhook']);
+        // Signed by the provider instead (StripeWebhookController, MercadoPagoWebhookController).
+        $middleware->validateCsrfTokens(except: ['stripe/webhook', 'mercadopago/webhook']);
 
         // Global, not just "web": a URL that matches no route still renders its 404 page
         // in the user's language. The cookie is not encrypted, so it is readable this early.

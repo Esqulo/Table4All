@@ -43,6 +43,15 @@ return [
         'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
     ],
 
+    // The platform's Mercado Pago application (Suas integrações): restaurants link
+    // their own account to it through OAuth. The webhook secret signs notifications
+    // (Webhooks > Configurar notificações; topics "Pagamentos" and "Vinculação de aplicações").
+    'mercadopago' => [
+        'client_id' => env('MERCADOPAGO_CLIENT_ID'),
+        'client_secret' => env('MERCADOPAGO_CLIENT_SECRET'),
+        'webhook_secret' => env('MERCADOPAGO_WEBHOOK_SECRET'),
+    ],
+
     // Converts "Hoje tem!" videos. Names on the PATH or absolute paths.
     'ffmpeg' => [
         'ffmpeg' => env('FFMPEG_BINARY', 'ffmpeg'),

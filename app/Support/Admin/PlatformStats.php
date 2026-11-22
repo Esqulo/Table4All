@@ -150,7 +150,7 @@ class PlatformStats
         $row = DB::table('users')
             ->where('account_type', AccountType::RESTAURANT->value)
             ->selectRaw('COUNT(*) as total')
-            ->selectRaw('COUNT(*) FILTER (WHERE stripe_charges_enabled) as stripe_active')
+            ->selectRaw('COUNT(*) FILTER (WHERE stripe_charges_enabled OR mercadopago_access_token IS NOT NULL) as payments_active')
             ->selectRaw('COUNT(*) FILTER (WHERE profile_public) as public_profiles')
             ->selectRaw('COUNT(*) FILTER (WHERE fee_percent_override IS NOT NULL) as custom_fee')
             ->selectRaw('COUNT(*) FILTER (WHERE created_at >= ?) as new_month', [$this->since(self::DAYS)])
@@ -166,7 +166,7 @@ class PlatformStats
 
         return [
             'total' => (int) ($row->total ?? 0),
-            'stripe_active' => (int) ($row->stripe_active ?? 0),
+            'payments_active' => (int) ($row->payments_active ?? 0),
             'public_profiles' => (int) ($row->public_profiles ?? 0),
             'custom_fee' => (int) ($row->custom_fee ?? 0),
             'new_month' => (int) ($row->new_month ?? 0),
@@ -224,7 +224,7 @@ class PlatformStats
             ->first();
 
         // In-app payments and what the platform kept of them: its commission on the part
-        // not refunded to the customer, minus Stripe fees it gave back to sponsored venues.
+        // not refunded to the customer, minus processing fees it gave back to sponsored venues.
         $commission = 'GREATEST(0, CASE WHEN charge_cents > 0 THEN ROUND(application_fee_cents::numeric * (charge_cents - refunded_cents) / charge_cents) ELSE 0 END - COALESCE(fee_refund_cents, 0))';
         $online = DB::table('online_payments')
             ->where('status', OnlinePaymentStatus::PAID->value)

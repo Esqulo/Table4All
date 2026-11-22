@@ -3,22 +3,25 @@
 namespace App\Models;
 
 use App\Enums\OnlinePaymentStatus;
+use App\Enums\PaymentProvider;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
- * A payment a customer started in the app: a Stripe Checkout on the
- * restaurant's own account. Money is in cents:
+ * A payment a customer started in the app: a hosted checkout (Stripe or
+ * Mercado Pago) on the restaurant's own account. Money is in cents:
  * - amount: what comes off the table's bill;
- * - discount: the coupon's part of it; charge = amount - discount is what Stripe collects;
- * - fee: the platform's share by tier; application_fee: what Stripe withholds for the
+ * - discount: the coupon's part of it; charge = amount - discount is what the provider collects;
+ * - fee: the platform's share by tier; application_fee: what the provider withholds for the
  *   platform (the fee minus a platform coupon's discount, never below zero);
  * - fee_refund: part of the platform's commission given back to a sponsored restaurant
- *   to cover Stripe's fee (never more than the commission withheld);
- * - owed: a platform coupon's discount beyond the commission, which the platform pays
- *   outside Stripe (Stripe Brazil doesn't allow free transfers) until marked paid;
+ *   to cover the provider's fee (never more than the commission withheld). Stripe gives it
+ *   back as a commission refund; on Mercado Pago, which can't, it is added to owed;
+ * - owed: what the platform pays the restaurant outside the provider (neither allows free
+ *   transfers) until marked paid: a platform coupon's discount beyond the commission, plus
+ *   the fee_refund on Mercado Pago;
  * - credited: what came off the bill once confirmed; refunded: the part of the charge
  *   sent back because the bill had been paid meanwhile (by a waiter, another customer).
  *   When that happens, discount and fee are recomputed on the credited amount.
@@ -27,10 +30,11 @@ use Illuminate\Support\Str;
  * @property int $restaurant_table_id
  * @property int|null $user_id
  * @property int $restaurant_id
- * @property string $stripe_account_id
+ * @property PaymentProvider $provider
+ * @property string $account_id The restaurant's account with the provider
  * @property OnlinePaymentStatus $status
  * @property string|null $request_key
- * @property string $stripe_key
+ * @property string $reference
  * @property int $amount_cents
  * @property int $discount_cents
  * @property int $charge_cents
@@ -51,7 +55,7 @@ use Illuminate\Support\Str;
  * @property int $refunded_cents
  * @property string|null $refund_id
  * @property Carbon|null $refunded_at
- * @property int|null $stripe_fee_cents
+ * @property int|null $processing_fee_cents
  * @property int|null $fee_refund_cents
  * @property string|null $fee_refund_id
  * @property int $owed_cents
@@ -66,7 +70,8 @@ final class OnlinePayment extends Model
         'restaurant_table_id',
         'user_id',
         'restaurant_id',
-        'stripe_account_id',
+        'provider',
+        'account_id',
         'status',
         'request_key',
         'amount_cents',
@@ -90,20 +95,21 @@ final class OnlinePayment extends Model
     protected static function booted(): void
     {
         self::creating(function (OnlinePayment $payment): void {
-            $payment->stripe_key ??= (string) Str::uuid();
+            $payment->reference ??= (string) Str::uuid();
         });
     }
 
-    /** An idempotency key for one kind of Stripe request about this payment. */
-    public function stripeKey(string $purpose): string
+    /** An idempotency key for one kind of request to the provider about this payment. */
+    public function idempotencyKey(string $purpose): string
     {
-        return $purpose.'-'.$this->stripe_key;
+        return $purpose.'-'.$this->reference;
     }
 
     protected function casts(): array
     {
         return [
             'status' => OnlinePaymentStatus::class,
+            'provider' => PaymentProvider::class,
             'amount_cents' => 'integer',
             'discount_cents' => 'integer',
             'charge_cents' => 'integer',
@@ -118,7 +124,7 @@ final class OnlinePayment extends Model
             'credited_cents' => 'integer',
             'refunded_cents' => 'integer',
             'refunded_at' => 'datetime',
-            'stripe_fee_cents' => 'integer',
+            'processing_fee_cents' => 'integer',
             'fee_refund_cents' => 'integer',
             'owed_cents' => 'integer',
             'owed_paid_at' => 'datetime',

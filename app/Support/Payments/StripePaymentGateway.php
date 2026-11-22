@@ -132,7 +132,7 @@ final class StripePaymentGateway implements PaymentGateway
         ];
     }
 
-    public function checkoutStatus(string $accountId, string $sessionId): array
+    public function checkoutStatus(string $accountId, string $sessionId, string $reference): array
     {
         $session = $this->call(fn (StripeClient $stripe) => $stripe->checkout->sessions->retrieve(
             $sessionId,
@@ -150,7 +150,7 @@ final class StripePaymentGateway implements PaymentGateway
         ];
     }
 
-    public function expireCheckout(string $accountId, string $sessionId): void
+    public function expireCheckout(string $accountId, string $sessionId, string $reference): void
     {
         $this->call(fn (StripeClient $stripe) => $stripe->checkout->sessions->expire(
             $sessionId,
@@ -159,10 +159,10 @@ final class StripePaymentGateway implements PaymentGateway
         ));
     }
 
-    public function processingFee(string $accountId, string $paymentIntentId): ?int
+    public function processingFee(string $accountId, string $paymentId): ?int
     {
         $intent = $this->call(fn (StripeClient $stripe) => $stripe->paymentIntents->retrieve(
-            $paymentIntentId,
+            $paymentId,
             ['expand' => ['latest_charge.balance_transaction']],
             ['stripe_account' => $accountId],
         ));
@@ -185,10 +185,10 @@ final class StripePaymentGateway implements PaymentGateway
         return $fee;
     }
 
-    public function refund(string $accountId, string $paymentIntentId, int $cents, string $idempotencyKey): string
+    public function refund(string $accountId, string $paymentId, int $cents, string $idempotencyKey): string
     {
         return $this->call(fn (StripeClient $stripe) => $stripe->refunds->create([
-            'payment_intent' => $paymentIntentId,
+            'payment_intent' => $paymentId,
             'amount' => $cents,
             // The platform gives back its share of what is refunded.
             'refund_application_fee' => true,
@@ -198,15 +198,20 @@ final class StripePaymentGateway implements PaymentGateway
         ])->id);
     }
 
+    public function refundsCommission(): bool
+    {
+        return true;
+    }
+
     /**
      * Stripe Brazil refuses platform-to-account transfers without a platform charge to
      * draw from (source_transaction); refunding part of the application fee is how
      * the platform can give money back on a direct charge.
      */
-    public function refundCommission(string $accountId, string $paymentIntentId, int $cents, string $idempotencyKey): ?array
+    public function refundCommission(string $accountId, string $paymentId, int $cents, string $idempotencyKey): ?array
     {
         $intent = $this->call(fn (StripeClient $stripe) => $stripe->paymentIntents->retrieve(
-            $paymentIntentId,
+            $paymentId,
             ['expand' => ['latest_charge']],
             ['stripe_account' => $accountId],
         ));
