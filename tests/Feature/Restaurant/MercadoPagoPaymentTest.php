@@ -337,7 +337,8 @@ class MercadoPagoPaymentTest extends TestCase
         // Default tier: 4.5% for the platform, as on Stripe.
         $this->assertEqualsWithDelta(0.90, $preference['marketplace_fee'], 0.001);
         $this->assertSame($payment->reference, $preference['external_reference']);
-        $this->assertSame($this->member->email, $preference['payer']['email']);
+        // Mercado Pago would tie the checkout to the account with that e-mail: the payer signs in there instead.
+        $this->assertArrayNotHasKey('payer', $preference);
         $this->assertSame($payment->idempotencyKey('checkout'), $preference['idempotency_key']);
         $this->assertSame(['APP_USR-seller'], array_unique($this->tokensUsed));
         // Stripe isn't involved.

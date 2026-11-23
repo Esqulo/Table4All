@@ -40,7 +40,8 @@ It is not legal advice: have a lawyer review the texts before launch.
 | Device location | not stored (rounded ~100 m, in the discovery URL only) | consent in the browser | — |
 
 Outside services: Stripe (payments, abroad: Art. 33), Mercado Pago (payments, for restaurants that
-choose it; receives the payer's email; restaurants' OAuth tokens are stored encrypted), Nominatim (restaurant addresses only), the
+choose it; the app sends it no customer data, the payer signs in there; restaurants' OAuth tokens
+are stored encrypted), Nominatim (restaurant addresses only), the
 email provider. The IP geolocation lookup (`IP_LOCATION_URL`) is **off** by default because it sends
 visitors' IPs abroad; turning it on requires adding it to the policy. Fonts are bundled
 (`@fontsource`), so no page calls Google Fonts.
