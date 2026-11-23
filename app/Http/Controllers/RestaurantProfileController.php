@@ -150,7 +150,7 @@ class RestaurantProfileController extends Controller
     {
         $restaurant = User::where('handle', $handle)
             ->where('account_type', AccountType::RESTAURANT)
-            ->first(['id', 'name', 'logo', 'banner', 'handle', 'profile_public', 'address', 'ifood_url', 'account_type']);
+            ->first(['id', 'name', 'logo', 'banner', 'handle', 'profile_public', 'address', 'ifood_url', 'account_type', 'deactivated_at']);
 
         // A hidden profile doesn't exist for anyone but its owner, who sees what visitors would.
         abort_unless($restaurant?->publicProfileVisibleTo($viewer), 404);

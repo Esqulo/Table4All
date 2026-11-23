@@ -118,7 +118,10 @@ class MenuController extends Controller
 
     public function show(Menu $menu): Response
     {
-        $menu->load(['user' => fn ($q) => $q->select('id', 'name', 'avatar')]);
+        $menu->load(['user' => fn ($q) => $q->select('id', 'name', 'avatar', 'deactivated_at')]);
+
+        // A switched-off restaurant's menus (and their QR codes) lead nowhere.
+        abort_if($menu->user === null || $menu->user->deactivated_at !== null, 404);
 
         [$categories, $products] = $this->catalog($menu);
 

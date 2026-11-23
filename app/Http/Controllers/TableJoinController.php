@@ -21,6 +21,7 @@ class TableJoinController extends Controller
     public function show(Request $request, string $code): Response|RedirectResponse
     {
         $table = RestaurantTable::where('access_code', $code)
+            ->ofActiveRestaurant()
             ->whereNull('closed_at')
             ->whereNull('deleted_at')
             ->with('user:id,name,avatar')

@@ -24,6 +24,7 @@ import {
     Gauge,
     Layers,
     ShieldCheck,
+    UserCog,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AdminUserController from '@/actions/App/Http/Controllers/Admin/AdminUserController';
@@ -34,6 +35,7 @@ import FeeTierController from '@/actions/App/Http/Controllers/Admin/FeeTierContr
 import OverviewController from '@/actions/App/Http/Controllers/Admin/OverviewController';
 import AdminPayoutController from '@/actions/App/Http/Controllers/Admin/PayoutController';
 import AdminRestaurantController from '@/actions/App/Http/Controllers/Admin/RestaurantController';
+import AdminAccountController from '@/actions/App/Http/Controllers/Admin/UserController';
 import CustomerJoinController from '@/actions/App/Http/Controllers/Customer/JoinController';
 import CustomerRewardController from '@/actions/App/Http/Controllers/Customer/RewardController';
 import DiscoverController from '@/actions/App/Http/Controllers/DiscoverController';
@@ -189,6 +191,11 @@ export function AppSidebar() {
                   title: t('nav.restaurants'),
                   href: AdminRestaurantController.index.url(),
                   icon: Store,
+              },
+              {
+                  title: t('nav.users'),
+                  href: AdminAccountController.index.url(),
+                  icon: UserCog,
               },
               {
                   title: t('nav.tiers'),

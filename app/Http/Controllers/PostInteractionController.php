@@ -90,7 +90,7 @@ class PostInteractionController extends Controller
     /** Posts of a hidden profile don't exist for anyone but the restaurant. */
     private function ensureVisible(RestaurantPost $post, User $viewer): void
     {
-        $restaurant = User::whereKey($post->user_id)->first(['id', 'account_type', 'profile_public']);
+        $restaurant = User::whereKey($post->user_id)->first(['id', 'account_type', 'profile_public', 'deactivated_at']);
 
         abort_unless($restaurant?->publicProfileVisibleTo($viewer), 404);
     }

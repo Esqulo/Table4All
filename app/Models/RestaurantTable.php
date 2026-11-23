@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Support\ServiceFee;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -80,6 +81,21 @@ final class RestaurantTable extends Model
         } while ($exists);
 
         return $code;
+    }
+
+    /**
+     * Tables of restaurants that are switched on: a switched-off restaurant's codes
+     * lead nowhere for customers (a primary-key lookup per table).
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeOfActiveRestaurant(Builder $query): Builder
+    {
+        return $query->whereExists(fn ($q) => $q->selectRaw('1')
+            ->from('users')
+            ->whereColumn('users.id', 'restaurant_tables.user_id')
+            ->whereNull('users.deactivated_at'));
     }
 
     /** @return BelongsTo<User, $this> */

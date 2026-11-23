@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
@@ -53,6 +54,11 @@ class FortifyServiceProvider extends ServiceProvider
             if ($user === null || $user->account_type === AccountType::ADMIN
                 || ! Hash::check((string) $request->input('password'), $user->password)) {
                 return null;
+            }
+
+            // Told only after the right password, so it says nothing to someone guessing.
+            if ($user->isBlocked()) {
+                throw ValidationException::withMessages([Fortify::username() => __('admin.account_deactivated')]);
             }
 
             return $user;

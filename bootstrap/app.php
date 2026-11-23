@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\ErrorPage;
+use App\Http\Middleware\EnsureAccountActive;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\ProtectAdminTwoFactor;
@@ -42,6 +43,8 @@ return Application::configure(basePath: dirname(__DIR__))
             : route('login'));
 
         $middleware->web(append: [
+            // First: a switched-off account is signed out before anything else runs.
+            EnsureAccountActive::class,
             HandleAppearance::class,
             HandleInertiaRequests::class,
             TrackLastSeen::class,

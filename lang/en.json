@@ -72,6 +72,7 @@
     "admin.error_invalid_code": "Invalid code. Check the app's current code and try again.",
     "admin.error_admin_email_taken": "There is already an account with this e-mail. Invite a new e-mail for the admin.",
     "admin.error_invitation_invalid": "This invitation is no longer valid. Ask an admin for a new one.",
+    "admin.account_deactivated": "This account has been deactivated. If you think this is a mistake, contact Table4All support.",
     "mail.admin_invitation.subject": "Invitation to administer :app",
     "mail.admin_invitation.heading": "You're invited to be an admin",
     "mail.admin_invitation.intro": "**:inviter** invited you to administer **:app**.",

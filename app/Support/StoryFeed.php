@@ -31,7 +31,8 @@ final class StoryFeed
                     ->where('restaurant_stories.status', RestaurantStory::READY)
                     ->whereIn('restaurant_stories.user_id', User::select('id')
                         ->where('account_type', AccountType::RESTAURANT)
-                        ->where('profile_public', true)))
+                        ->where('profile_public', true)
+                        ->whereNull('deactivated_at')))
                 ->when($ownId !== null, fn ($q) => $q->orWhere('restaurant_stories.user_id', $ownId)));
 
         // Which restaurants, newest story first (one grouped query), then their stories (one query).

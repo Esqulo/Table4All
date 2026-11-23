@@ -108,6 +108,7 @@ class PaymentController extends Controller
     private function tableFor(Request $request, string $code): RestaurantTable
     {
         $table = RestaurantTable::where('access_code', $code)
+            ->ofActiveRestaurant()
             ->whereNull('closed_at')
             ->whereNull('deleted_at')
             ->firstOrFail(['id', 'user_id', 'title', 'responsible_user_id']);

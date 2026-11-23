@@ -1,5 +1,6 @@
 import { Form, Head, Link, router } from '@inertiajs/react';
 import {
+    Ban,
     CheckCircle2,
     ChevronRight,
     CircleDashed,
@@ -48,6 +49,7 @@ type RestaurantRow = {
     mercadopago_connected: boolean;
     last_seen_at: string | null;
     created_at: string | null;
+    deactivated: boolean;
 };
 
 type Paginated<T> = {
@@ -201,9 +203,19 @@ export default function AdminRestaurants({
                                     )}
                                     className="group min-w-48 flex-1"
                                 >
-                                    <p className="flex items-center gap-1 font-medium group-hover:underline">
-                                        {restaurant.name}
+                                    <p className="flex items-center gap-1 font-medium">
+                                        <span className="group-hover:underline">
+                                            {restaurant.name}
+                                        </span>
                                         <ChevronRight className="size-4 text-muted-foreground" />
+                                        {restaurant.deactivated && (
+                                            <Badge variant="destructive">
+                                                <Ban />
+                                                {t(
+                                                    'admin_users.status_deactivated',
+                                                )}
+                                            </Badge>
+                                        )}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
                                         {restaurant.email}

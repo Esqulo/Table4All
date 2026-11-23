@@ -1,6 +1,7 @@
 import { Form, Head, Link } from '@inertiajs/react';
 import {
     ArrowLeft,
+    Ban,
     CheckCircle2,
     CircleDashed,
     ExternalLink,
@@ -10,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import RestaurantController from '@/actions/App/Http/Controllers/Admin/RestaurantController';
+import AccountStatusControl from '@/components/admin/account-status-control';
 import ActivityKpis from '@/components/admin/activity-kpis';
 import DailyChart from '@/components/admin/daily-chart';
 import Panel, { SectionTitle } from '@/components/admin/panel';
@@ -54,6 +56,9 @@ type Restaurant = {
     fee_percent_override: number | null;
     effective_fee_percent: number;
     platform_pays_stripe_fees: boolean;
+    deactivated_at: string | null;
+    deactivated_by: string | null;
+    deactivation_reason: string | null;
 };
 
 type Props = {
@@ -208,7 +213,37 @@ export default function AdminRestaurant({
                             )}
                         </div>
                     </div>
+                    <AccountStatusControl
+                        user={{ ...restaurant, account_type: 'restaurant' }}
+                        deactivated={restaurant.deactivated_at !== null}
+                        size="default"
+                    />
                 </header>
+
+                {restaurant.deactivated_at && (
+                    <div className="flex items-start gap-3 rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-sm">
+                        <Ban className="mt-0.5 size-4 shrink-0 text-destructive" />
+                        <div className="space-y-1">
+                            <p className="font-medium text-destructive">
+                                {t('admin_users.deactivated_info', {
+                                    when: formatDateTime(
+                                        restaurant.deactivated_at,
+                                        language,
+                                    ),
+                                    by:
+                                        restaurant.deactivated_by ??
+                                        t('admin_users.unknown_admin'),
+                                })}
+                            </p>
+                            {restaurant.deactivation_reason && (
+                                <p>{restaurant.deactivation_reason}</p>
+                            )}
+                            <p className="text-muted-foreground">
+                                {t('admin_users.restaurant_deactivated_hint')}
+                            </p>
+                        </div>
+                    </div>
+                )}
 
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8">
                     <PlainStat

@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\FeeTierController;
 use App\Http\Controllers\Admin\OverviewController;
 use App\Http\Controllers\Admin\PayoutController as AdminPayoutController;
 use App\Http\Controllers\Admin\RestaurantController as AdminRestaurantController;
+use App\Http\Controllers\Admin\UserController as AdminAccountController;
 use App\Http\Controllers\AdmissionRequestController;
 use App\Http\Controllers\Customer\JoinController as CustomerJoinController;
 use App\Http\Controllers\Customer\PaymentController as CustomerPaymentController;
@@ -376,6 +377,10 @@ Route::middleware(['auth', 'verified', EnsureAdmin::class])
             ->only(['index', 'store', 'show', 'update'])
             ->names('restaurants')
             ->parameters(['restaurantes' => 'restaurant']);
+        // Every account on the platform; switching one off (a restaurant takes its team along).
+        Route::get('usuarios', [AdminAccountController::class, 'index'])->name('users.index');
+        Route::patch('usuarios/{user}/desativar', [AdminAccountController::class, 'deactivate'])->name('users.deactivate');
+        Route::patch('usuarios/{user}/reativar', [AdminAccountController::class, 'reactivate'])->name('users.reactivate');
         // Commercial plans: the platform's commission on online payments.
         Route::resource('planos', FeeTierController::class)
             ->only(['index', 'store', 'update', 'destroy'])

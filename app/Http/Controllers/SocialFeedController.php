@@ -44,7 +44,8 @@ class SocialFeedController extends Controller
                     'user_id',
                     User::select('id')
                         ->where('account_type', AccountType::RESTAURANT)
-                        ->where('profile_public', true),
+                        ->where('profile_public', true)
+                        ->whereNull('deactivated_at'),
                 )
                     ->with(['restaurant' => fn ($q) => $q->select(PostFeed::RESTAURANT_COLUMNS)])
                     ->orderByDesc('id')

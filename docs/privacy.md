@@ -27,6 +27,7 @@ It is not legal advice: have a lawyer review the texts before launch.
 | --- | --- | --- | --- |
 | Account (name, email, phone optional, avatar) | `users` | contract (Art. 7 V) | until the account is deleted |
 | Consent to terms | `users.terms_accepted_at`, `terms_version` | proof of consent (Art. 8 §2) | with the account |
+| Deactivation by an admin (date, admin, reason) | `users.deactivated_*` | legitimate interest, security and abuse prevention | while deactivated (cleared on reactivation) |
 | Sessions, sign-in dates | `sessions`, `users.last_login_at/last_seen_at` | legitimate interest, security | session lifetime / account |
 | Tables joined, orders, bill lines | `restaurant_table_customers`, `queue_items`, `restaurant_table_product` | contract; legal obligation for bills | 5 years (tax), unlinked on deletion |
 | Payments | `table_payments`, `online_payments` | contract; legal obligation | 5 years, unlinked on deletion |

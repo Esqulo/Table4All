@@ -38,6 +38,9 @@ final class PersonalDataExport
                 'terms_accepted_at' => $user->terms_accepted_at?->toIso8601String(),
                 'terms_version' => $user->terms_version,
                 'two_factor_enabled' => $user->two_factor_confirmed_at !== null,
+                // An admin switched the account off: when, and the reason they recorded.
+                'deactivated_at' => $user->deactivated_at?->toIso8601String(),
+                'deactivation_reason' => $user->deactivation_reason,
             ],
             'restaurant_profile' => $user->account_type === AccountType::RESTAURANT ? [
                 'handle' => $user->handle,

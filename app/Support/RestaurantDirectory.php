@@ -244,6 +244,7 @@ final class RestaurantDirectory
         return User::query()
             ->where('account_type', AccountType::RESTAURANT)
             ->where('profile_public', true)
+            ->whereNull('deactivated_at')
             ->whereNotNull('handle')
             ->select(['id', 'name', 'handle', 'logo', 'account_type'])
             ->withAvg('reviews', 'rating')

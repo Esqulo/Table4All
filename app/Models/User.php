@@ -66,6 +66,9 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $last_seen_at
  * @property Carbon|null $terms_accepted_at
  * @property string|null $terms_version
+ * @property Carbon|null $deactivated_at Switched off by an admin: can't sign in (nor its team, for a restaurant)
+ * @property int|null $deactivated_by
+ * @property string|null $deactivation_reason The admin's note on why, for the admin panel
  * @property Carbon|null $email_verified_at
  * @property string $password
  * @property string|null $two_factor_secret
@@ -76,7 +79,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'email', 'phone', 'avatar', 'logo', 'banner', 'handle', 'profile_public', 'address', 'ifood_url', 'price_level', 'table_capacity', 'account_type', 'password', 'restaurant_id'])]
-#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token', 'search_name', 'search_vector', 'stripe_account_id', 'mercadopago_user_id', 'mercadopago_access_token', 'mercadopago_refresh_token'])]
+#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token', 'search_name', 'search_vector', 'stripe_account_id', 'mercadopago_user_id', 'mercadopago_access_token', 'mercadopago_refresh_token', 'deactivated_by', 'deactivation_reason'])]
 class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
@@ -128,12 +131,31 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     /** Whether $viewer can see this restaurant's public profile and its posts. */
     public function publicProfileVisibleTo(?User $viewer): bool
     {
-        if ($this->account_type !== AccountType::RESTAURANT) {
+        if ($this->account_type !== AccountType::RESTAURANT || $this->deactivated_at !== null) {
             return false;
         }
 
         return $this->profile_public
             || ($viewer !== null && $viewer->account_type === AccountType::RESTAURANT && $viewer->id === $this->id);
+    }
+
+    /** Admins can switch off any account but their own kind. */
+    public function canBeDeactivated(): bool
+    {
+        return $this->account_type !== AccountType::ADMIN;
+    }
+
+    /**
+     * Whether this account is kept out: switched off itself, or staff of a restaurant that
+     * was switched off. One primary-key lookup for staff, none for anyone else.
+     */
+    public function isBlocked(): bool
+    {
+        if ($this->deactivated_at !== null) {
+            return true;
+        }
+
+        return $this->isStaff() && User::whereKey($this->restaurant_id)->whereNotNull('deactivated_at')->exists();
     }
 
     /** A member of a restaurant's team (waiter or manager), still linked to it. */
@@ -306,6 +328,16 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
         return $this->belongsTo(User::class, 'restaurant_id');
     }
 
+    /**
+     * The admin who switched this account off.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function deactivatedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'deactivated_by');
+    }
+
     /** @return HasMany<RestaurantOpeningHour, $this> */
     public function openingHours(): HasMany
     {
@@ -387,6 +419,7 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             'last_login_at' => 'datetime',
             'last_seen_at' => 'datetime',
             'terms_accepted_at' => 'datetime',
+            'deactivated_at' => 'datetime',
             'staff_role' => StaffRole::class,
             'staff_permissions' => 'array',
             'price_level' => 'integer',

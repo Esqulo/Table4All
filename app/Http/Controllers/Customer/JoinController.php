@@ -82,6 +82,7 @@ class JoinController extends Controller
     public function show(Request $request, string $code): Response|RedirectResponse
     {
         $table = RestaurantTable::where('access_code', $code)
+            ->ofActiveRestaurant()
             ->whereNull('closed_at')
             ->whereNull('deleted_at')
             ->first(['id', 'user_id', 'title', 'responsible_user_id', ...ServiceFee::COLUMNS, 'service_fee_waived']);
@@ -347,6 +348,7 @@ class JoinController extends Controller
     public function order(Request $request, string $code): RedirectResponse
     {
         $table = RestaurantTable::where('access_code', $code)
+            ->ofActiveRestaurant()
             ->whereNull('closed_at')
             ->whereNull('deleted_at')
             ->firstOrFail(['id', 'user_id', 'responsible_user_id']);
@@ -496,6 +498,7 @@ class JoinController extends Controller
     private function tableForMember(Request $request, string $code): RestaurantTable
     {
         $table = RestaurantTable::where('access_code', $code)
+            ->ofActiveRestaurant()
             ->whereNull('closed_at')
             ->whereNull('deleted_at')
             ->firstOrFail(['id', 'user_id', 'responsible_user_id']);
@@ -520,6 +523,7 @@ class JoinController extends Controller
     private function decide(Request $request, string $code, int $customer, TableCustomerStatus $decision): RedirectResponse
     {
         $table = RestaurantTable::where('access_code', $code)
+            ->ofActiveRestaurant()
             ->whereNull('closed_at')
             ->whereNull('deleted_at')
             ->firstOrFail(['id', 'responsible_user_id']);
@@ -631,6 +635,7 @@ class JoinController extends Controller
     private function openTable(string $code): RestaurantTable
     {
         return RestaurantTable::where('access_code', $code)
+            ->ofActiveRestaurant()
             ->whereNull('closed_at')
             ->whereNull('deleted_at')
             ->firstOrFail(['id', 'responsible_user_id']);

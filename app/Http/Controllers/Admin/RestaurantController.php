@@ -46,7 +46,7 @@ class RestaurantController extends Controller
                 ? $q->where(fn ($q) => $q->whereNull('fee_tier')->orWhere('fee_tier', $defaultKey)->orWhereNotIn('fee_tier', $knownKeys))
                 : $q->where('fee_tier', $tier))
             ->orderBy('name')
-            ->select(['id', 'name', 'email', 'fee_tier', 'fee_percent_override', 'platform_pays_stripe_fees', 'stripe_account_id', 'stripe_charges_enabled', 'mercadopago_user_id', 'last_seen_at', 'created_at'])
+            ->select(['id', 'name', 'email', 'fee_tier', 'fee_percent_override', 'platform_pays_stripe_fees', 'stripe_account_id', 'stripe_charges_enabled', 'mercadopago_user_id', 'last_seen_at', 'created_at', 'deactivated_at'])
             ->paginate(50)
             ->withQueryString()
             ->through(fn (User $restaurant) => [
@@ -61,6 +61,7 @@ class RestaurantController extends Controller
                 'mercadopago_connected' => $restaurant->mercadopago_user_id !== null,
                 'last_seen_at' => $restaurant->last_seen_at?->toIso8601String(),
                 'created_at' => $restaurant->created_at?->toIso8601String(),
+                'deactivated' => $restaurant->deactivated_at !== null,
             ]);
 
         return Inertia::render('admin/restaurants', [
@@ -141,6 +142,7 @@ class RestaurantController extends Controller
                 'fee_percent_override' => $restaurant->fee_percent_override !== null ? (float) $restaurant->fee_percent_override : null,
                 'effective_fee_percent' => $restaurant->feeRateBps() / 100,
                 'platform_pays_stripe_fees' => $restaurant->platform_pays_stripe_fees,
+                ...UserController::deactivation($restaurant),
             ],
             'tiers' => $tiers,
             'maxPercent' => FeeTier::MAX_PERCENT,

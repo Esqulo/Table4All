@@ -122,6 +122,7 @@
     "admin.error_invalid_code": "Código inválido. Confira o código atual do aplicativo e tente de novo.",
     "admin.error_admin_email_taken": "Já existe uma conta com este e-mail. Convide um e-mail novo para o admin.",
     "admin.error_invitation_invalid": "Este convite não vale mais. Peça um novo a um administrador.",
+    "admin.account_deactivated": "Esta conta foi desativada. Se acha que é um engano, fale com o suporte do Table4All.",
     "mail.admin_invitation.subject": "Convite para administrar o :app",
     "mail.admin_invitation.heading": "Você foi convidado para ser administrador",
     "mail.admin_invitation.intro": "**:inviter** convidou você para administrar o **:app**.",
