@@ -118,10 +118,9 @@ final class MercadoPagoGateway implements CheckoutGateway
             $preference['marketplace_fee'] = $request->applicationFeeCents / 100;
         }
 
-        // The customer's e-mail is deliberately not sent: Mercado Pago ties the checkout to the
-        // account with that e-mail, so a customer whose Mercado Pago account is the restaurant's
-        // or the platform's (or who wants to pay with someone else's) is refused before paying.
-        // Whoever pays signs in or types their own details on Mercado Pago's page.
+        if ($request->customerEmail !== null) {
+            $preference['payer'] = ['email' => $request->customerEmail];
+        }
 
         $created = $this->send(fn (PendingRequest $http) => $http
             ->withToken($this->token($accountId))
