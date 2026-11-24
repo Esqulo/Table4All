@@ -1,6 +1,6 @@
 import { Link } from '@inertiajs/react';
 import type { LucideIcon } from 'lucide-react';
-import { Compass, Menu, Newspaper, QrCode, Trophy } from 'lucide-react';
+import { Compass, Menu, Newspaper, Trophy, Utensils } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import CustomerJoinController from '@/actions/App/Http/Controllers/Customer/JoinController';
 import CustomerRewardController from '@/actions/App/Http/Controllers/Customer/RewardController';
@@ -56,7 +56,7 @@ export function CustomerBottomNav() {
                                     'ring-primary/25',
                             )}
                         >
-                            <QrCode className="size-6" />
+                            <Utensils className="size-6" />
                         </span>
                         <span
                             className={

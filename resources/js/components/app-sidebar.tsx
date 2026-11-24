@@ -12,13 +12,13 @@ import {
     Newspaper,
     Compass,
     Percent,
-    QrCode,
     ScrollText,
     ShoppingBag,
     Store,
     Tag,
     Users,
     UtensilsCrossed,
+    Utensils,
     Gift,
     Trophy,
     Gauge,
@@ -244,7 +244,7 @@ export function AppSidebar() {
                     {
                         title: t('nav.table'),
                         href: CustomerJoinController.index.url(),
-                        icon: QrCode,
+                        icon: Utensils,
                     },
                     {
                         title: t('nav.rewards'),

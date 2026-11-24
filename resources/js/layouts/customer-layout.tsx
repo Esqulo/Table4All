@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { Menu, QrCode, X } from 'lucide-react';
+import { Menu, Utensils, X } from 'lucide-react';
 import type { PropsWithChildren } from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -50,7 +50,7 @@ export default function CustomerLayout({ children }: PropsWithChildren) {
                         className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                         onClick={() => setOpen(false)}
                     >
-                        <QrCode className="h-4 w-4 shrink-0" />
+                        <Utensils className="h-4 w-4 shrink-0" />
                         {t('nav.table')}
                     </Link>
                 </nav>
