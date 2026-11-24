@@ -31,8 +31,9 @@ trait ManagesCoupons
 
         $coupons = Coupon::query()
             ->when($ownerId === null, fn ($q) => $q->whereNull('user_id'), fn ($q) => $q->where('user_id', $ownerId))
-            // Personal coupons (loyalty rewards) are handed out automatically, not managed here.
-            ->whereNull('customer_id')
+            // Loyalty rewards are handed out automatically, not managed here.
+            ->notLoyaltyReward()
+            ->with('customer:id,name')
             ->withCount(['onlinePayments as uses' => fn ($q) => $q->where('status', OnlinePaymentStatus::PAID->value)])
             ->orderByDesc('id')
             ->get()
@@ -48,6 +49,8 @@ trait ManagesCoupons
                 'max_uses' => $coupon->max_uses,
                 'uses' => (int) $coupon->getAttribute('uses'),
                 'exhausted' => $coupon->max_uses !== null && (int) $coupon->getAttribute('uses') >= $coupon->max_uses,
+                // Who it is restricted to, by name only: staff never see a customer's e-mail.
+                'customer' => $coupon->customer_id === null ? null : ['name' => $coupon->customer?->name],
             ]);
 
         return Inertia::render($this->couponPage(), [
@@ -60,6 +63,8 @@ trait ManagesCoupons
         Coupon::create([
             ...$this->couponAttributes($request),
             'user_id' => $this->couponOwnerId($request),
+            // Set only on creation; null means anyone may use it.
+            'customer_id' => $request->customerId(),
         ]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'coupons.msg_created']);
@@ -94,7 +99,7 @@ trait ManagesCoupons
     {
         abort_unless($coupon->user_id === $this->couponOwnerId($request), 403);
         // A customer's loyalty reward isn't the restaurant's to edit or take back.
-        abort_unless($coupon->customer_id === null, 403);
+        abort_if($coupon->customer_id !== null && $coupon->isLoyaltyReward(), 403);
     }
 
     /**

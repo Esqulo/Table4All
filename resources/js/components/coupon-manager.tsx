@@ -1,5 +1,5 @@
 import { Form, Head } from '@inertiajs/react';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Trash2, UserRound } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type RestaurantCouponController from '@/actions/App/Http/Controllers/Restaurant/CouponController';
@@ -40,6 +40,8 @@ export type CouponRow = {
     max_uses: number | null;
     uses: number;
     exhausted: boolean;
+    /** The only customer who can use it (by name); null for anyone. */
+    customer: { name: string | null } | null;
 };
 
 /** The restaurant and admin coupon controllers have the same actions. */
@@ -163,6 +165,16 @@ function CouponItem({
                     {coupon.exhausted && (
                         <Badge variant="outline" className="text-destructive">
                             {t('coupons.exhausted')}
+                        </Badge>
+                    )}
+                    {coupon.customer && (
+                        <Badge variant="outline" className="max-w-full">
+                            <UserRound className="h-3 w-3" />
+                            <span className="truncate">
+                                {t('coupons.customer_badge', {
+                                    name: coupon.customer.name ?? '—',
+                                })}
+                            </span>
                         </Badge>
                     )}
                     <Badge variant="secondary">
@@ -389,6 +401,40 @@ function CouponDialog({
                                 </p>
                                 <InputError message={errors.max_uses} />
                             </div>
+
+                            {coupon === null ? (
+                                <div className="grid gap-2">
+                                    <Label htmlFor="customer_email">
+                                        {t('coupons.customer_email')}
+                                    </Label>
+                                    <Input
+                                        id="customer_email"
+                                        name="customer_email"
+                                        type="email"
+                                        inputMode="email"
+                                        maxLength={255}
+                                        autoComplete="off"
+                                        placeholder={t(
+                                            'coupons.customer_email_placeholder',
+                                        )}
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('coupons.customer_email_hint')}
+                                    </p>
+                                    <InputError
+                                        message={errors.customer_email}
+                                    />
+                                </div>
+                            ) : (
+                                coupon.customer && (
+                                    <p className="flex items-start gap-2 rounded-lg border border-border p-3 text-xs text-muted-foreground">
+                                        <UserRound className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                                        {t('coupons.customer_locked', {
+                                            name: coupon.customer.name ?? '—',
+                                        })}
+                                    </p>
+                                )
+                            )}
 
                             <label className="flex items-start gap-3 rounded-lg border border-border p-3">
                                 <Checkbox

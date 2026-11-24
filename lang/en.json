@@ -51,6 +51,7 @@
     "payments.coupon_already_used": "You already used a coupon at this table.",
     "payments.checkout_description": ":table · :restaurant",
     "coupons.code_taken": "A coupon with this code already exists.",
+    "coupons.customer_not_found": "No customer with an app account uses this e-mail.",
     "loyalty.attribute_tiers": "tiers",
     "loyalty.attribute_visits": "visits",
     "loyalty.attribute_discount_type": "discount type",

@@ -5,6 +5,7 @@ namespace Tests\Feature\Restaurant;
 use App\Enums\OnlinePaymentStatus;
 use App\Models\Coupon;
 use App\Models\OnlinePayment;
+use App\Models\User;
 use App\Support\Payments\PaymentGateway;
 use App\Support\Payments\StripePaymentGateway;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -208,6 +209,90 @@ class PaymentSettingsTest extends TestCase
 
         $this->actingAs($restaurant)->delete(route('restaurant.coupons.destroy', $coupon));
         $this->assertSoftDeleted($coupon);
+    }
+
+    public function test_a_coupon_can_be_made_for_one_customer_by_their_email(): void
+    {
+        $restaurant = $this->restaurant();
+        $customer = User::factory()->create(['name' => 'Ana Cliente', 'email' => 'ana@example.com']);
+
+        $this->actingAs($restaurant)
+            ->post(route('restaurant.coupons.store'), $this->couponForm(['customer_email' => '  ANA@example.com ']))
+            ->assertSessionHasNoErrors();
+
+        $coupon = Coupon::sole();
+        $this->assertSame($customer->id, $coupon->customer_id);
+        $this->assertSame($restaurant->id, $coupon->user_id);
+
+        // Listed with the customer's name, never their e-mail.
+        $this->actingAs($restaurant)->get(route('restaurant.coupons.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('coupons.0.customer', ['name' => 'Ana Cliente'])
+                ->where('coupons.0.code', 'BEM-VINDO10'));
+        $this->actingAs($restaurant)->get(route('restaurant.coupons.index'))->assertDontSee('ana@example.com');
+
+        // It shows up in the customer's wallet.
+        $this->actingAs($customer)->get(route('customer.rewards'))
+            ->assertInertia(fn (Assert $page) => $page->where('wallet.0.code', 'BEM-VINDO10')->where('wallet.0.status', 'available'));
+
+        // The owner still edits it like any other coupon, but can't hand it to someone else.
+        $this->actingAs($restaurant)->put(route('restaurant.coupons.update', $coupon), $this->couponForm(['discount_value' => 20]))
+            ->assertSessionHasNoErrors();
+        $this->assertSame(20.0, $coupon->refresh()->discount_value);
+        $this->assertSame($customer->id, $coupon->customer_id);
+
+        $this->actingAs($restaurant)
+            ->put(route('restaurant.coupons.update', $coupon), $this->couponForm(['customer_email' => User::factory()->create()->email]))
+            ->assertSessionHasErrors('customer_email');
+        $this->assertSame($customer->id, $coupon->refresh()->customer_id);
+
+        $this->actingAs($restaurant)->delete(route('restaurant.coupons.destroy', $coupon));
+        $this->assertSoftDeleted($coupon);
+    }
+
+    public function test_a_customer_coupon_needs_an_active_customer_account_with_that_email(): void
+    {
+        $restaurant = $this->restaurant();
+        $deactivated = User::factory()->create(['deactivated_at' => now()]);
+
+        foreach ([
+            'nobody@example.com',
+            'not-an-email',
+            $this->restaurant()->email,
+            $this->waiterOf($restaurant)->email,
+            $this->admin()->email,
+            $deactivated->email,
+        ] as $email) {
+            $this->actingAs($restaurant)
+                ->post(route('restaurant.coupons.store'), $this->couponForm(['customer_email' => $email]))
+                ->assertSessionHasErrors('customer_email');
+        }
+
+        $this->assertSame(0, Coupon::count());
+
+        // Empty means anyone can use it.
+        $this->actingAs($restaurant)->post(route('restaurant.coupons.store'), $this->couponForm(['customer_email' => '']))
+            ->assertSessionHasNoErrors();
+        $this->assertNull(Coupon::sole()->customer_id);
+    }
+
+    public function test_the_admin_makes_a_platform_coupon_for_one_customer(): void
+    {
+        $customer = $this->customer();
+
+        $this->actingAs($this->admin())
+            ->post(route('admin.coupons.store'), $this->couponForm(['customer_email' => $customer->email]))
+            ->assertSessionHasNoErrors();
+
+        $coupon = Coupon::sole();
+        $this->assertNull($coupon->user_id);
+        $this->assertSame($customer->id, $coupon->customer_id);
+
+        // Valid everywhere, so the wallet names the platform instead of a restaurant.
+        $this->actingAs($customer)->get(route('customer.rewards'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('wallet.0.code', 'BEM-VINDO10')
+                ->where('wallet.0.restaurant.name', config('app.name')));
     }
 
     public function test_a_restaurant_cannot_touch_another_restaurants_or_the_platforms_coupons(): void

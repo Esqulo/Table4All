@@ -131,10 +131,11 @@ class RewardController extends Controller
     private function wallet(int $userId): array
     {
         return DB::table('coupons as c')
-            ->join('users as r', 'r.id', '=', 'c.user_id')
+            // No restaurant for a platform coupon made for this customer: valid everywhere.
+            ->leftJoin('users as r', 'r.id', '=', 'c.user_id')
             ->where('c.customer_id', $userId)
             ->whereNull('c.deleted_at')
-            ->selectRaw('c.id, c.code, c.discount_type, c.discount_value, c.max_discount, c.expires_at, r.name as restaurant_name, r.handle as restaurant_handle')
+            ->selectRaw('c.id, c.code, c.discount_type, c.discount_value, c.max_discount, c.expires_at, c.max_uses, r.name as restaurant_name, r.handle as restaurant_handle')
             ->selectSub(
                 DB::table('online_payments')
                     ->whereColumn('coupon_id', 'c.id')
@@ -147,7 +148,9 @@ class RewardController extends Controller
             ->get()
             ->map(function (object $c) {
                 $expiresAt = $c->expires_at === null ? null : CarbonImmutable::parse((string) $c->expires_at, 'UTC');
-                $status = (int) $c->uses > 0 ? 'used' : ($expiresAt?->isPast() ? 'expired' : 'available');
+                // Used up once every allowed use is paid; an unlimited one never is.
+                $usedUp = $c->max_uses !== null && (int) $c->uses >= (int) $c->max_uses;
+                $status = $usedUp ? 'used' : ($expiresAt?->isPast() ? 'expired' : 'available');
 
                 return [
                     'id' => (int) $c->id,
@@ -157,7 +160,10 @@ class RewardController extends Controller
                     'max_discount' => $c->max_discount === null ? null : (float) $c->max_discount,
                     'expires_at' => $expiresAt?->toIso8601ZuluString(),
                     'status' => $status,
-                    'restaurant' => ['name' => (string) $c->restaurant_name, 'handle' => $c->restaurant_handle],
+                    'restaurant' => [
+                        'name' => $c->restaurant_name === null ? (string) config('app.name') : (string) $c->restaurant_name,
+                        'handle' => $c->restaurant_handle,
+                    ],
                 ];
             })
             ->sortBy(fn (array $c) => $c['status'] === 'available' ? 0 : 1)

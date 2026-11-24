@@ -101,6 +101,7 @@
     "payments.coupon_already_used": "Você já usou um cupom nesta mesa.",
     "payments.checkout_description": ":table · :restaurant",
     "coupons.code_taken": "Já existe um cupom com este código.",
+    "coupons.customer_not_found": "Nenhum cliente com conta no app usa este e-mail.",
     "loyalty.attribute_tiers": "etapas",
     "loyalty.attribute_visits": "visitas",
     "loyalty.attribute_discount_type": "tipo de desconto",

@@ -1433,7 +1433,12 @@
         "unlimited": "Ilimitado",
         "uses_of_one": "{{count}} de {{max}} uso",
         "uses_of_other": "{{count}} de {{max}} usos",
-        "exhausted": "Esgotado"
+        "exhausted": "Esgotado",
+        "customer_email": "Cliente específico",
+        "customer_email_placeholder": "e-mail da conta do cliente (opcional)",
+        "customer_email_hint": "Preencha para que só esse cliente possa usar o cupom. Ele precisa ter conta no app com este e-mail. Não dá para mudar depois.",
+        "customer_badge": "Só para {{name}}",
+        "customer_locked": "Exclusivo de {{name}}. O cliente não pode ser trocado; para outro cliente, crie um novo cupom."
     },
     "finance": {
         "title": "Financeiro",
@@ -1614,7 +1619,7 @@
         },
         "wallet": {
             "title": "Carteira",
-            "description": "Seus cupons de recompensa aparecem aqui.",
+            "description": "Seus cupons de recompensa e os cupons feitos só para você aparecem aqui.",
             "available_one": "Você tem {{count}} cupom para usar. Digite o código ao pagar pelo app.",
             "available_other": "Você tem {{count}} cupons para usar. Digite o código ao pagar pelo app.",
             "empty": "Nenhum cupom ainda. Complete a barra de fidelidade de um lugar para ganhar o primeiro.",

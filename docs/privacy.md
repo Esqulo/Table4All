@@ -34,7 +34,7 @@ It is not legal advice: have a lawyer review the texts before launch.
 | Table chat, reactions | `table_messages`, `table_reactions` | contract | `RETENTION_TABLE_CHAT_DAYS` (30) after close |
 | Waiter / bill calls | `table_calls` | contract | `RETENTION_TABLE_CALLS_DAYS` (90) after resolved |
 | Comments, reactions, reviews | `post_*`, `restaurant_reviews` | contract (the person posts) | until deleted |
-| Loyalty, personal coupons | `loyalty_rewards`, `coupons.customer_id` | contract | until the account is deleted |
+| Loyalty, personal coupons (rewards, or made for one customer by their e-mail) | `loyalty_rewards`, `coupons.customer_id` | contract | until the account is deleted |
 | Contact form | `admission_requests` | pre-contract (Art. 7 V) | 365 days after answered |
 | Invitations, QR sign-in links | `waiter_invitations`, `admin_invitations`, `customer_link_tokens` | contract | days after use/expiry |
 | Device location | not stored (rounded ~100 m, in the discovery URL only) | consent in the browser | — |

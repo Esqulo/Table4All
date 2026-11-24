@@ -1433,7 +1433,12 @@
         "unlimited": "Unlimited",
         "uses_of_one": "{{count}} of {{max}} use",
         "uses_of_other": "{{count}} of {{max}} uses",
-        "exhausted": "Used up"
+        "exhausted": "Used up",
+        "customer_email": "Specific customer",
+        "customer_email_placeholder": "customer account e-mail (optional)",
+        "customer_email_hint": "Fill in so only this customer can use the coupon. They need an app account with this e-mail. It can’t be changed later.",
+        "customer_badge": "Only for {{name}}",
+        "customer_locked": "Only for {{name}}. The customer can’t be changed; create a new coupon for someone else."
     },
     "finance": {
         "title": "Finance",
@@ -1614,7 +1619,7 @@
         },
         "wallet": {
             "title": "Wallet",
-            "description": "Your reward coupons show up here.",
+            "description": "Your reward coupons and coupons made just for you show up here.",
             "available_one": "You have {{count}} coupon to use. Type the code when paying in the app.",
             "available_other": "You have {{count}} coupons to use. Type the code when paying in the app.",
             "empty": "No coupons yet. Fill a place's loyalty bar to earn your first one.",

@@ -704,6 +704,18 @@ class OnlinePaymentTest extends TestCase
         $this->assertFalse($this->lastPayment()->coupon_by_platform);
     }
 
+    public function test_a_coupon_made_for_one_customer_only_works_for_them(): void
+    {
+        $this->coupon($this->restaurant, ['code' => 'SOANA', 'customer_id' => $this->owner->id]);
+        $this->coupon(null, ['code' => 'APPANA', 'customer_id' => $this->owner->id]);
+
+        $this->pay($this->member, 20, ['coupon' => 'SOANA'])->assertSessionHasErrors('coupon');
+        $this->pay($this->member, 20, ['coupon' => 'APPANA'])->assertSessionHasErrors('coupon');
+
+        $this->pay($this->owner, 20, ['coupon' => 'SOANA'])->assertSessionHasNoErrors();
+        $this->assertSame(1800, $this->gateway->checkouts[$this->gateway->lastSessionId()]->chargeCents);
+    }
+
     public function test_another_restaurants_coupon_is_not_accepted(): void
     {
         $this->coupon($this->restaurant());

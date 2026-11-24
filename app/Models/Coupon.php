@@ -6,16 +6,19 @@ use App\Enums\CouponDiscountType;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
  * A discount code. user_id is the restaurant that offers it (and pays for the
  * discount); null means a platform coupon, valid at every restaurant and paid
  * by the platform. Codes are stored upper-case and matched that way.
- * customer_id makes it personal (loyalty rewards): only that customer can use it.
+ * customer_id makes it personal (loyalty rewards, or a coupon the owner made for
+ * one customer): only that customer can use it.
  *
  * @property int $id
  * @property int|null $user_id
@@ -106,6 +109,32 @@ final class Coupon extends Model
         }
 
         return max(0, min($discount, $amountCents));
+    }
+
+    /**
+     * The only customer who can use it, for personal coupons.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'customer_id');
+    }
+
+    /**
+     * Coupons the owner hands out by hand, leaving out loyalty rewards (the
+     * program issues those to the customer on its own).
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeNotLoyaltyReward(Builder $query): void
+    {
+        $query->whereNotExists(fn ($q) => $q->from('loyalty_rewards')->whereColumn('loyalty_rewards.coupon_id', 'coupons.id'));
+    }
+
+    public function isLoyaltyReward(): bool
+    {
+        return DB::table('loyalty_rewards')->where('coupon_id', $this->id)->exists();
     }
 
     /** @return HasMany<OnlinePayment, $this> */

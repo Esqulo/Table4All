@@ -170,6 +170,7 @@ return [
         'name' => 'nome',
         'terms' => 'termos de uso',
         'email' => 'e-mail',
+        'customer_email' => 'e-mail do cliente',
         'coupon' => 'cupom',
         'discount_type' => 'tipo de desconto',
         'discount_value' => 'valor do desconto',

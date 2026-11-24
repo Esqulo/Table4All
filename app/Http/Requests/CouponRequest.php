@@ -2,18 +2,35 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\AccountType;
 use App\Enums\CouponDiscountType;
 use App\Models\Coupon;
+use App\Models\User;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 /**
  * A coupon as the restaurant (or the admin, for platform coupons) fills it in.
- * Codes are unique per owner.
+ * Codes are unique per owner. On creation it may be tied to one customer by
+ * their account e-mail: then only that customer can use it.
  */
 class CouponRequest extends FormRequest
 {
+    /** The customer the new coupon is restricted to, found by the e-mail typed. */
+    private ?int $customerId = null;
+
+    public function customerId(): ?int
+    {
+        return $this->customerId;
+    }
+
+    private function isCreating(): bool
+    {
+        return ! $this->route('coupon') instanceof Coupon;
+    }
+
     /** The restaurant that owns the coupon; null for the platform's (admin routes). */
     public function ownerId(): ?int
     {
@@ -51,12 +68,16 @@ class CouponRequest extends FormRequest
             // Total uses across every table and customer; empty for unlimited.
             'max_uses' => ['nullable', 'integer', 'min:1', 'max:1000000'],
             'multiple_per_table' => ['boolean'],
+            // Only when creating: who a coupon belongs to doesn't change afterwards.
+            'customer_email' => $this->isCreating() ? ['nullable', 'string', 'email', 'max:255'] : ['prohibited'],
         ];
     }
 
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator): void {
+            $this->resolveCustomer($validator);
+
             if ($validator->errors()->has('code')) {
                 return;
             }
@@ -76,5 +97,28 @@ class CouponRequest extends FormRequest
                 $validator->errors()->add('code', __('coupons.code_taken'));
             }
         });
+    }
+
+    private function resolveCustomer(Validator $validator): void
+    {
+        $email = $this->input('customer_email');
+        if (! $this->isCreating() || ! is_string($email) || trim($email) === '' || $validator->errors()->has('customer_email')) {
+            return;
+        }
+
+        $email = trim($email);
+        // Sign-up stores e-mails lower-cased; looking up both spellings keeps the unique index in use.
+        $customerId = User::whereIn('email', array_unique([$email, Str::lower($email)]))
+            ->where('account_type', AccountType::CUSTOMER->value)
+            ->whereNull('deactivated_at')
+            ->value('id');
+
+        if ($customerId === null) {
+            $validator->errors()->add('customer_email', __('coupons.customer_not_found'));
+
+            return;
+        }
+
+        $this->customerId = (int) $customerId;
     }
 }
