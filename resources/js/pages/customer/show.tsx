@@ -383,8 +383,9 @@ export default function CustomerShow({
                     )}
                 </div>
 
-                {/* The two things people come to this screen for, always within reach. */}
-                <div className="sticky bottom-0 z-10 -mx-4 border-t border-border bg-background/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur">
+                {/* The two things people come to this screen for, always within reach:
+                    above the bottom nav on phones (which then takes the safe area). */}
+                <div className="sticky bottom-(--bottom-nav-h,0px) z-10 -mx-4 border-t border-border bg-background/95 px-4 pt-3 pb-[max(0.75rem,var(--bottom-safe-area,env(safe-area-inset-bottom)))] backdrop-blur">
                     <div className="flex gap-2">
                         {canPay && tab !== 'bill' && (
                             <Button

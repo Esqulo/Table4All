@@ -101,7 +101,8 @@
         "calls": "Calls",
         "admin_overview": "Overview",
         "tiers": "Plans",
-        "admins": "Admins"
+        "admins": "Admins",
+        "menu": "Menu"
     },
     "settings": {
         "title": "Settings",

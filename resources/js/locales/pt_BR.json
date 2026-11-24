@@ -101,7 +101,8 @@
         "calls": "Chamadas",
         "admin_overview": "Painel",
         "tiers": "Planos",
-        "admins": "Administradores"
+        "admins": "Administradores",
+        "menu": "Menu"
     },
     "settings": {
         "title": "Configurações",

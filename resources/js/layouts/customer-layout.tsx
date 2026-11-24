@@ -59,13 +59,15 @@ export default function CustomerLayout({ children }: PropsWithChildren) {
             {/* Main area */}
             <div className="flex min-w-0 flex-1 flex-col">
                 {/* Mobile top bar */}
-                <header className="flex h-12 shrink-0 items-center border-b border-border bg-card px-4 lg:hidden">
+                <header className="flex h-14 shrink-0 items-center border-b border-border bg-card px-4 lg:hidden">
                     <button
-                        className="rounded-md p-1 text-muted-foreground hover:bg-muted"
+                        type="button"
+                        className="inline-flex h-10 items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 pr-3.5 pl-3 text-sm font-semibold text-primary shadow-xs transition-colors hover:bg-primary/15 active:scale-95"
                         onClick={() => setOpen(true)}
                         aria-label={t('nav.open_menu')}
                     >
-                        <Menu className="h-5 w-5" />
+                        <Menu className="size-5" />
+                        {t('nav.menu')}
                     </button>
                 </header>
 
